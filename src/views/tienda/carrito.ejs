@@ -1,0 +1,97 @@
+<%- include('../partials/head', { title: 'Carrito' }) %>
+<%- include('../partials/navbar') %>
+<%- include('../partials/flash') %>
+
+<div class="page-header">
+  <div class="container">
+    <div class="breadcrumb">
+      <a href="/">Inicio</a><span class="breadcrumb-sep">›</span>
+      <a href="/tienda">Tienda</a><span class="breadcrumb-sep">›</span>
+      <span>Carrito</span>
+    </div>
+    <h1 class="page-header-title">Mi carrito</h1>
+  </div>
+</div>
+
+<main>
+  <div class="container section-py">
+    <% if (typeof items !== 'undefined' && items && items.length > 0) { %>
+      <div class="cart-layout">
+        <!-- Artículos -->
+        <div class="card" style="padding:0">
+          <% let total = 0; %>
+          <% items.forEach(function(item) { %>
+            <% total += item.producto.precio * item.cantidad; %>
+            <div class="cart-item">
+              <div class="cart-item-img">
+                <% if (item.producto.imagen) { %>
+                  <img src="<%= item.producto.imagen %>" alt="<%= item.producto.nombre %>">
+                <% } else { %>
+                  <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:var(--bg2);font-size:1.8rem">
+                    <%= item.producto.categoria === 'ROPA' ? '👕' : item.producto.categoria === 'EQUIPAMIENTO' ? '⚾' : '🎁' %>
+                  </div>
+                <% } %>
+              </div>
+              <div class="cart-item-info">
+                <p class="cart-item-name"><%= item.producto.nombre %></p>
+                <p class="cart-item-cat"><%= item.producto.categoria %></p>
+                <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem">
+                  <div class="cart-qty">
+                    <form action="/tienda/carrito/actualizar" method="POST" style="display:inline">
+                      <input type="hidden" name="productoId" value="<%= item.producto.id %>">
+                      <input type="hidden" name="cantidad" value="<%= item.cantidad - 1 %>">
+                      <button type="submit" class="cart-qty-btn">−</button>
+                    </form>
+                    <span class="cart-qty-num"><%= item.cantidad %></span>
+                    <form action="/tienda/carrito/actualizar" method="POST" style="display:inline">
+                      <input type="hidden" name="productoId" value="<%= item.producto.id %>">
+                      <input type="hidden" name="cantidad" value="<%= item.cantidad + 1 %>">
+                      <button type="submit" class="cart-qty-btn">+</button>
+                    </form>
+                    <form action="/tienda/carrito/eliminar" method="POST" style="display:inline;margin-left:.5rem">
+                      <input type="hidden" name="productoId" value="<%= item.producto.id %>">
+                      <button type="submit" class="btn-icon" style="font-size:.9rem;color:var(--red)" title="Eliminar">🗑️</button>
+                    </form>
+                  </div>
+                  <span class="cart-item-price"><%= (item.producto.precio * item.cantidad).toFixed(2) %> €</span>
+                </div>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+
+        <!-- Resumen -->
+        <div class="cart-summary">
+          <h3 style="margin-bottom:1.25rem">Resumen del pedido</h3>
+          <div class="cart-summary-row">
+            <span style="color:var(--text2)">Subtotal</span>
+            <span><%= total.toFixed(2) %> €</span>
+          </div>
+          <div class="cart-summary-row">
+            <span style="color:var(--text2)">Envío</span>
+            <span style="color:#22c55e">Gratis</span>
+          </div>
+          <div class="cart-summary-row" style="padding-top:1rem;margin-top:.5rem;border-top:1px solid var(--border)">
+            <span>Total</span>
+            <span style="font-size:1.3rem;color:var(--accent)"><%= total.toFixed(2) %> €</span>
+          </div>
+          <a href="/tienda/checkout" class="btn btn-primary btn-full btn-lg" style="margin-top:1.5rem">
+            Finalizar compra →
+          </a>
+          <a href="/tienda" class="btn btn-ghost btn-full btn-sm" style="margin-top:.75rem">
+            ← Seguir comprando
+          </a>
+        </div>
+      </div>
+    <% } else { %>
+      <div class="card cart-empty">
+        <div class="cart-empty-icon">🛒</div>
+        <h2 style="margin-bottom:.5rem">Tu carrito está vacío</h2>
+        <p style="color:var(--text2);margin-bottom:2rem">Explora nuestra tienda y añade artículos al carrito.</p>
+        <a href="/tienda" class="btn btn-primary btn-lg">Ir a la tienda</a>
+      </div>
+    <% } %>
+  </div>
+</main>
+
+<%- include('../partials/footer') %>

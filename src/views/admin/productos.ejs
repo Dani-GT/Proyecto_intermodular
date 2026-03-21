@@ -1,0 +1,99 @@
+<%- include('../partials/head', { title: 'Productos · Admin' }) %>
+<%- include('../partials/navbar') %>
+<%- include('../partials/flash') %>
+
+<main>
+  <div class="container">
+    <div class="admin-layout">
+      <aside class="admin-sidebar">
+        <div class="card" style="padding:.75rem">
+          <p class="admin-sidebar-title">Panel Admin</p>
+          <a href="/admin/dashboard"     class="admin-nav-item">📊 Dashboard</a>
+          <a href="/admin/usuarios"      class="admin-nav-item">👥 Usuarios</a>
+          <a href="/admin/inscripciones" class="admin-nav-item">📋 Inscripciones</a>
+          <a href="/admin/productos"     class="admin-nav-item active">🛍️ Productos</a>
+          <a href="/admin/noticias"      class="admin-nav-item">📰 Noticias</a>
+          <a href="/admin/partidos"      class="admin-nav-item">⚾ Partidos</a>
+          <div style="height:1px;background:var(--border);margin:.5rem 0"></div>
+          <a href="/" class="admin-nav-item">🏠 Ver web</a>
+        </div>
+      </aside>
+
+      <div class="admin-content" style="padding:2rem 0">
+        <h1 class="admin-page-title">Productos</h1>
+
+        <!-- Formulario nuevo producto -->
+        <div class="card" style="padding:1.75rem;margin-bottom:2rem">
+          <h3 style="margin-bottom:1.25rem;font-size:1rem">➕ Nuevo producto</h3>
+          <form action="/admin/productos" method="POST" enctype="multipart/form-data">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+              <div class="form-group">
+                <label class="form-label">Nombre</label>
+                <input type="text" name="nombre" class="form-control" placeholder="Nombre del producto" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Categoría</label>
+                <select name="categoria" class="form-control" required>
+                  <option value="ROPA">👕 Ropa</option>
+                  <option value="EQUIPAMIENTO">⚾ Equipamiento</option>
+                  <option value="MERCHANDISING">🎁 Merchandising</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Precio (€)</label>
+                <input type="number" name="precio" step="0.01" min="0" class="form-control" placeholder="19.99" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Stock</label>
+                <input type="number" name="stock" min="0" class="form-control" placeholder="50" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Descripción</label>
+              <textarea name="descripcion" class="form-control" rows="2" placeholder="Descripción del producto…"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Crear producto</button>
+          </form>
+        </div>
+
+        <!-- Tabla productos -->
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr><th>Producto</th><th>Categoría</th><th>Precio</th><th>Stock</th><th>Acciones</th></tr>
+            </thead>
+            <tbody>
+              <% if (typeof productos !== 'undefined' && productos && productos.length > 0) { %>
+                <% productos.forEach(function(p) { %>
+                  <tr class="<%= p.stock === 0 ? 'row-disabled' : '' %>">
+                    <td><strong><%= p.nombre %></strong><br><span style="font-size:.78rem;color:var(--text3)"><%= p.descripcion ? p.descripcion.substring(0,60) + '…' : '' %></span></td>
+                    <td><span class="badge badge-neutral badge-sm"><%= p.categoria %></span></td>
+                    <td><strong><%= p.precio.toFixed(2) %> €</strong></td>
+                    <td>
+                      <span class="badge <%= p.stock === 0 ? 'badge-danger' : p.stock < 5 ? 'badge-warning' : 'badge-success' %> badge-sm">
+                        <%= p.stock === 0 ? 'Agotado' : p.stock + ' uds.' %>
+                      </span>
+                    </td>
+                    <td>
+                      <div style="display:flex;gap:.5rem">
+                        <form action="/admin/productos/<%= p.id %>" method="POST" class="inline-form">
+                          <input type="hidden" name="_method" value="PUT">
+                          <input type="number" name="stock" value="<%= p.stock %>" min="0" class="form-control" style="width:70px;padding:.3rem .5rem;font-size:.82rem">
+                          <button type="submit" class="btn btn-primary btn-sm">Guardar</button>
+                        </form>
+                      </div>
+                    </td>
+                  </tr>
+                <% }) %>
+              <% } else { %>
+                <tr><td colspan="5" style="text-align:center;color:var(--text3);padding:3rem">Sin productos</td></tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<%- include('../partials/footer') %>

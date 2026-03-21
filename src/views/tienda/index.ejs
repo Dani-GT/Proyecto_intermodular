@@ -1,0 +1,97 @@
+<%- include('../partials/head', { title: 'Tienda oficial' }) %>
+<%- include('../partials/navbar') %>
+<%- include('../partials/flash') %>
+
+<div class="page-header">
+  <div class="container">
+    <div class="breadcrumb">
+      <a href="/">Inicio</a><span class="breadcrumb-sep">›</span><span>Tienda</span>
+    </div>
+    <h1 class="page-header-title">Tienda oficial</h1>
+    <p class="page-header-desc">Equipamiento y merchandising oficial del Club Béisbol Granollers.</p>
+  </div>
+</div>
+
+<main>
+  <div class="container section-py">
+    <div class="shop-layout">
+
+      <!-- Sidebar filtros -->
+      <aside class="shop-sidebar">
+        <div class="card" style="padding:1.25rem">
+          <div class="shop-sidebar-section">
+            <p class="shop-sidebar-title">Categoría</p>
+            <button class="shop-filter-btn active" data-cat="TODOS">Todos los productos</button>
+            <button class="shop-filter-btn" data-cat="ROPA">👕 Ropa</button>
+            <button class="shop-filter-btn" data-cat="EQUIPAMIENTO">⚾ Equipamiento</button>
+            <button class="shop-filter-btn" data-cat="MERCHANDISING">🎁 Merchandising</button>
+          </div>
+          <div class="shop-sidebar-section">
+            <p class="shop-sidebar-title">Carrito</p>
+            <a href="/tienda/carrito" class="btn btn-outline btn-sm btn-full">🛒 Ver carrito</a>
+          </div>
+          <div class="shop-sidebar-section" style="margin-bottom:0">
+            <p class="shop-sidebar-title">Pagos seguros</p>
+            <p style="font-size:.8rem;color:var(--text3)">🔒 Transacciones cifradas · Devoluciones en 30 días</p>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Productos -->
+      <div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem">
+          <p style="font-size:.9rem;color:var(--text2)">
+            <strong style="color:var(--text)"><%= typeof productos !== 'undefined' ? productos.length : 0 %></strong> productos
+          </p>
+        </div>
+
+        <% if (typeof productos !== 'undefined' && productos && productos.length > 0) { %>
+          <div class="products-grid">
+            <% productos.forEach(function(producto) { %>
+              <div class="product-card-wrap" data-cat="<%= producto.categoria %>">
+                <a href="/tienda/<%= producto.id %>" class="card product-card card-hover" style="text-decoration:none;display:block">
+                  <div class="product-img">
+                    <% if (producto.imagen) { %>
+                      <img src="<%= producto.imagen %>" alt="<%= producto.nombre %>">
+                    <% } else { %>
+                      <div class="product-img-placeholder">
+                        <%= producto.categoria === 'ROPA' ? '👕' : producto.categoria === 'EQUIPAMIENTO' ? '⚾' : '🎁' %>
+                      </div>
+                    <% } %>
+                    <% if (producto.stock === 0) { %>
+                      <div style="position:absolute;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center">
+                        <span class="badge badge-danger">Agotado</span>
+                      </div>
+                    <% } %>
+                  </div>
+                  <div class="product-body">
+                    <p class="product-cat"><%= producto.categoria %></p>
+                    <h3 class="product-name"><%= producto.nombre %></h3>
+                    <div class="product-price-row">
+                      <span class="product-price"><%= producto.precio.toFixed(2) %> €</span>
+                      <% if (producto.stock > 0) { %>
+                        <form action="/tienda/carrito/agregar" method="POST" onclick="event.stopPropagation()">
+                          <input type="hidden" name="productoId" value="<%= producto.id %>">
+                          <input type="hidden" name="cantidad" value="1">
+                          <button type="submit" class="product-add" title="Añadir al carrito">+</button>
+                        </form>
+                      <% } %>
+                    </div>
+                  </div>
+                </a>
+              </div>
+            <% }) %>
+          </div>
+        <% } else { %>
+          <div class="card" style="padding:4rem;text-align:center">
+            <div style="font-size:3rem;margin-bottom:1rem">🛍️</div>
+            <h3 style="margin-bottom:.5rem">Sin productos disponibles</h3>
+            <p style="color:var(--text2)">Próximamente nuevos artículos en la tienda.</p>
+          </div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</main>
+
+<%- include('../partials/footer') %>

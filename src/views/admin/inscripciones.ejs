@@ -1,0 +1,74 @@
+<%- include('../partials/head', { title: 'Inscripciones · Admin' }) %>
+<%- include('../partials/navbar') %>
+<%- include('../partials/flash') %>
+
+<main>
+  <div class="container">
+    <div class="admin-layout">
+      <aside class="admin-sidebar">
+        <div class="card" style="padding:.75rem">
+          <p class="admin-sidebar-title">Panel Admin</p>
+          <a href="/admin/dashboard"     class="admin-nav-item">📊 Dashboard</a>
+          <a href="/admin/usuarios"      class="admin-nav-item">👥 Usuarios</a>
+          <a href="/admin/inscripciones" class="admin-nav-item active">📋 Inscripciones</a>
+          <a href="/admin/productos"     class="admin-nav-item">🛍️ Productos</a>
+          <a href="/admin/noticias"      class="admin-nav-item">📰 Noticias</a>
+          <a href="/admin/partidos"      class="admin-nav-item">⚾ Partidos</a>
+          <div style="height:1px;background:var(--border);margin:.5rem 0"></div>
+          <a href="/" class="admin-nav-item">🏠 Ver web</a>
+        </div>
+      </aside>
+
+      <div class="admin-content" style="padding:2rem 0">
+        <h1 class="admin-page-title">Inscripciones</h1>
+        <div style="display:flex;gap:.5rem;margin-bottom:1.5rem;flex-wrap:wrap">
+          <button class="btn btn-primary btn-sm" onclick="filtrarIns('TODAS')">Todas</button>
+          <button class="btn btn-outline btn-sm" onclick="filtrarIns('PENDIENTE')">⏳ Pendientes</button>
+          <button class="btn btn-outline btn-sm" onclick="filtrarIns('APROBADA')">✓ Aprobadas</button>
+          <button class="btn btn-outline btn-sm" onclick="filtrarIns('RECHAZADA')">✗ Rechazadas</button>
+        </div>
+        <div class="table-wrap">
+          <table class="table" id="insTable">
+            <thead>
+              <tr><th>Jugador</th><th>Email</th><th>Categoría</th><th>Temporada</th><th>Estado</th><th>Cambiar estado</th><th>Fecha</th></tr>
+            </thead>
+            <tbody>
+              <% if (typeof inscripciones !== 'undefined' && inscripciones && inscripciones.length > 0) { %>
+                <% inscripciones.forEach(function(ins) { %>
+                  <tr data-estado="<%= ins.estado %>">
+                    <td><strong><%= ins.persona ? ins.persona.nombre + ' ' + ins.persona.apellidos : '–' %></strong></td>
+                    <td style="color:var(--text2);font-size:.85rem"><%= ins.persona ? ins.persona.email : '–' %></td>
+                    <td><span class="badge badge-primary badge-sm"><%= ins.categoria ? ins.categoria.nombre : '–' %></span></td>
+                    <td style="color:var(--text2)"><%= ins.temporada || '–' %></td>
+                    <td><span class="badge <%= ins.estado === 'APROBADA' ? 'badge-success' : ins.estado === 'RECHAZADA' ? 'badge-danger' : 'badge-warning' %> badge-sm"><%= ins.estado %></span></td>
+                    <td>
+                      <form action="/admin/inscripciones/<%= ins.id %>" method="POST" class="inline-form">
+                        <input type="hidden" name="_method" value="PUT">
+                        <select name="estado" class="form-control" style="padding:.3rem .6rem;font-size:.82rem;width:auto" onchange="this.form.submit()">
+                          <% ['PENDIENTE','APROBADA','RECHAZADA'].forEach(function(e) { %><option value="<%= e %>" <%= ins.estado === e ? 'selected' : '' %>><%= e %></option><% }) %>
+                        </select>
+                      </form>
+                    </td>
+                    <td style="color:var(--text2);font-size:.82rem"><%= new Date(ins.createdAt).toLocaleDateString('es') %></td>
+                  </tr>
+                <% }) %>
+              <% } else { %>
+                <tr><td colspan="7" style="text-align:center;color:var(--text3);padding:3rem">Sin inscripciones</td></tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+function filtrarIns(estado) {
+  document.querySelectorAll('#insTable tbody tr[data-estado]').forEach(r => {
+    r.style.display = (estado === 'TODAS' || r.dataset.estado === estado) ? '' : 'none';
+  });
+}
+</script>
+
+<%- include('../partials/footer') %>

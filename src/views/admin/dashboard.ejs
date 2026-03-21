@@ -1,0 +1,113 @@
+<%- include('../partials/head', { title: 'Panel Admin' }) %>
+<%- include('../partials/navbar') %>
+<%- include('../partials/flash') %>
+
+<main>
+  <div class="container">
+    <div class="admin-layout">
+
+      <!-- Sidebar -->
+      <aside class="admin-sidebar">
+        <div class="card" style="padding:.75rem">
+          <p class="admin-sidebar-title">Panel Admin</p>
+          <a href="/admin/dashboard"    class="admin-nav-item active">📊 Dashboard</a>
+          <a href="/admin/usuarios"     class="admin-nav-item">👥 Usuarios</a>
+          <a href="/admin/inscripciones" class="admin-nav-item">📋 Inscripciones</a>
+          <a href="/admin/productos"    class="admin-nav-item">🛍️ Productos</a>
+          <a href="/admin/noticias"     class="admin-nav-item">📰 Noticias</a>
+          <a href="/admin/partidos"     class="admin-nav-item">⚾ Partidos</a>
+          <div style="height:1px;background:var(--border);margin:.5rem 0"></div>
+          <a href="/" class="admin-nav-item">🏠 Ver web</a>
+        </div>
+      </aside>
+
+      <!-- Contenido -->
+      <div class="admin-content" style="padding:2rem 0">
+        <h1 class="admin-page-title">Dashboard</h1>
+
+        <!-- Stats -->
+        <div class="stats-cards">
+          <div class="card stat-card">
+            <div class="stat-card-icon">👥</div>
+            <div class="stat-card-num"><%= stats ? stats.usuarios : 0 %></div>
+            <div class="stat-card-label">Usuarios registrados</div>
+          </div>
+          <div class="card stat-card">
+            <div class="stat-card-icon">📋</div>
+            <div class="stat-card-num"><%= stats ? stats.inscripciones : 0 %></div>
+            <div class="stat-card-label">Inscripciones totales</div>
+          </div>
+          <div class="card stat-card">
+            <div class="stat-card-icon">🛍️</div>
+            <div class="stat-card-num"><%= stats ? stats.productos : 0 %></div>
+            <div class="stat-card-label">Productos en tienda</div>
+          </div>
+          <div class="card stat-card">
+            <div class="stat-card-icon">📰</div>
+            <div class="stat-card-num"><%= stats ? stats.noticias : 0 %></div>
+            <div class="stat-card-label">Noticias publicadas</div>
+          </div>
+        </div>
+
+        <!-- Accesos rápidos -->
+        <h2 style="font-size:1.1rem;margin-bottom:1rem;font-weight:700">Acciones rápidas</h2>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:2.5rem">
+          <a href="/admin/inscripciones" class="card" style="padding:1.25rem;text-align:center;text-decoration:none;cursor:pointer">
+            <div style="font-size:1.5rem;margin-bottom:.4rem">📋</div>
+            <p style="font-weight:600;font-size:.88rem">Gestionar inscripciones</p>
+            <% if (stats && stats.inscripcionesPendientes > 0) { %>
+              <span class="badge badge-warning badge-sm" style="margin-top:.4rem"><%= stats.inscripcionesPendientes %> pendientes</span>
+            <% } %>
+          </a>
+          <a href="/admin/noticias" class="card" style="padding:1.25rem;text-align:center;text-decoration:none">
+            <div style="font-size:1.5rem;margin-bottom:.4rem">📰</div>
+            <p style="font-weight:600;font-size:.88rem">Publicar noticia</p>
+          </a>
+          <a href="/admin/partidos" class="card" style="padding:1.25rem;text-align:center;text-decoration:none">
+            <div style="font-size:1.5rem;margin-bottom:.4rem">⚾</div>
+            <p style="font-weight:600;font-size:.88rem">Añadir partido</p>
+          </a>
+        </div>
+
+        <!-- Últimas inscripciones -->
+        <div class="section-header" style="margin-bottom:1rem">
+          <h2 style="font-size:1.1rem;font-weight:700">Últimas inscripciones</h2>
+          <a href="/admin/inscripciones" class="btn btn-ghost btn-sm">Ver todas →</a>
+        </div>
+        <div class="table-wrap">
+          <table class="table table-sm">
+            <thead>
+              <tr>
+                <th>Jugador</th>
+                <th>Categoría</th>
+                <th>Estado</th>
+                <th>Fecha</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (typeof ultimasInscripciones !== 'undefined' && ultimasInscripciones && ultimasInscripciones.length > 0) { %>
+                <% ultimasInscripciones.slice(0,5).forEach(function(ins) { %>
+                  <tr>
+                    <td><strong><%= ins.persona ? ins.persona.nombre + ' ' + ins.persona.apellidos : '–' %></strong></td>
+                    <td><%= ins.categoria ? ins.categoria.nombre : '–' %></td>
+                    <td>
+                      <span class="badge <%= ins.estado === 'APROBADA' ? 'badge-success' : ins.estado === 'RECHAZADA' ? 'badge-danger' : 'badge-warning' %> badge-sm">
+                        <%= ins.estado %>
+                      </span>
+                    </td>
+                    <td style="color:var(--text2);font-size:.82rem"><%= new Date(ins.createdAt).toLocaleDateString('es') %></td>
+                  </tr>
+                <% }) %>
+              <% } else { %>
+                <tr><td colspan="4" style="text-align:center;color:var(--text3);padding:2rem">Sin inscripciones recientes</td></tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<%- include('../partials/footer') %>

@@ -1,0 +1,105 @@
+<%- include('../partials/head', { title: 'Partidos · Admin' }) %>
+<%- include('../partials/navbar') %>
+<%- include('../partials/flash') %>
+
+<main>
+  <div class="container">
+    <div class="admin-layout">
+      <aside class="admin-sidebar">
+        <div class="card" style="padding:.75rem">
+          <p class="admin-sidebar-title">Panel Admin</p>
+          <a href="/admin/dashboard"     class="admin-nav-item">📊 Dashboard</a>
+          <a href="/admin/usuarios"      class="admin-nav-item">👥 Usuarios</a>
+          <a href="/admin/inscripciones" class="admin-nav-item">📋 Inscripciones</a>
+          <a href="/admin/productos"     class="admin-nav-item">🛍️ Productos</a>
+          <a href="/admin/noticias"      class="admin-nav-item">📰 Noticias</a>
+          <a href="/admin/partidos"      class="admin-nav-item active">⚾ Partidos</a>
+          <div style="height:1px;background:var(--border);margin:.5rem 0"></div>
+          <a href="/" class="admin-nav-item">🏠 Ver web</a>
+        </div>
+      </aside>
+
+      <div class="admin-content" style="padding:2rem 0">
+        <h1 class="admin-page-title">Partidos</h1>
+
+        <!-- Formulario nuevo partido -->
+        <div class="card" style="padding:1.75rem;margin-bottom:2rem">
+          <h3 style="margin-bottom:1.25rem;font-size:1rem">➕ Nuevo partido</h3>
+          <form action="/admin/partidos" method="POST">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+              <div class="form-group">
+                <label class="form-label">Categoría</label>
+                <select name="categoriaId" class="form-control" required>
+                  <option value="">Selecciona…</option>
+                  <% if (typeof categorias !== 'undefined' && categorias) { %>
+                    <% categorias.forEach(function(c) { %><option value="<%= c.id %>"><%= c.nombre %></option><% }) %>
+                  <% } %>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Rival</label>
+                <input type="text" name="rival" class="form-control" placeholder="Nombre del equipo rival" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Fecha y hora</label>
+                <input type="datetime-local" name="fecha" class="form-control" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Campo</label>
+                <input type="text" name="campo" class="form-control" placeholder="Campo Municipal Granollers">
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1rem">
+              <input type="checkbox" name="esLocal" id="esLocal" value="true" checked style="width:16px;height:16px">
+              <label for="esLocal" style="font-size:.88rem;cursor:pointer">Partido en casa (local)</label>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Descripción (opcional)</label>
+              <input type="text" name="descripcion" class="form-control" placeholder="Contexto o información adicional">
+            </div>
+            <button type="submit" class="btn btn-primary">Añadir partido</button>
+          </form>
+        </div>
+
+        <!-- Tabla partidos -->
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr><th>Fecha</th><th>Categoría</th><th>Rival</th><th>Local/Visitante</th><th>Resultado</th><th>Registrar resultado</th></tr>
+            </thead>
+            <tbody>
+              <% if (typeof partidos !== 'undefined' && partidos && partidos.length > 0) { %>
+                <% partidos.forEach(function(p) { %>
+                  <tr>
+                    <td style="font-size:.85rem;color:var(--text2)"><%= new Date(p.fecha).toLocaleDateString('es',{day:'2-digit',month:'short',year:'numeric'}) %><br><span style="font-size:.75rem"><%= new Date(p.fecha).toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit'}) %></span></td>
+                    <td><span class="badge badge-primary badge-sm"><%= p.categoria ? p.categoria.nombre : '–' %></span></td>
+                    <td><strong><%= p.rival %></strong></td>
+                    <td><span class="badge <%= p.esLocal ? 'badge-success' : 'badge-neutral' %> badge-sm"><%= p.esLocal ? '🏠 Local' : '✈️ Visitante' %></span></td>
+                    <td>
+                      <% if (p.resultado) { %>
+                        <strong style="color:var(--accent)"><%= p.resultado %></strong>
+                      <% } else { %>
+                        <span style="color:var(--text3);font-size:.82rem">Pendiente</span>
+                      <% } %>
+                    </td>
+                    <td>
+                      <form action="/admin/partidos/<%= p.id %>" method="POST" class="inline-form">
+                        <input type="hidden" name="_method" value="PUT">
+                        <input type="text" name="resultado" value="<%= p.resultado || '' %>" class="form-control" placeholder="7-3" style="width:75px;padding:.3rem .5rem;font-size:.82rem">
+                        <button type="submit" class="btn btn-primary btn-sm">✓</button>
+                      </form>
+                    </td>
+                  </tr>
+                <% }) %>
+              <% } else { %>
+                <tr><td colspan="6" style="text-align:center;color:var(--text3);padding:3rem">Sin partidos registrados</td></tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<%- include('../partials/footer') %>

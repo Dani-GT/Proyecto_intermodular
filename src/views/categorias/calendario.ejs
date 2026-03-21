@@ -1,0 +1,78 @@
+<%- include('../partials/head', { title: 'Calendario' }) %>
+<%- include('../partials/navbar') %>
+<%- include('../partials/flash') %>
+
+<div class="page-header">
+  <div class="container">
+    <div class="breadcrumb">
+      <a href="/">Inicio</a><span class="breadcrumb-sep">›</span>
+      <a href="/categorias">Categorías</a><span class="breadcrumb-sep">›</span>
+      <span>Calendario</span>
+    </div>
+    <h1 class="page-header-title">Calendario de partidos</h1>
+    <p class="page-header-desc">Consulta los próximos partidos de todos los equipos del club.</p>
+  </div>
+</div>
+
+<main>
+  <div class="container section-py">
+    <!-- Filtros -->
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:2rem">
+      <button class="btn btn-primary btn-sm" onclick="filtrarCal('TODAS')" id="cal-TODAS">Todos</button>
+      <% const catNames = ['SUB10','SUB12','SUB14','SUB16','SUB18','SENIOR']; %>
+      <% catNames.forEach(function(c) { %>
+        <button class="btn btn-outline btn-sm" onclick="filtrarCal('<%= c %>')" id="cal-<%= c %>"><%= c %></button>
+      <% }) %>
+    </div>
+
+    <div class="match-list" id="calendarioGrid">
+      <% if (typeof partidos !== 'undefined' && partidos && partidos.length > 0) { %>
+        <% partidos.forEach(function(p) { %>
+          <% const fecha = new Date(p.fecha); %>
+          <div class="match-item" data-cat="<%= p.categoria ? p.categoria.nombre : '' %>">
+            <div class="match-date-box">
+              <div class="match-date-day"><%= fecha.getDate() %></div>
+              <div class="match-date-mon"><%= fecha.toLocaleString('es',{month:'short'}).toUpperCase() %></div>
+            </div>
+            <div class="match-info">
+              <div class="match-vs">
+                CB Granollers <small>vs</small> <%= p.rival %>
+              </div>
+              <div class="match-meta">
+                <%= p.esLocal ? '🏠 Local' : '✈️ Visitante' %> ·
+                <%= fecha.toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit'}) %> ·
+                <%= p.campo || 'Campo por confirmar' %>
+              </div>
+              <% if (p.descripcion) { %>
+                <div style="font-size:.8rem;color:var(--text3);margin-top:.2rem"><%= p.descripcion %></div>
+              <% } %>
+            </div>
+            <div>
+              <span class="badge badge-primary match-badge"><%= p.categoria ? p.categoria.nombre : '' %></span>
+              <span class="badge <%= p.esLocal ? 'badge-success' : 'badge-neutral' %> badge-sm" style="display:block;margin-top:.4rem;text-align:center"><%= p.esLocal ? 'Local' : 'Visitante' %></span>
+            </div>
+          </div>
+        <% }) %>
+      <% } else { %>
+        <div class="card" style="padding:4rem;text-align:center">
+          <div style="font-size:3rem;margin-bottom:1rem">📅</div>
+          <h3>Sin partidos programados</h3>
+          <p style="color:var(--text2)">El calendario se actualizará próximamente.</p>
+        </div>
+      <% } %>
+    </div>
+  </div>
+</main>
+
+<script>
+function filtrarCal(cat) {
+  document.querySelectorAll('[id^="cal-"]').forEach(b => {
+    b.className = b.id === 'cal-' + cat ? 'btn btn-primary btn-sm' : 'btn btn-outline btn-sm';
+  });
+  document.querySelectorAll('#calendarioGrid .match-item').forEach(item => {
+    item.style.display = (cat === 'TODAS' || item.dataset.cat === cat) ? '' : 'none';
+  });
+}
+</script>
+
+<%- include('../partials/footer') %>

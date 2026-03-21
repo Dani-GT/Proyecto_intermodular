@@ -1,0 +1,123 @@
+<%- include('../partials/head', { title: 'Mi perfil' }) %>
+<%- include('../partials/navbar') %>
+<%- include('../partials/flash') %>
+
+<div class="page-header">
+  <div class="container">
+    <h1 class="page-header-title">Mi perfil</h1>
+  </div>
+</div>
+
+<main>
+  <div class="container section-py">
+
+    <!-- Cabecera de perfil -->
+    <div class="profile-header">
+      <div class="profile-avatar-big"><%= usuario.nombre.charAt(0).toUpperCase() %></div>
+      <div>
+        <h2 class="profile-name"><%= usuario.nombre %> <%= usuario.apellidos %></h2>
+        <p class="profile-email"><%= usuario.email %></p>
+        <div style="margin-top:.5rem;display:flex;gap:.5rem;flex-wrap:wrap">
+          <span class="badge badge-primary"><%= usuario.rol %></span>
+          <% if (usuario.telefono) { %><span class="badge badge-neutral">📞 <%= usuario.telefono %></span><% } %>
+          <% if (usuario.fechaNacimiento) { %><span class="badge badge-neutral">🎂 <%= new Date(usuario.fechaNacimiento).toLocaleDateString('es') %></span><% } %>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="profile-tabs">
+      <button class="profile-tab active" data-tab="inscripciones">📋 Mis inscripciones</button>
+      <button class="profile-tab" data-tab="compras">🛍️ Mis compras</button>
+    </div>
+
+    <!-- Panel inscripciones -->
+    <div id="tab-inscripciones" class="profile-panel">
+      <% if (typeof inscripciones !== 'undefined' && inscripciones && inscripciones.length > 0) { %>
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Categoría</th>
+                <th>Temporada</th>
+                <th>Estado</th>
+                <th>Fecha solicitud</th>
+                <th>Notas</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% inscripciones.forEach(function(ins) { %>
+                <tr>
+                  <td><strong><%= ins.categoria ? ins.categoria.nombre : '–' %></strong></td>
+                  <td><%= ins.temporada || '2024-2025' %></td>
+                  <td>
+                    <span class="badge <%= ins.estado === 'APROBADA' ? 'badge-success' : ins.estado === 'RECHAZADA' ? 'badge-danger' : 'badge-warning' %>">
+                      <%= ins.estado %>
+                    </span>
+                  </td>
+                  <td style="color:var(--text2);font-size:.85rem"><%= new Date(ins.createdAt).toLocaleDateString('es') %></td>
+                  <td style="color:var(--text2);font-size:.85rem"><%= ins.notas || '–' %></td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      <% } else { %>
+        <div class="card" style="padding:3rem;text-align:center">
+          <div style="font-size:2.5rem;margin-bottom:.75rem">📋</div>
+          <h3 style="margin-bottom:.5rem">Sin inscripciones</h3>
+          <p style="color:var(--text2);margin-bottom:1.5rem">Todavía no te has inscrito en ninguna categoría.</p>
+          <a href="/inscripcion" class="btn btn-primary">Inscribirme ahora</a>
+        </div>
+      <% } %>
+    </div>
+
+    <!-- Panel compras -->
+    <div id="tab-compras" class="profile-panel" style="display:none">
+      <% if (typeof compras !== 'undefined' && compras && compras.length > 0) { %>
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Pedido</th>
+                <th>Productos</th>
+                <th>Total</th>
+                <th>Estado</th>
+                <th>Fecha</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% compras.forEach(function(c) { %>
+                <tr>
+                  <td><code style="font-size:.8rem;color:var(--text3)">#<%= c.id.substring(0,8) %></code></td>
+                  <td style="color:var(--text2);font-size:.85rem">
+                    <% if (c.CompraProducto) { %>
+                      <%= c.CompraProducto.map(cp => cp.producto ? cp.producto.nombre : '?').join(', ').substring(0,50) + (c.CompraProducto.length > 1 ? '…' : '') %>
+                    <% } %>
+                  </td>
+                  <td><strong><%= c.total ? c.total.toFixed(2) + ' €' : '–' %></strong></td>
+                  <td>
+                    <span class="badge <%= c.estado === 'COMPLETADA' ? 'badge-success' : c.estado === 'CANCELADA' ? 'badge-danger' : 'badge-warning' %>">
+                      <%= c.estado %>
+                    </span>
+                  </td>
+                  <td style="color:var(--text2);font-size:.85rem"><%= new Date(c.createdAt).toLocaleDateString('es') %></td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      <% } else { %>
+        <div class="card" style="padding:3rem;text-align:center">
+          <div style="font-size:2.5rem;margin-bottom:.75rem">🛍️</div>
+          <h3 style="margin-bottom:.5rem">Sin compras</h3>
+          <p style="color:var(--text2);margin-bottom:1.5rem">Todavía no has realizado ningún pedido.</p>
+          <a href="/tienda" class="btn btn-primary">Ir a la tienda</a>
+        </div>
+      <% } %>
+    </div>
+
+  </div>
+</main>
+
+<%- include('../partials/footer') %>

@@ -1,106 +1,255 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><%= title %></title>
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/css/style.css">
-</head>
-<body>
-    <header class="glass-header">
-        <div class="container nav-container">
-            <div class="logo">
-                <h1>Tigres<span>Béisbol</span></h1>
-            </div>
-            <nav>
-                <ul class="nav-links">
-                    <li><a href="/" class="<%= typeof homeActive !== 'undefined' && homeActive ? 'active' : '' %>">Inicio</a></li>
-                    <li><a href="#">El Club</a></li>
-                    <li><a href="#">Equipos</a></li>
-                    <li><a href="#">Noticias</a></li>
-                    <li><a href="#">Contacto</a></li>
-                </ul>
-            </nav>
-            <div class="header-actions">
-                <a href="#" class="btn btn-primary">Asóciate</a>
-            </div>
+<%- include('partials/head', { title: 'Inicio' }) %>
+<%- include('partials/navbar') %>
+<%- include('partials/flash') %>
+
+<!-- ══════════════════════════════════════════════════════
+     HERO
+     ══════════════════════════════════════════════════════ -->
+<section class="hero" style="min-height:540px">
+  <div class="hero-bg"></div>
+  <div class="hero-overlay"></div>
+  <div class="container hero-content" style="padding:5rem 0">
+    <div class="hero-eyebrow">⚾ Est. 1985 · Granollers</div>
+    <h1 class="hero-title">Desata tu <span class="highlight">poder</span><br>en el diamante</h1>
+    <p class="hero-desc">Entrenamiento de élite, instalaciones de primer nivel y una cultura de excelencia. Únete al mejor programa de béisbol de la región.</p>
+    <div class="hero-actions">
+      <a href="/auth/registro" class="btn btn-primary btn-lg">Únete al club</a>
+      <a href="/categorias" class="btn btn-outline btn-lg" style="color:#fff;border-color:rgba(255,255,255,.4)">Ver categorías</a>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     STATS BAR
+     ══════════════════════════════════════════════════════ -->
+<div class="stats-bar">
+  <div class="container">
+    <div class="stats-bar-inner">
+      <div class="stat-item">
+        <div class="stat-num">+150</div>
+        <div class="stat-label">Jugadores</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">6</div>
+        <div class="stat-label">Categorías</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">1985</div>
+        <div class="stat-label">Fundación</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num">+20</div>
+        <div class="stat-label">Títulos</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     FEATURES
+     ══════════════════════════════════════════════════════ -->
+<section class="section-py">
+  <div class="container">
+    <div class="text-center" style="margin-bottom:3rem">
+      <div class="section-label">¿Por qué elegirnos?</div>
+      <h2 class="section-title">Más que un club de béisbol</h2>
+    </div>
+    <div class="features-grid">
+      <div class="card feature-card card-hover">
+        <div class="feature-icon">🏅</div>
+        <h3 class="feature-title">Entrenamiento de élite</h3>
+        <p class="feature-desc">Nuestro cuerpo técnico incluye ex jugadores de la liga profesional y entrenadores certificados dedicados a desarrollar la próxima generación de talento.</p>
+      </div>
+      <div class="card feature-card card-hover">
+        <div class="feature-icon">🤝</div>
+        <h3 class="feature-title">Cultura familiar</h3>
+        <p class="feature-desc">No somos solo un equipo, somos una hermandad. Nos centramos en construir carácter, disciplina y amistades para toda la vida.</p>
+      </div>
+      <div class="card feature-card card-hover">
+        <div class="feature-icon">🏟️</div>
+        <h3 class="feature-title">Instalaciones profesionales</h3>
+        <p class="feature-desc">Accede a jaulas de bateo de última generación, campos de césped profesional y herramientas de análisis de alto nivel.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     SCOREBOARD + PRÓXIMOS PARTIDOS
+     ══════════════════════════════════════════════════════ -->
+<section class="section-py bg-dark" style="background:var(--bg2)">
+  <div class="container">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem">
+
+      <!-- Resultados recientes -->
+      <div>
+        <div class="section-header">
+          <div>
+            <div class="section-label">Resultados</div>
+            <h2 class="section-title" style="font-size:1.5rem">Marcador</h2>
+          </div>
+          <a href="/categorias/resultados" class="btn btn-ghost btn-sm">Ver todos →</a>
         </div>
-    </header>
-
-    <main>
-        <section class="hero-section">
-            <div class="hero-overlay"></div>
-            <div class="container hero-content">
-                <span class="badge">Temporada 2026</span>
-                <h2 class="hero-title">Pasión en cada <span>Lanzamiento</span></h2>
-                <p class="hero-subtitle">Únete al club más dinámico y competitivo. Entrenamientos, pasión y una comunidad increíble te esperan en nuestro diamante.</p>
-                <div class="hero-buttons">
-                    <a href="#" class="btn btn-primary btn-lg">Únete al Equipo</a>
-                    <a href="#" class="btn btn-outline btn-lg">Ver Calendario</a>
+        <div class="card scoreboard-card">
+          <% if (typeof ultimosResultados !== 'undefined' && ultimosResultados && ultimosResultados.length > 0) { %>
+            <% ultimosResultados.forEach(function(p) { %>
+              <% const partes = p.resultado ? p.resultado.split('-') : []; %>
+              <% const local = partes[0] ? parseInt(partes[0]) : 0; %>
+              <% const visitante = partes[1] ? parseInt(partes[1]) : 0; %>
+              <div class="score-item">
+                <div class="score-teams">
+                  <div class="score-team <%= (p.esLocal && local > visitante) || (!p.esLocal && visitante > local) ? 'winner' : '' %>">
+                    <span class="score-team-name">CB Granollers <%= p.esLocal ? '(L)' : '(V)' %></span>
+                    <span class="score-team-num"><%= p.esLocal ? local : visitante %></span>
+                  </div>
+                  <div class="score-team <%= (!p.esLocal && local > visitante) || (p.esLocal && visitante > local) ? 'winner' : '' %>">
+                    <span class="score-team-name"><%= p.rival %></span>
+                    <span class="score-team-num"><%= p.esLocal ? visitante : local %></span>
+                  </div>
                 </div>
-            </div>
-        </section>
-
-        <section class="features-section container">
-            <div class="section-header text-center">
-                <h3>Lo que ofrecemos</h3>
-                <p>Nuestras instalaciones y programas están diseñados para sacar tu mejor nivel.</p>
-            </div>
-            <div class="grid features-grid">
-                <div class="feature-card glass-card">
-                    <div class="icon-wrapper">
-                        ⚾
-                    </div>
-                    <h4>Entrenamiento de Élite</h4>
-                    <p>Coaches experimentados y metodología profesional adaptada a todas las edades.</p>
-                </div>
-                <div class="feature-card glass-card">
-                    <div class="icon-wrapper">
-                        🏟️
-                    </div>
-                    <h4>Instalaciones Premium</h4>
-                    <p>Diamante de juego y cajas de bateo con tecnología de seguimiento.</p>
-                </div>
-                <div class="feature-card glass-card">
-                    <div class="icon-wrapper">
-                        🏆
-                    </div>
-                    <h4>Ligas Competitivas</h4>
-                    <p>Participación en torneos regionales y ligas internas para todos los niveles.</p>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <footer class="footer">
-        <div class="container footer-content">
-            <div class="footer-col">
-                <h3>Tigres Béisbol</h3>
-                <p>Formando atletas, construyendo carácter desde 2010.</p>
-            </div>
-            <div class="footer-col">
-                <h4>Enlaces</h4>
-                <ul>
-                    <li><a href="/">Inicio</a></li>
-                    <li><a href="#">El Club</a></li>
-                    <li><a href="#">Contacto</a></li>
-                </ul>
-            </div>
-            <div class="footer-col">
-                <h4>Contacto</h4>
-                <p>📍 Calle Diamante, 123</p>
-                <p>📞 +34 900 123 456</p>
-            </div>
+                <span class="score-status final">Final</span>
+              </div>
+            <% }) %>
+          <% } else { %>
+            <p style="color:var(--text2);text-align:center;padding:2rem">Sin resultados recientes</p>
+          <% } %>
         </div>
-        <div class="footer-bottom text-center">
-            <p>&copy; <%= new Date().getFullYear() %> Club Béisbol Los Tigres. Todos los derechos reservados.</p>
-        </div>
-    </footer>
+      </div>
 
-    <script src="/js/main.js"></script>
-</body>
-</html>
+      <!-- Próximos partidos -->
+      <div>
+        <div class="section-header">
+          <div>
+            <div class="section-label">Agenda</div>
+            <h2 class="section-title" style="font-size:1.5rem">Próximos partidos</h2>
+          </div>
+          <a href="/categorias/calendario" class="btn btn-ghost btn-sm">Ver todos →</a>
+        </div>
+        <div class="match-list">
+          <% if (typeof proximosPartidos !== 'undefined' && proximosPartidos && proximosPartidos.length > 0) { %>
+            <% proximosPartidos.slice(0,4).forEach(function(p) { %>
+              <% const fecha = new Date(p.fecha); %>
+              <div class="match-item">
+                <div class="match-date-box">
+                  <div class="match-date-day"><%= fecha.getDate() %></div>
+                  <div class="match-date-mon"><%= fecha.toLocaleString('es', {month:'short'}).toUpperCase() %></div>
+                </div>
+                <div class="match-info">
+                  <div class="match-vs">CB Granollers <small>vs</small> <%= p.rival %></div>
+                  <div class="match-meta">
+                    <%= p.esLocal ? '🏠 Local' : '✈️ Visitante' %> · <%= fecha.toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit'}) %>
+                  </div>
+                </div>
+                <span class="badge badge-primary match-badge"><%= p.categoria ? p.categoria.nombre : '' %></span>
+              </div>
+            <% }) %>
+          <% } else { %>
+            <div class="card" style="padding:2rem;text-align:center;color:var(--text2)">Sin partidos programados</div>
+          <% } %>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     CATEGORÍAS
+     ══════════════════════════════════════════════════════ -->
+<section class="section-py">
+  <div class="container">
+    <div class="section-header">
+      <div>
+        <div class="section-label">Equipos</div>
+        <h2 class="section-title">Nuestras categorías</h2>
+      </div>
+      <a href="/categorias" class="btn btn-outline">Ver todas →</a>
+    </div>
+    <div class="categories-grid">
+      <% const cats = typeof categorias !== 'undefined' && categorias && categorias.length > 0 ? categorias : [
+        {nombre:'SUB10',descripcion:'Béisbol para los más pequeños, de 8 a 10 años.',entrenador:'Carlos Martínez'},
+        {nombre:'SUB12',descripcion:'Categoría alevín, 11 y 12 años.',entrenador:'Laura Pérez'},
+        {nombre:'SUB14',descripcion:'Categoría infantil, 13 y 14 años.',entrenador:'Marc Torres'},
+        {nombre:'SUB16',descripcion:'Categoría cadete, 15 y 16 años.',entrenador:'David Sánchez'},
+        {nombre:'SUB18',descripcion:'Categoría juvenil, 17 y 18 años.',entrenador:'Àlex Ribera'},
+        {nombre:'SENIOR',descripcion:'Equipo principal del club.',entrenador:'Roberto Fuentes'}
+      ]; %>
+      <% const catColors = {SUB10:'cat-sub10',SUB12:'cat-sub12',SUB14:'cat-sub14',SUB16:'cat-sub16',SUB18:'cat-sub18',SENIOR:'cat-senior'}; %>
+      <% const catEmoji = {SUB10:'🧢',SUB12:'⚾',SUB14:'🥊',SUB16:'💪',SUB18:'🔥',SENIOR:'🏆'}; %>
+      <% cats.slice(0,6).forEach(function(cat) { %>
+        <div class="card category-card card-hover">
+          <div class="category-img <%= catColors[cat.nombre] || '' %>">
+            <div class="category-img-placeholder"><%= catEmoji[cat.nombre] || '⚾' %></div>
+          </div>
+          <div class="category-body">
+            <h3 class="category-name"><%= cat.nombre %></h3>
+            <div class="category-info">
+              <span>🎓 <%= cat.entrenador || 'Por confirmar' %></span>
+              <% if (cat.horarioEntrenamiento) { %><span>🕐 <%= cat.horarioEntrenamiento %></span><% } %>
+            </div>
+          </div>
+          <div class="category-actions">
+            <a href="/categorias/<%= cat.nombre.toLowerCase() %>" class="btn btn-primary btn-sm btn-full">Ver equipo</a>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     ÚLTIMAS NOTICIAS
+     ══════════════════════════════════════════════════════ -->
+<section class="section-py" style="background:var(--bg2)">
+  <div class="container">
+    <div class="section-header">
+      <div>
+        <div class="section-label">Blog</div>
+        <h2 class="section-title">Últimas noticias</h2>
+      </div>
+      <a href="/noticias" class="btn btn-ghost btn-sm">Ver todas →</a>
+    </div>
+    <div class="news-grid">
+      <% if (typeof noticias !== 'undefined' && noticias && noticias.length > 0) { %>
+        <% noticias.slice(0,3).forEach(function(noticia) { %>
+          <a href="/noticias/<%= noticia.id %>" class="card news-card card-hover" style="text-decoration:none">
+            <div class="news-thumb">
+              <% if (noticia.imagen) { %>
+                <img src="<%= noticia.imagen %>" alt="<%= noticia.titulo %>">
+              <% } else { %>
+                <div class="news-thumb-placeholder">📰</div>
+              <% } %>
+            </div>
+            <div class="news-body">
+              <div class="news-meta">
+                <span><%= new Date(noticia.publicadoEn).toLocaleDateString('es',{day:'2-digit',month:'short',year:'numeric'}) %></span>
+                <% if (noticia.destacada) { %><span class="badge badge-primary badge-sm">Destacada</span><% } %>
+              </div>
+              <h3 class="news-title"><%= noticia.titulo %></h3>
+              <p class="news-excerpt"><%= noticia.resumen %></p>
+              <span class="news-link">Leer más →</span>
+            </div>
+          </a>
+        <% }) %>
+      <% } else { %>
+        <div class="card" style="padding:3rem;text-align:center;grid-column:1/-1;color:var(--text2)">Próximamente, las últimas noticias del club.</div>
+      <% } %>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════════════
+     CTA
+     ══════════════════════════════════════════════════════ -->
+<section class="cta-banner">
+  <div class="container">
+    <h2>¿Listo para subirte al plato?</h2>
+    <p>Las inscripciones para la temporada 2024-2025 ya están abiertas. Asegura tu plaza y únete a la familia.</p>
+    <div class="cta-actions">
+      <a href="/auth/registro" class="btn btn-white btn-lg">Registrarse ahora</a>
+      <a href="/contacto" class="btn btn-outline-white btn-lg">Contactar con el club</a>
+    </div>
+  </div>
+</section>
+
+<%- include('partials/footer') %>

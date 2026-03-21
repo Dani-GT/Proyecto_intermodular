@@ -1,0 +1,82 @@
+<%- include('../partials/head', { title: noticia.titulo }) %>
+<%- include('../partials/navbar') %>
+<%- include('../partials/flash') %>
+
+<main>
+  <div class="container section-py">
+    <div class="news-layout">
+      <!-- Artículo -->
+      <article>
+        <div class="breadcrumb" style="margin-bottom:1.5rem">
+          <a href="/">Inicio</a><span class="breadcrumb-sep">›</span>
+          <a href="/noticias">Noticias</a><span class="breadcrumb-sep">›</span>
+          <span><%= noticia.titulo.substring(0,40) %>…</span>
+        </div>
+
+        <div class="article-header">
+          <% if (noticia.destacada) { %>
+            <span class="badge badge-primary" style="margin-bottom:.75rem">Destacada</span>
+          <% } %>
+          <h1 class="article-title"><%= noticia.titulo %></h1>
+          <div class="article-meta">
+            <span>📅 <%= new Date(noticia.publicadoEn).toLocaleDateString('es',{weekday:'long',day:'2-digit',month:'long',year:'numeric'}) %></span>
+            <% if (noticia.autor) { %><span>✍️ <%= noticia.autor %></span><% } %>
+          </div>
+        </div>
+
+        <div class="article-img">
+          <% if (noticia.imagen) { %>
+            <img src="<%= noticia.imagen %>" alt="<%= noticia.titulo %>" style="width:100%;height:100%;object-fit:cover">
+          <% } else { %>
+            <div style="width:100%;height:300px;display:flex;align-items:center;justify-content:center;font-size:5rem;background:var(--bg2)">📰</div>
+          <% } %>
+        </div>
+
+        <div class="article-body">
+          <% noticia.contenido.split('\n').forEach(function(parrafo) { %>
+            <% if (parrafo.trim()) { %><p><%= parrafo %></p><% } %>
+          <% }) %>
+        </div>
+
+        <!-- Compartir -->
+        <div style="margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem">
+          <a href="/noticias" class="btn btn-ghost">← Volver a noticias</a>
+          <div style="display:flex;align-items:center;gap:.75rem;font-size:.85rem;color:var(--text2)">
+            Compartir:
+            <a href="#" class="btn btn-ghost btn-sm">Twitter</a>
+            <a href="#" class="btn btn-ghost btn-sm">Facebook</a>
+          </div>
+        </div>
+      </article>
+
+      <!-- Sidebar -->
+      <aside class="news-sidebar">
+        <div class="card news-sidebar-card">
+          <p class="news-sidebar-title">Otras noticias</p>
+          <% if (typeof relacionadas !== 'undefined' && relacionadas) { %>
+            <% relacionadas.slice(0,5).forEach(function(n) { %>
+              <a href="/noticias/<%= n.id %>" class="news-mini" style="text-decoration:none">
+                <div class="news-mini-img">
+                  <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:var(--bg2)">📰</div>
+                </div>
+                <div class="news-mini-info">
+                  <p class="news-mini-title"><%= n.titulo.length > 55 ? n.titulo.substring(0,55) + '…' : n.titulo %></p>
+                  <span class="news-mini-date"><%= new Date(n.publicadoEn).toLocaleDateString('es',{day:'2-digit',month:'short'}) %></span>
+                </div>
+              </a>
+            <% }) %>
+          <% } %>
+        </div>
+
+        <div class="card news-sidebar-card" style="text-align:center">
+          <p class="news-sidebar-title" style="text-align:left">Únete al club</p>
+          <div style="font-size:2rem;margin:.75rem 0">⚾</div>
+          <p style="font-size:.85rem;color:var(--text2);margin-bottom:1rem">¿Te gusta el béisbol? Inscríbete ahora y forma parte de la familia.</p>
+          <a href="/auth/registro" class="btn btn-primary btn-sm btn-full">Registrarse</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</main>
+
+<%- include('../partials/footer') %>

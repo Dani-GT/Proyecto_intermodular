@@ -1,0 +1,101 @@
+<%- include('../partials/head', { title: 'Categorías' }) %>
+<%- include('../partials/navbar') %>
+<%- include('../partials/flash') %>
+
+<div class="page-header">
+  <div class="container">
+    <div class="breadcrumb">
+      <a href="/">Inicio</a><span class="breadcrumb-sep">›</span><span>Categorías</span>
+    </div>
+    <h1 class="page-header-title">Categorías e inscripción</h1>
+    <p class="page-header-desc">Explora todos nuestros equipos, desde los más pequeños hasta el equipo sénior.</p>
+  </div>
+</div>
+
+<main>
+  <div class="container section-py">
+
+    <!-- Accesos rápidos -->
+    <div style="display:flex;gap:1rem;margin-bottom:2.5rem;flex-wrap:wrap">
+      <a href="/categorias/calendario" class="btn btn-outline">📅 Calendario de partidos</a>
+      <a href="/categorias/resultados" class="btn btn-outline">📊 Resultados</a>
+      <% if (usuario) { %>
+        <a href="/inscripcion" class="btn btn-primary">📋 Inscribirme</a>
+      <% } else { %>
+        <a href="/auth/registro" class="btn btn-primary">✨ Registrarme para inscribirme</a>
+      <% } %>
+    </div>
+
+    <% const catColors = {SUB10:'cat-sub10',SUB12:'cat-sub12',SUB14:'cat-sub14',SUB16:'cat-sub16',SUB18:'cat-sub18',SENIOR:'cat-senior'}; %>
+    <% const catEmoji = {SUB10:'🧢',SUB12:'⚾',SUB14:'🥊',SUB16:'💪',SUB18:'🔥',SENIOR:'🏆'}; %>
+    <% const catEdad = {SUB10:'Hasta 10 años',SUB12:'11-12 años',SUB14:'13-14 años',SUB16:'15-16 años',SUB18:'17-18 años',SENIOR:'+18 años'}; %>
+
+    <% if (typeof categorias !== 'undefined' && categorias && categorias.length > 0) { %>
+      <div class="categories-grid">
+        <% categorias.forEach(function(cat) { %>
+          <div class="card category-card card-hover">
+            <div class="category-img <%= catColors[cat.nombre] || '' %>">
+              <div class="category-img-placeholder"><%= catEmoji[cat.nombre] || '⚾' %></div>
+            </div>
+            <div class="category-body">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem">
+                <h3 class="category-name" style="margin:0"><%= cat.nombre %></h3>
+                <span class="badge badge-neutral badge-sm"><%= catEdad[cat.nombre] || '' %></span>
+              </div>
+              <div class="category-info">
+                <span>🎓 <%= cat.entrenador || 'Por confirmar' %></span>
+                <% if (cat.horarioEntrenamiento) { %><span>🕐 <%= cat.horarioEntrenamiento %></span><% } %>
+              </div>
+              <p style="font-size:.82rem;color:var(--text2);margin-top:.75rem;line-height:1.5"><%= cat.descripcion ? cat.descripcion.substring(0,90) + '…' : '' %></p>
+            </div>
+            <div class="category-actions">
+              <a href="/categorias/<%= cat.nombre.toLowerCase() %>" class="btn btn-primary btn-sm" style="flex:1">Ver equipo</a>
+              <a href="/categorias/<%= cat.nombre.toLowerCase() %>/calendario" class="btn btn-outline btn-sm">📅</a>
+            </div>
+          </div>
+        <% }) %>
+      </div>
+    <% } else { %>
+      <div class="card" style="padding:4rem;text-align:center">
+        <div style="font-size:3rem;margin-bottom:1rem">⚾</div>
+        <h3>Sin categorías disponibles</h3>
+        <p style="color:var(--text2)">Ejecuta el seed para cargar los datos de ejemplo.</p>
+      </div>
+    <% } %>
+
+    <!-- Política de inscripción -->
+    <div class="card" style="padding:2rem;margin-top:3rem">
+      <h3 style="margin-bottom:1rem">📋 Política de inscripción</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem">
+        <div>
+          <h4 style="font-size:.9rem;margin-bottom:.5rem;color:var(--accent)">Requisitos generales</h4>
+          <ul style="font-size:.875rem;color:var(--text2);line-height:1.9;padding-left:1.2rem">
+            <li>Estar registrado en la plataforma web del club</li>
+            <li>Abonar la cuota de inscripción correspondiente</li>
+            <li>Presentar fotocopia del DNI o pasaporte</li>
+            <li>Aportar certificado médico deportivo</li>
+          </ul>
+        </div>
+        <div>
+          <h4 style="font-size:.9rem;margin-bottom:.5rem;color:var(--accent)">Proceso de inscripción</h4>
+          <ul style="font-size:.875rem;color:var(--text2);line-height:1.9;padding-left:1.2rem">
+            <li>Selecciona tu categoría según la edad</li>
+            <li>Envía tu solicitud desde esta plataforma</li>
+            <li>El club revisará y aprobará tu inscripción</li>
+            <li>Recibirás confirmación por email</li>
+          </ul>
+        </div>
+      </div>
+      <div style="margin-top:1.5rem;text-align:center">
+        <% if (usuario) { %>
+          <a href="/inscripcion" class="btn btn-primary btn-lg">Inscribirme ahora</a>
+        <% } else { %>
+          <a href="/auth/registro" class="btn btn-primary btn-lg">Crear cuenta para inscribirme</a>
+        <% } %>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<%- include('../partials/footer') %>

@@ -1,0 +1,83 @@
+<%- include('../partials/head', { title: 'Confirmar pedido' }) %>
+<%- include('../partials/navbar') %>
+<%- include('../partials/flash') %>
+
+<div class="page-header">
+  <div class="container">
+    <div class="breadcrumb">
+      <a href="/tienda">Tienda</a><span class="breadcrumb-sep">›</span>
+      <a href="/tienda/carrito">Carrito</a><span class="breadcrumb-sep">›</span>
+      <span>Confirmar pedido</span>
+    </div>
+    <h1 class="page-header-title">Confirmar pedido</h1>
+  </div>
+</div>
+
+<main>
+  <div class="container section-py">
+    <div style="display:grid;grid-template-columns:1fr 360px;gap:2rem;align-items:start">
+
+      <!-- Resumen artículos -->
+      <div>
+        <h3 style="margin-bottom:1.25rem">Artículos del pedido</h3>
+        <div class="card" style="padding:0">
+          <% let total = 0; %>
+          <% if (typeof items !== 'undefined' && items) { %>
+            <% items.forEach(function(item) { %>
+              <% total += item.producto.precio * item.cantidad; %>
+              <div class="cart-item">
+                <div class="cart-item-img">
+                  <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:var(--bg2);font-size:1.5rem">
+                    <%= item.producto.categoria === 'ROPA' ? '👕' : item.producto.categoria === 'EQUIPAMIENTO' ? '⚾' : '🎁' %>
+                  </div>
+                </div>
+                <div class="cart-item-info">
+                  <p class="cart-item-name"><%= item.producto.nombre %></p>
+                  <p style="font-size:.82rem;color:var(--text3)">Cantidad: <%= item.cantidad %></p>
+                </div>
+                <span class="cart-item-price"><%= (item.producto.precio * item.cantidad).toFixed(2) %> €</span>
+              </div>
+            <% }) %>
+          <% } %>
+        </div>
+      </div>
+
+      <!-- Resumen + confirmar -->
+      <div class="cart-summary">
+        <h3 style="margin-bottom:1.25rem">Total del pedido</h3>
+        <div class="cart-summary-row">
+          <span style="color:var(--text2)">Subtotal</span>
+          <span><%= total.toFixed(2) %> €</span>
+        </div>
+        <div class="cart-summary-row">
+          <span style="color:var(--text2)">Envío</span>
+          <span style="color:#22c55e">Gratis</span>
+        </div>
+        <div class="cart-summary-row" style="padding-top:1rem;margin-top:.5rem;border-top:1px solid var(--border)">
+          <span>Total</span>
+          <span style="font-size:1.3rem;color:var(--accent)"><%= total.toFixed(2) %> €</span>
+        </div>
+
+        <form action="/tienda/checkout/confirmar" method="POST">
+          <div class="form-group" style="margin-top:1.5rem">
+            <label class="form-label">Dirección de entrega</label>
+            <input type="text" name="direccion" class="form-control" placeholder="Calle, número, piso…" required
+              value="<%= usuario && usuario.direccion ? usuario.direccion : '' %>">
+          </div>
+          <button type="submit" class="btn btn-primary btn-full btn-lg">
+            Confirmar y pagar →
+          </button>
+        </form>
+
+        <a href="/tienda/carrito" class="btn btn-ghost btn-full btn-sm" style="margin-top:.75rem">← Modificar carrito</a>
+
+        <div style="margin-top:1rem;text-align:center;font-size:.75rem;color:var(--text3)">
+          🔒 Pago seguro · Devoluciones en 30 días
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+
+<%- include('../partials/footer') %>

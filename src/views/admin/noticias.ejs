@@ -1,0 +1,89 @@
+<%- include('../partials/head', { title: 'Noticias · Admin' }) %>
+<%- include('../partials/navbar') %>
+<%- include('../partials/flash') %>
+
+<main>
+  <div class="container">
+    <div class="admin-layout">
+      <aside class="admin-sidebar">
+        <div class="card" style="padding:.75rem">
+          <p class="admin-sidebar-title">Panel Admin</p>
+          <a href="/admin/dashboard"     class="admin-nav-item">📊 Dashboard</a>
+          <a href="/admin/usuarios"      class="admin-nav-item">👥 Usuarios</a>
+          <a href="/admin/inscripciones" class="admin-nav-item">📋 Inscripciones</a>
+          <a href="/admin/productos"     class="admin-nav-item">🛍️ Productos</a>
+          <a href="/admin/noticias"      class="admin-nav-item active">📰 Noticias</a>
+          <a href="/admin/partidos"      class="admin-nav-item">⚾ Partidos</a>
+          <div style="height:1px;background:var(--border);margin:.5rem 0"></div>
+          <a href="/" class="admin-nav-item">🏠 Ver web</a>
+        </div>
+      </aside>
+
+      <div class="admin-content" style="padding:2rem 0">
+        <h1 class="admin-page-title">Noticias</h1>
+
+        <!-- Formulario nueva noticia -->
+        <div class="card" style="padding:1.75rem;margin-bottom:2rem">
+          <h3 style="margin-bottom:1.25rem;font-size:1rem">➕ Nueva noticia</h3>
+          <form action="/admin/noticias" method="POST">
+            <div class="form-group">
+              <label class="form-label">Título</label>
+              <input type="text" name="titulo" class="form-control" placeholder="Título de la noticia" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Resumen</label>
+              <input type="text" name="resumen" class="form-control" placeholder="Breve resumen (1-2 frases)" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Contenido</label>
+              <textarea name="contenido" class="form-control" rows="5" placeholder="Contenido completo de la noticia…" required style="resize:vertical"></textarea>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+              <div class="form-group" style="margin-bottom:0">
+                <label class="form-label">Autor</label>
+                <input type="text" name="autor" class="form-control" placeholder="Redacción CB Granollers">
+              </div>
+              <div class="form-group" style="margin-bottom:0">
+                <label class="form-label">Fecha de publicación</label>
+                <input type="date" name="publicadoEn" class="form-control" value="<%= new Date().toISOString().split('T')[0] %>">
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:.75rem;margin-top:1rem">
+              <input type="checkbox" name="destacada" id="destacada" value="true" style="width:16px;height:16px">
+              <label for="destacada" style="font-size:.88rem;cursor:pointer">Marcar como noticia destacada</label>
+            </div>
+            <button type="submit" class="btn btn-primary" style="margin-top:1rem">Publicar noticia</button>
+          </form>
+        </div>
+
+        <!-- Tabla noticias -->
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr><th>Noticia</th><th>Autor</th><th>Destacada</th><th>Publicada</th></tr>
+            </thead>
+            <tbody>
+              <% if (typeof noticias !== 'undefined' && noticias && noticias.length > 0) { %>
+                <% noticias.forEach(function(n) { %>
+                  <tr>
+                    <td>
+                      <a href="/noticias/<%= n.id %>" style="font-weight:700" target="_blank"><%= n.titulo %></a>
+                      <p style="font-size:.78rem;color:var(--text3);margin-top:.15rem"><%= n.resumen ? n.resumen.substring(0,70) + '…' : '' %></p>
+                    </td>
+                    <td style="color:var(--text2);font-size:.85rem"><%= n.autor || '–' %></td>
+                    <td><% if (n.destacada) { %><span class="badge badge-primary badge-sm">Destacada</span><% } %></td>
+                    <td style="color:var(--text2);font-size:.85rem"><%= new Date(n.publicadoEn).toLocaleDateString('es') %></td>
+                  </tr>
+                <% }) %>
+              <% } else { %>
+                <tr><td colspan="4" style="text-align:center;color:var(--text3);padding:3rem">Sin noticias publicadas</td></tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<%- include('../partials/footer') %>

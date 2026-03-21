@@ -1,8 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const indexController = require('../controllers/index.controller');
+const controller = require('../controllers/index.controller');
 
-// Ruta principal
-router.get('/', indexController.renderHome);
+router.get('/', controller.renderHome);
+router.get('/club', controller.renderClub);
+router.get('/contacto', controller.renderContacto);
 
 module.exports = router;

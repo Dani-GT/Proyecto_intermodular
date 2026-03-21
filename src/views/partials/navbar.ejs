@@ -1,0 +1,148 @@
+<header class="navbar">
+  <div class="container">
+    <!-- Logo -->
+    <a href="/" class="nav-logo">
+      <span style="font-size:1.5rem">⚾</span>
+      <span class="nav-logo-text">CB <span>Granollers</span></span>
+    </a>
+
+    <!-- Links escritorio -->
+    <nav class="nav-links">
+      <a href="/" class="nav-link<%= paginaActual === '/' ? ' active' : '' %>" data-page="">Inicio</a>
+      <a href="/club" class="nav-link<%= paginaActual === '/club' ? ' active' : '' %>" data-page="club">El Club</a>
+      <a href="/categorias" class="nav-link<%= paginaActual && paginaActual.startsWith('/categorias') ? ' active' : '' %>" data-page="categorias">Categorías</a>
+      <a href="/noticias" class="nav-link<%= paginaActual && paginaActual.startsWith('/noticias') ? ' active' : '' %>" data-page="noticias">Noticias</a>
+      <a href="/tienda" class="nav-link<%= paginaActual && paginaActual.startsWith('/tienda') ? ' active' : '' %>" data-page="tienda">Tienda</a>
+      <a href="/contacto" class="nav-link<%= paginaActual === '/contacto' ? ' active' : '' %>" data-page="contacto">Contacto</a>
+    </nav>
+
+    <!-- Acciones -->
+    <div class="nav-actions">
+      <!-- Toggle tema (SIEMPRE visible) -->
+      <button class="theme-toggle" aria-label="Cambiar tema" title="Cambiar tema">
+        <span class="icon-light">🌙</span>
+        <span class="icon-dark">☀️</span>
+      </button>
+
+      <% if (usuario) { %>
+        <!-- Carrito -->
+        <a href="/tienda/carrito" class="btn-icon" title="Carrito" style="font-size:1.3rem;position:relative">
+          🛒
+        </a>
+        <!-- Menú usuario -->
+        <div class="nav-user">
+          <button class="nav-user-btn" id="userMenuBtn" aria-label="Menú de usuario">
+            <div class="nav-avatar"><%= usuario.nombre.charAt(0).toUpperCase() %></div>
+            <span class="d-none d-sm-inline"><%= usuario.nombre %></span>
+            <span style="font-size:.7rem;opacity:.6">▾</span>
+          </button>
+          <div class="nav-dropdown" id="userDropdown">
+            <div style="padding:.75rem 1rem;border-bottom:1px solid var(--border)">
+              <div style="font-weight:700;font-size:.9rem"><%= usuario.nombre %> <%= usuario.apellidos %></div>
+              <div style="font-size:.78rem;color:var(--text3)"><%= usuario.email %></div>
+              <span class="badge badge-primary badge-sm" style="margin-top:.4rem"><%= usuario.rol %></span>
+            </div>
+            <a href="/auth/perfil" class="nav-dropdown-item">👤 Mi perfil</a>
+            <a href="/inscripcion" class="nav-dropdown-item">📋 Inscribirme</a>
+            <a href="/tienda/carrito" class="nav-dropdown-item">🛒 Mi carrito</a>
+            <% if (usuario.rol === 'ADMIN' || usuario.rol === 'TECNICO') { %>
+              <div class="nav-dropdown-divider"></div>
+              <a href="/admin/dashboard" class="nav-dropdown-item">⚙️ Panel admin</a>
+            <% } %>
+            <div class="nav-dropdown-divider"></div>
+            <form action="/auth/logout" method="POST">
+              <button type="submit" class="nav-dropdown-item danger" style="width:100%;text-align:left">🚪 Cerrar sesión</button>
+            </form>
+          </div>
+        </div>
+      <% } else { %>
+        <a href="/auth/login" class="btn btn-ghost btn-sm">Entrar</a>
+        <a href="/auth/registro" class="btn btn-primary btn-sm">Únete</a>
+      <% } %>
+
+      <!-- Hamburger (solo móvil) -->
+      <button class="nav-hamburger" id="navHamburger" aria-label="Abrir menú" aria-expanded="false">
+        <div class="hamburger-lines">
+          <span></span><span></span><span></span>
+        </div>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- Menú móvil lateral -->
+<div class="nav-mobile" id="navMobile">
+  <% if (usuario) { %>
+    <div class="nav-mobile-user">
+      <div style="display:flex;align-items:center;gap:.75rem">
+        <div class="nav-avatar" style="width:40px;height:40px;font-size:1rem"><%= usuario.nombre.charAt(0).toUpperCase() %></div>
+        <div>
+          <div style="font-weight:700"><%= usuario.nombre %> <%= usuario.apellidos %></div>
+          <div style="font-size:.8rem;color:var(--text3)"><%= usuario.email %></div>
+        </div>
+      </div>
+    </div>
+  <% } %>
+
+  <nav class="nav-mobile-links">
+    <a href="/" class="nav-mobile-link<%= paginaActual === '/' ? ' active' : '' %>">🏠 Inicio</a>
+    <a href="/club" class="nav-mobile-link<%= paginaActual === '/club' ? ' active' : '' %>">🏟️ El Club</a>
+    <a href="/categorias" class="nav-mobile-link<%= paginaActual && paginaActual.startsWith('/categorias') ? ' active' : '' %>">⚾ Categorías</a>
+    <a href="/categorias/calendario" class="nav-mobile-link" style="padding-left:2.5rem;font-size:.9rem">📅 Calendario</a>
+    <a href="/categorias/resultados" class="nav-mobile-link" style="padding-left:2.5rem;font-size:.9rem">📊 Resultados</a>
+    <a href="/noticias" class="nav-mobile-link<%= paginaActual && paginaActual.startsWith('/noticias') ? ' active' : '' %>">📰 Noticias</a>
+    <a href="/tienda" class="nav-mobile-link<%= paginaActual && paginaActual.startsWith('/tienda') ? ' active' : '' %>">🛍️ Tienda</a>
+    <a href="/contacto" class="nav-mobile-link<%= paginaActual === '/contacto' ? ' active' : '' %>">📍 Contacto</a>
+
+    <div class="nav-mobile-divider"></div>
+
+    <% if (usuario) { %>
+      <a href="/auth/perfil" class="nav-mobile-link">👤 Mi perfil</a>
+      <a href="/inscripcion" class="nav-mobile-link">📋 Inscribirme</a>
+      <% if (usuario.rol === 'ADMIN' || usuario.rol === 'TECNICO') { %>
+        <a href="/admin/dashboard" class="nav-mobile-link">⚙️ Panel admin</a>
+      <% } %>
+      <div class="nav-mobile-divider"></div>
+      <form action="/auth/logout" method="POST">
+        <button type="submit" class="nav-mobile-link" style="background:none;border:none;width:100%;text-align:left;cursor:pointer;color:var(--red)">🚪 Cerrar sesión</button>
+      </form>
+    <% } else { %>
+      <a href="/auth/login" class="nav-mobile-link">🔑 Iniciar sesión</a>
+      <a href="/auth/registro" class="nav-mobile-link" style="color:var(--accent);font-weight:700">✨ Registrarse</a>
+    <% } %>
+
+    <div class="nav-mobile-divider"></div>
+    <!-- Toggle tema en móvil -->
+    <button class="theme-toggle nav-mobile-link" style="background:none;border:none;text-align:left;width:100%;display:flex;align-items:center;gap:.75rem;padding:.85rem 1rem;border-radius:8px">
+      <span class="icon-light">🌙</span>
+      <span class="icon-dark">☀️</span>
+      <span style="font-size:1rem;font-weight:500;color:var(--text2)">Cambiar tema</span>
+    </button>
+  </nav>
+</div>
+
+<!-- Nav inferior móvil -->
+<nav class="bottom-nav">
+  <div class="bottom-nav-inner">
+    <a href="/" class="bottom-nav-item<%= paginaActual === '/' ? ' active' : '' %>" data-page="">
+      <span class="bnav-icon">🏠</span>
+      <span>Inicio</span>
+    </a>
+    <a href="/categorias" class="bottom-nav-item<%= paginaActual && paginaActual.startsWith('/categorias') ? ' active' : '' %>" data-page="categorias">
+      <span class="bnav-icon">⚾</span>
+      <span>Equipos</span>
+    </a>
+    <a href="/noticias" class="bottom-nav-item<%= paginaActual && paginaActual.startsWith('/noticias') ? ' active' : '' %>" data-page="noticias">
+      <span class="bnav-icon">📰</span>
+      <span>Noticias</span>
+    </a>
+    <a href="/tienda" class="bottom-nav-item<%= paginaActual && paginaActual.startsWith('/tienda') ? ' active' : '' %>" data-page="tienda">
+      <span class="bnav-icon">🛍️</span>
+      <span>Tienda</span>
+    </a>
+    <a href="<%= usuario ? '/auth/perfil' : '/auth/login' %>" class="bottom-nav-item<%= paginaActual && (paginaActual.startsWith('/auth') || paginaActual.startsWith('/inscripcion')) ? ' active' : '' %>">
+      <span class="bnav-icon">👤</span>
+      <span><%= usuario ? 'Perfil' : 'Entrar' %></span>
+    </a>
+  </div>
+</nav>

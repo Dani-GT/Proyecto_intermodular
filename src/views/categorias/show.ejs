@@ -1,0 +1,149 @@
+<%- include('../partials/head', { title: categoria.nombre }) %>
+<%- include('../partials/navbar') %>
+<%- include('../partials/flash') %>
+
+<% const catColors = {SUB10:'cat-sub10',SUB12:'cat-sub12',SUB14:'cat-sub14',SUB16:'cat-sub16',SUB18:'cat-sub18',SENIOR:'cat-senior'}; %>
+<% const catEmoji = {SUB10:'🧢',SUB12:'⚾',SUB14:'🥊',SUB16:'💪',SUB18:'🔥',SENIOR:'🏆'}; %>
+
+<!-- Hero categoría -->
+<div class="<%= catColors[categoria.nombre] || 'cat-senior' %>" style="padding:3rem 0">
+  <div class="container">
+    <div class="breadcrumb" style="color:rgba(255,255,255,.6)">
+      <a href="/" style="color:rgba(255,255,255,.6)">Inicio</a><span class="breadcrumb-sep">›</span>
+      <a href="/categorias" style="color:rgba(255,255,255,.6)">Categorías</a><span class="breadcrumb-sep">›</span>
+      <span><%= categoria.nombre %></span>
+    </div>
+    <div style="display:flex;align-items:center;gap:1.5rem;margin-top:1rem;flex-wrap:wrap">
+      <div style="font-size:4rem"><%= catEmoji[categoria.nombre] || '⚾' %></div>
+      <div>
+        <h1 style="font-size:2.5rem;font-weight:900;color:#fff;margin-bottom:.25rem"><%= categoria.nombre %></h1>
+        <p style="color:rgba(255,255,255,.8);font-size:1rem"><%= categoria.descripcion || 'Equipo del Club Béisbol Granollers' %></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<main>
+  <div class="container section-py">
+    <div style="display:grid;grid-template-columns:1fr 300px;gap:2.5rem;align-items:start">
+
+      <!-- Info principal -->
+      <div>
+        <!-- Info del equipo -->
+        <div class="card" style="padding:1.75rem;margin-bottom:1.5rem">
+          <h2 style="font-size:1.2rem;margin-bottom:1.25rem">Información del equipo</h2>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem">
+            <div>
+              <p style="font-size:.75rem;font-weight:700;text-transform:uppercase;color:var(--text3);letter-spacing:.06em;margin-bottom:.25rem">Entrenador</p>
+              <p style="font-weight:600"><%= categoria.entrenador || 'Por confirmar' %></p>
+            </div>
+            <div>
+              <p style="font-size:.75rem;font-weight:700;text-transform:uppercase;color:var(--text3);letter-spacing:.06em;margin-bottom:.25rem">Horario</p>
+              <p style="font-weight:600"><%= categoria.horarioEntrenamiento || 'Por confirmar' %></p>
+            </div>
+            <div>
+              <p style="font-size:.75rem;font-weight:700;text-transform:uppercase;color:var(--text3);letter-spacing:.06em;margin-bottom:.25rem">Temporada</p>
+              <p style="font-weight:600">2024-2025</p>
+            </div>
+            <div>
+              <p style="font-size:.75rem;font-weight:700;text-transform:uppercase;color:var(--text3);letter-spacing:.06em;margin-bottom:.25rem">Jugadores</p>
+              <p style="font-weight:600"><%= typeof inscripciones !== 'undefined' ? inscripciones.length : 0 %> inscritos</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Próximos partidos -->
+        <div class="section-header">
+          <h2 style="font-size:1.2rem">Próximos partidos</h2>
+          <a href="/categorias/<%= categoria.nombre.toLowerCase() %>/calendario" class="btn btn-ghost btn-sm">Ver calendario →</a>
+        </div>
+        <div class="match-list">
+          <% if (typeof partidos !== 'undefined' && partidos && partidos.filter(p => !p.resultado).length > 0) { %>
+            <% partidos.filter(p => !p.resultado).slice(0,4).forEach(function(p) { %>
+              <% const fecha = new Date(p.fecha); %>
+              <div class="match-item">
+                <div class="match-date-box">
+                  <div class="match-date-day"><%= fecha.getDate() %></div>
+                  <div class="match-date-mon"><%= fecha.toLocaleString('es',{month:'short'}).toUpperCase() %></div>
+                </div>
+                <div class="match-info">
+                  <div class="match-vs">CB Granollers <small>vs</small> <%= p.rival %></div>
+                  <div class="match-meta"><%= p.esLocal ? '🏠 Local' : '✈️ Visitante' %> · <%= fecha.toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit'}) %></div>
+                </div>
+              </div>
+            <% }) %>
+          <% } else { %>
+            <div class="card" style="padding:1.5rem;text-align:center;color:var(--text2)">Sin partidos programados</div>
+          <% } %>
+        </div>
+
+        <!-- Últimos resultados -->
+        <div class="section-header" style="margin-top:2rem">
+          <h2 style="font-size:1.2rem">Últimos resultados</h2>
+          <a href="/categorias/<%= categoria.nombre.toLowerCase() %>/resultados" class="btn btn-ghost btn-sm">Ver todos →</a>
+        </div>
+        <div class="results-grid">
+          <% if (typeof partidos !== 'undefined' && partidos && partidos.filter(p => p.resultado).length > 0) { %>
+            <% partidos.filter(p => p.resultado).slice(0,3).forEach(function(p) { %>
+              <% const partes = p.resultado.split('-'); %>
+              <% const pL = parseInt(partes[0]); const pV = parseInt(partes[1]); %>
+              <% const gano = (p.esLocal && pL > pV) || (!p.esLocal && pV > pL); %>
+              <% const fecha = new Date(p.fecha); %>
+              <div class="card result-card">
+                <div class="result-date">
+                  <div class="result-date-day"><%= fecha.getDate() %></div>
+                  <div class="result-date-mon"><%= fecha.toLocaleString('es',{month:'short'}).toUpperCase() %></div>
+                </div>
+                <div class="result-teams">
+                  <div class="result-team <%= gano ? 'winner' : '' %>">
+                    <span class="result-team-name">CB Granollers</span>
+                    <span class="result-team-score"><%= p.esLocal ? pL : pV %></span>
+                  </div>
+                  <div class="result-divider"></div>
+                  <div class="result-team <%= !gano ? 'winner' : '' %>">
+                    <span class="result-team-name"><%= p.rival %></span>
+                    <span class="result-team-score"><%= p.esLocal ? pV : pL %></span>
+                  </div>
+                </div>
+                <span class="badge <%= gano ? 'badge-success' : 'badge-danger' %> badge-sm"><%= gano ? 'Victoria' : 'Derrota' %></span>
+              </div>
+            <% }) %>
+          <% } else { %>
+            <div class="card" style="padding:1.5rem;text-align:center;color:var(--text2)">Sin resultados disponibles</div>
+          <% } %>
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <aside style="position:sticky;top:calc(var(--nav-h) + 1.5rem)">
+        <% if (!usuario) { %>
+          <div class="card" style="padding:1.5rem;text-align:center;margin-bottom:1.25rem">
+            <div style="font-size:2rem;margin-bottom:.75rem">🚀</div>
+            <h4 style="margin-bottom:.5rem">¿Quieres unirte?</h4>
+            <p style="font-size:.85rem;color:var(--text2);margin-bottom:1rem">Regístrate e inscríbete en <%= categoria.nombre %></p>
+            <a href="/auth/registro" class="btn btn-primary btn-sm btn-full">Registrarse</a>
+          </div>
+        <% } else { %>
+          <div class="card" style="padding:1.5rem;text-align:center;margin-bottom:1.25rem">
+            <h4 style="margin-bottom:.5rem">Inscripción</h4>
+            <p style="font-size:.85rem;color:var(--text2);margin-bottom:1rem">¿Te interesa esta categoría?</p>
+            <a href="/inscripcion" class="btn btn-primary btn-sm btn-full">Solicitar inscripción</a>
+          </div>
+        <% } %>
+
+        <div class="card" style="padding:1.25rem">
+          <p style="font-size:.78rem;font-weight:700;text-transform:uppercase;color:var(--text3);letter-spacing:.06em;margin-bottom:.75rem">Otras categorías</p>
+          <% const cats = ['SUB10','SUB12','SUB14','SUB16','SUB18','SENIOR'].filter(c => c !== categoria.nombre); %>
+          <% cats.forEach(function(c) { %>
+            <a href="/categorias/<%= c.toLowerCase() %>" style="display:flex;align-items:center;justify-content:space-between;padding:.5rem .5rem;border-radius:var(--radius-sm);font-size:.88rem;color:var(--text2);transition:all .2s">
+              ⚾ <%= c %> <span style="font-size:.7rem;opacity:.4">→</span>
+            </a>
+          <% }) %>
+        </div>
+      </aside>
+
+    </div>
+  </div>
+</main>
+
+<%- include('../partials/footer') %>

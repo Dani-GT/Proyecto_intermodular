@@ -1,0 +1,86 @@
+<%- include('../partials/head', { title: 'Registro' }) %>
+<%- include('../partials/navbar') %>
+
+<main class="auth-page" style="padding:2rem 0">
+  <div class="container">
+    <%- include('../partials/flash') %>
+    <div class="auth-card" style="max-width:560px">
+      <div class="auth-logo">
+        <div style="font-size:2.5rem">⚾</div>
+        <h1 class="auth-title">Registro de jugador</h1>
+        <p class="auth-subtitle">Crea tu cuenta y forma parte del CB Granollers</p>
+      </div>
+
+      <form action="/auth/registro" method="POST" novalidate>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+          <div class="form-group">
+            <label class="form-label" for="nombre">Nombre</label>
+            <input type="text" id="nombre" name="nombre" class="form-control"
+              placeholder="Joan" required autocomplete="given-name"
+              value="<%= typeof nombre !== 'undefined' ? nombre : '' %>">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="apellidos">Apellidos</label>
+            <input type="text" id="apellidos" name="apellidos" class="form-control"
+              placeholder="García Puig" required autocomplete="family-name"
+              value="<%= typeof apellidos !== 'undefined' ? apellidos : '' %>">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="email">Correo electrónico</label>
+          <div class="input-icon-wrap">
+            <span class="input-icon">📧</span>
+            <input type="email" id="email" name="email" class="form-control"
+              placeholder="tu@correo.com" required autocomplete="email"
+              value="<%= typeof emailVal !== 'undefined' ? emailVal : '' %>">
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+          <div class="form-group">
+            <label class="form-label" for="telefono">Teléfono</label>
+            <input type="tel" id="telefono" name="telefono" class="form-control"
+              placeholder="600 123 456" autocomplete="tel"
+              value="<%= typeof telefono !== 'undefined' ? telefono : '' %>">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="fechaNacimiento">Fecha de nacimiento</label>
+            <input type="date" id="fechaNacimiento" name="fechaNacimiento" class="form-control"
+              required value="<%= typeof fechaNacimiento !== 'undefined' ? fechaNacimiento : '' %>">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="password">Contraseña</label>
+          <div class="password-wrap">
+            <input type="password" id="password" name="password" class="form-control"
+              placeholder="Mínimo 8 caracteres" required autocomplete="new-password">
+            <button type="button" class="password-toggle" onclick="togglePassword(this)">👁️</button>
+          </div>
+          <span class="form-hint">Mínimo 8 caracteres con letras y números</span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="passwordConfirm">Confirmar contraseña</label>
+          <div class="password-wrap">
+            <input type="password" id="passwordConfirm" name="passwordConfirm" class="form-control"
+              placeholder="Repite la contraseña" required autocomplete="new-password">
+            <button type="button" class="password-toggle" onclick="togglePassword(this)">👁️</button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-full btn-lg" style="margin-top:.5rem">
+          Crear cuenta
+        </button>
+      </form>
+
+      <div class="auth-footer">
+        ¿Ya tienes cuenta?
+        <a href="/auth/login" style="color:var(--accent);font-weight:600">Inicia sesión</a>
+      </div>
+    </div>
+  </div>
+</main>
+
+<%- include('../partials/footer') %>

@@ -1,0 +1,84 @@
+<%- include('../partials/head', { title: 'Usuarios · Admin' }) %>
+<%- include('../partials/navbar') %>
+<%- include('../partials/flash') %>
+
+<main>
+  <div class="container">
+    <div class="admin-layout">
+      <aside class="admin-sidebar">
+        <div class="card" style="padding:.75rem">
+          <p class="admin-sidebar-title">Panel Admin</p>
+          <a href="/admin/dashboard"     class="admin-nav-item">📊 Dashboard</a>
+          <a href="/admin/usuarios"      class="admin-nav-item active">👥 Usuarios</a>
+          <a href="/admin/inscripciones" class="admin-nav-item">📋 Inscripciones</a>
+          <a href="/admin/productos"     class="admin-nav-item">🛍️ Productos</a>
+          <a href="/admin/noticias"      class="admin-nav-item">📰 Noticias</a>
+          <a href="/admin/partidos"      class="admin-nav-item">⚾ Partidos</a>
+          <div style="height:1px;background:var(--border);margin:.5rem 0"></div>
+          <a href="/" class="admin-nav-item">🏠 Ver web</a>
+        </div>
+      </aside>
+
+      <div class="admin-content" style="padding:2rem 0">
+        <div class="section-header">
+          <h1 class="admin-page-title" style="margin-bottom:0">Usuarios</h1>
+          <span style="color:var(--text2);font-size:.9rem"><%= typeof usuarios !== 'undefined' ? usuarios.length : 0 %> registrados</span>
+        </div>
+
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Usuario</th>
+                <th>Email</th>
+                <th>Teléfono</th>
+                <th>Rol actual</th>
+                <th>Cambiar rol</th>
+                <th>Registro</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (typeof usuarios !== 'undefined' && usuarios && usuarios.length > 0) { %>
+                <% usuarios.forEach(function(u) { %>
+                  <tr>
+                    <td>
+                      <div style="display:flex;align-items:center;gap:.65rem">
+                        <div style="width:32px;height:32px;border-radius:50%;background:var(--accent);color:#fff;font-weight:700;font-size:.8rem;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+                          <%= u.nombre.charAt(0).toUpperCase() %>
+                        </div>
+                        <strong><%= u.nombre %> <%= u.apellidos %></strong>
+                      </div>
+                    </td>
+                    <td style="color:var(--text2)"><%= u.email %></td>
+                    <td style="color:var(--text2)"><%= u.telefono || '–' %></td>
+                    <td>
+                      <% const rolActual = u.rol ? u.rol.tipo : 'SOCIO'; %>
+                      <span class="badge <%= rolActual === 'ADMIN' ? 'badge-danger' : rolActual === 'TECNICO' ? 'badge-primary' : rolActual === 'JUGADOR' ? 'badge-success' : 'badge-neutral' %> badge-sm">
+                        <%= rolActual %>
+                      </span>
+                    </td>
+                    <td>
+                      <form action="/admin/usuarios/<%= u.id %>/rol" method="POST" class="inline-form">
+                        <input type="hidden" name="_method" value="PUT">
+                        <select name="rol" class="form-control" style="padding:.3rem .6rem;font-size:.82rem;width:auto" onchange="this.form.submit()">
+                          <% ['SOCIO','JUGADOR','TECNICO','ADMIN'].forEach(function(r) { %>
+                            <option value="<%= r %>" <%= rolActual === r ? 'selected' : '' %>><%= r %></option>
+                          <% }) %>
+                        </select>
+                      </form>
+                    </td>
+                    <td style="color:var(--text2);font-size:.82rem"><%= new Date(u.createdAt).toLocaleDateString('es') %></td>
+                  </tr>
+                <% }) %>
+              <% } else { %>
+                <tr><td colspan="6" style="text-align:center;color:var(--text3);padding:3rem">Sin usuarios registrados</td></tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<%- include('../partials/footer') %>

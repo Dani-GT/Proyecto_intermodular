@@ -1,0 +1,62 @@
+<%- include('../partials/head', { title: producto.nombre }) %>
+<%- include('../partials/navbar') %>
+<%- include('../partials/flash') %>
+
+<main>
+  <div class="container section-py">
+    <div class="breadcrumb" style="margin-bottom:2rem">
+      <a href="/">Inicio</a><span class="breadcrumb-sep">›</span>
+      <a href="/tienda">Tienda</a><span class="breadcrumb-sep">›</span>
+      <span><%= producto.nombre %></span>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:start">
+      <!-- Imagen -->
+      <div class="card" style="padding:0;overflow:hidden">
+        <div class="product-img" style="aspect-ratio:1/1">
+          <% if (producto.imagen) { %>
+            <img src="<%= producto.imagen %>" alt="<%= producto.nombre %>" style="width:100%;height:100%;object-fit:cover">
+          <% } else { %>
+            <div class="product-img-placeholder" style="height:100%">
+              <%= producto.categoria === 'ROPA' ? '👕' : producto.categoria === 'EQUIPAMIENTO' ? '⚾' : '🎁' %>
+            </div>
+          <% } %>
+        </div>
+      </div>
+
+      <!-- Info -->
+      <div>
+        <span class="badge badge-primary" style="margin-bottom:.75rem"><%= producto.categoria %></span>
+        <h1 style="font-size:1.8rem;font-weight:900;margin-bottom:.75rem"><%= producto.nombre %></h1>
+        <div style="font-size:2rem;font-weight:900;color:var(--accent);margin-bottom:1.5rem"><%= producto.precio.toFixed(2) %> €</div>
+
+        <p style="color:var(--text2);line-height:1.7;margin-bottom:1.5rem"><%= producto.descripcion %></p>
+
+        <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1.5rem">
+          <span class="badge <%= producto.stock === 0 ? 'badge-danger' : producto.stock < 5 ? 'badge-warning' : 'badge-success' %>">
+            <%= producto.stock === 0 ? '✗ Agotado' : producto.stock < 5 ? '⚠ Últimas unidades (' + producto.stock + ')' : '✓ En stock (' + producto.stock + ')' %>
+          </span>
+        </div>
+
+        <% if (producto.stock > 0) { %>
+          <form action="/tienda/carrito/agregar" method="POST">
+            <input type="hidden" name="productoId" value="<%= producto.id %>">
+            <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem">
+              <label class="form-label" style="margin:0;white-space:nowrap">Cantidad:</label>
+              <input type="number" name="cantidad" value="1" min="1" max="<%= producto.stock %>" class="form-control" style="width:80px">
+            </div>
+            <button type="submit" class="btn btn-primary btn-lg btn-full">
+              🛒 Añadir al carrito
+            </button>
+          </form>
+        <% } else { %>
+          <button class="btn btn-outline btn-lg btn-full" disabled>Producto agotado</button>
+        <% } %>
+
+        <a href="/tienda" class="btn btn-ghost btn-full" style="margin-top:.75rem">← Volver a la tienda</a>
+      </div>
+    </div>
+  </div>
+</main>
+
+<%- include('../partials/footer') %>
