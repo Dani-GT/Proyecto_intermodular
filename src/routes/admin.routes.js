@@ -11,10 +11,15 @@ router.get('/dashboard', controller.dashboard);
 // Usuarios
 router.get('/usuarios', controller.usuarios);
 router.post('/usuarios/:id/rol', controller.cambiarRol);
+router.post('/usuarios/:id/eliminar', controller.deleteUsuario);
+
+// Jugadores / Técnicos (crear persona + inscripción)
+router.post('/jugadores', controller.createJugador);
 
 // Inscripciones
 router.get('/inscripciones', controller.inscripciones);
 router.post('/inscripciones/:id', controller.updateInscripcion);
+router.post('/inscripciones/:id/eliminar', controller.deleteInscripcion);
 
 // Productos
 router.get('/productos', controller.productos);

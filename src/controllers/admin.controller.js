@@ -8,7 +8,7 @@ exports.dashboard = async (req, res) => {
             prisma.persona.count(),
             prisma.inscripcion.count(),
             prisma.compra.count(),
-            prisma.producto.count({ where: { activo: true } }),
+            prisma.producto.count(),
             prisma.inscripcion.findMany({
                 take: 5,
                 orderBy: { createdAt: 'desc' },
@@ -44,7 +44,7 @@ exports.usuarios = async (req, res) => {
 
         res.render('admin/usuarios', {
             title: 'Usuarios | Admin CB Granollers',
-            personas,
+            usuarios: personas,
         });
     } catch (error) {
         console.error('Error al cargar usuarios:', error);
@@ -76,17 +76,21 @@ exports.cambiarRol = async (req, res) => {
 // ─── Gestión de inscripciones ─────────────────────────────────────────────────
 exports.inscripciones = async (req, res) => {
     try {
-        const inscripciones = await prisma.inscripcion.findMany({
-            include: {
-                persona: { select: { nombre: true, apellidos: true, email: true } },
-                categoria: true
-            },
-            orderBy: { createdAt: 'desc' }
-        });
+        const [inscripciones, categorias] = await Promise.all([
+            prisma.inscripcion.findMany({
+                include: {
+                    persona: { select: { nombre: true, apellidos: true, email: true, rol: true } },
+                    categoria: true
+                },
+                orderBy: { createdAt: 'desc' }
+            }),
+            prisma.categoria.findMany({ orderBy: { nombre: 'asc' } })
+        ]);
 
         res.render('admin/inscripciones', {
             title: 'Inscripciones | Admin CB Granollers',
             inscripciones,
+            categorias,
         });
     } catch (error) {
         console.error('Error al cargar inscripciones:', error);
@@ -162,7 +166,7 @@ exports.createProducto = async (req, res) => {
 // ─── Actualizar producto ───────────────────────────────────────────────────────
 exports.updateProducto = async (req, res) => {
     const { id } = req.params;
-    const { nombre, descripcion, precio, stock, categoria, activo } = req.body;
+    const { nombre, descripcion, precio, stock, categoria } = req.body;
 
     try {
         await prisma.producto.update({
@@ -173,7 +177,6 @@ exports.updateProducto = async (req, res) => {
                 precio: parseFloat(precio),
                 stock: parseInt(stock),
                 categoria,
-                activo: activo === 'true',
             }
         });
 
@@ -279,15 +282,14 @@ exports.createPartido = async (req, res) => {
 // ─── Registrar resultado de partido ───────────────────────────────────────────
 exports.updatePartido = async (req, res) => {
     const { id } = req.params;
-    const { golesFavor, golesContra, finalizado } = req.body;
+    const { resultado, descripcion } = req.body;
 
     try {
         await prisma.partido.update({
             where: { id: parseInt(id) },
             data: {
-                golesFavor: golesFavor !== '' ? parseInt(golesFavor) : null,
-                golesContra: golesContra !== '' ? parseInt(golesContra) : null,
-                finalizado: finalizado === 'true',
+                resultado: resultado && resultado.trim() !== '' ? resultado.trim() : null,
+                descripcion: descripcion && descripcion.trim() !== '' ? descripcion.trim() : null,
             }
         });
 
@@ -297,5 +299,85 @@ exports.updatePartido = async (req, res) => {
         console.error('Error al actualizar partido:', error);
         req.flash('error', 'Error al actualizar el partido.');
         res.redirect('/admin/partidos');
+    }
+};
+
+// ─── Crear jugador/técnico desde admin ────────────────────────────────────────
+exports.createJugador = async (req, res) => {
+    const { nombre, apellidos, email, password, fechaNacimiento, telefono, rol, categoriaId, temporada } = req.body;
+
+    try {
+        const bcrypt = require('bcryptjs');
+
+        // Verificar que no exista el email
+        const existente = await prisma.persona.findUnique({ where: { email } });
+        if (existente) {
+            req.flash('error', `Ya existe un usuario con el email ${email}.`);
+            return res.redirect('/admin/inscripciones');
+        }
+
+        const hash = await bcrypt.hash(password || 'User1234!', 10);
+
+        await prisma.$transaction(async (tx) => {
+            const persona = await tx.persona.create({
+                data: {
+                    nombre,
+                    apellidos,
+                    email,
+                    password: hash,
+                    telefono: telefono || null,
+                    fechaNacimiento: fechaNacimiento ? new Date(fechaNacimiento) : null,
+                    rol: { create: { tipo: rol || 'JUGADOR' } },
+                },
+            });
+
+            if (categoriaId) {
+                await tx.inscripcion.create({
+                    data: {
+                        personaId: persona.id,
+                        categoriaId: parseInt(categoriaId),
+                        temporada: temporada || '2025-2026',
+                        estado: 'APROBADA',
+                    },
+                });
+            }
+        });
+
+        req.flash('exito', `${rol === 'TECNICO' ? 'Técnico' : 'Jugador'} ${nombre} ${apellidos} creado correctamente.`);
+        res.redirect('/admin/inscripciones');
+    } catch (error) {
+        console.error('Error al crear jugador:', error);
+        req.flash('error', 'Error al crear el jugador. Revisa los datos.');
+        res.redirect('/admin/inscripciones');
+    }
+};
+
+// ─── Eliminar inscripción ─────────────────────────────────────────────────────
+exports.deleteInscripcion = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        await prisma.inscripcion.delete({ where: { id: parseInt(id) } });
+        req.flash('exito', 'Inscripción eliminada correctamente.');
+        res.redirect('/admin/inscripciones');
+    } catch (error) {
+        console.error('Error al eliminar inscripción:', error);
+        req.flash('error', 'Error al eliminar la inscripción.');
+        res.redirect('/admin/inscripciones');
+    }
+};
+
+// ─── Eliminar usuario (persona) ───────────────────────────────────────────────
+exports.deleteUsuario = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        await prisma.persona.delete({ where: { id: parseInt(id) } });
+        req.flash('exito', 'Usuario eliminado correctamente.');
+        res.redirect('/admin/usuarios');
+    } catch (error) {
+        console.error('Error al eliminar usuario:', error);
+        req.flash('error', 'No se pudo eliminar el usuario.');
+        res.redirect('/admin/usuarios');
     }
 };

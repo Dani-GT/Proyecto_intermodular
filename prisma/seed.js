@@ -143,7 +143,7 @@ async function main() {
       data: {
         personaId: jugador.id,
         categoriaId: categoriaSub14.id,
-        temporada: '2024-2025',
+        temporada: '2025-2026',
         estado: 'APROBADA',
         notas: 'Inscripción de prueba generada por seed',
       },
@@ -151,46 +151,158 @@ async function main() {
   }
   console.log(`   ✅ Inscripción creada para jugador en SUB14\n`);
 
+  // ─── 4b. Técnicos y jugadores por categoría ─────────────────────────────────
+  console.log('👥 Creando técnicos y jugadores por categoría...');
+
+  // Datos de técnicos — nombres coinciden con entrenadores de las categorías
+  const tecnicosData = [
+    { nombre: 'Carlos',  apellidos: 'Martínez López',  email: 'cmartinez@cbgranollers.cat',  categoria: 'SUB10'  },
+    { nombre: 'Laura',   apellidos: 'Pérez Domínguez', email: 'lperez@cbgranollers.cat',     categoria: 'SUB12'  },
+    { nombre: 'Marc',    apellidos: 'Torres Vidal',     email: 'mtorres@cbgranollers.cat',    categoria: 'SUB14'  },
+    { nombre: 'David',   apellidos: 'Sánchez Ruiz',     email: 'dsanchez@cbgranollers.cat',   categoria: 'SUB16'  },
+    { nombre: 'Àlex',    apellidos: 'Ribera Puigdomènech', email: 'aribera@cbgranollers.cat', categoria: 'SUB18'  },
+    { nombre: 'Roberto', apellidos: 'Fuentes Carmona', email: 'rfuentes@cbgranollers.cat',   categoria: 'SENIOR' },
+  ];
+
+  for (const t of tecnicosData) {
+    const cat = categorias.find(c => c.nombre === t.categoria);
+    const persona = await prisma.persona.upsert({
+      where: { email: t.email },
+      update: {},
+      create: {
+        nombre: t.nombre,
+        apellidos: t.apellidos,
+        email: t.email,
+        password: hashUser,
+        telefono: '93800000' + (tecnicosData.indexOf(t) + 2),
+        fechaNacimiento: new Date('1980-01-01'),
+        rol: { create: { tipo: 'TECNICO' } },
+      },
+    });
+    const inscrExiste = await prisma.inscripcion.findFirst({
+      where: { personaId: persona.id, categoriaId: cat.id },
+    });
+    if (!inscrExiste) {
+      await prisma.inscripcion.create({
+        data: { personaId: persona.id, categoriaId: cat.id, temporada: '2025-2026', estado: 'APROBADA' },
+      });
+    }
+  }
+  console.log(`   ✅ ${tecnicosData.length} técnicos creados\n`);
+
+  // Datos de jugadores — 6 por categoría
+  const jugadoresData = [
+    // SUB10
+    { nombre: 'Pau',      apellidos: 'Garcia Soler',       email: 'pau.garcia@ejemplo.com',      categoria: 'SUB10',  nacimiento: '2015-03-12' },
+    { nombre: 'Arnau',    apellidos: 'López Mas',           email: 'arnau.lopez@ejemplo.com',     categoria: 'SUB10',  nacimiento: '2015-06-25' },
+    { nombre: 'Jan',      apellidos: 'Ferrer Puig',         email: 'jan.ferrer@ejemplo.com',      categoria: 'SUB10',  nacimiento: '2015-09-08' },
+    { nombre: 'Biel',     apellidos: 'Roca Vila',           email: 'biel.roca@ejemplo.com',       categoria: 'SUB10',  nacimiento: '2016-01-20' },
+    { nombre: 'Laia',     apellidos: 'Martí Bosch',         email: 'laia.marti@ejemplo.com',      categoria: 'SUB10',  nacimiento: '2015-11-30' },
+    { nombre: 'Marta',    apellidos: 'Pujol Sala',          email: 'marta.pujol@ejemplo.com',     categoria: 'SUB10',  nacimiento: '2016-04-15' },
+    // SUB12
+    { nombre: 'Nil',      apellidos: 'Soler Camps',         email: 'nil.soler@ejemplo.com',       categoria: 'SUB12',  nacimiento: '2013-02-17' },
+    { nombre: 'Iker',     apellidos: 'Vidal Costa',         email: 'iker.vidal@ejemplo.com',      categoria: 'SUB12',  nacimiento: '2013-05-03' },
+    { nombre: 'Júlia',    apellidos: 'Mas Torrent',          email: 'julia.mas@ejemplo.com',       categoria: 'SUB12',  nacimiento: '2013-08-22' },
+    { nombre: 'Alex',     apellidos: 'Castells Mir',        email: 'alex.castells@ejemplo.com',   categoria: 'SUB12',  nacimiento: '2014-01-09' },
+    { nombre: 'Roger',    apellidos: 'Planes Font',          email: 'roger.planes@ejemplo.com',    categoria: 'SUB12',  nacimiento: '2013-10-14' },
+    { nombre: 'Emma',     apellidos: 'Molina Serra',        email: 'emma.molina@ejemplo.com',     categoria: 'SUB12',  nacimiento: '2014-03-28' },
+    // SUB14
+    { nombre: 'Oriol',    apellidos: 'Giménez Roca',        email: 'oriol.gimenez@ejemplo.com',   categoria: 'SUB14',  nacimiento: '2011-07-04' },
+    { nombre: 'Pol',      apellidos: 'Ferreira Nadal',      email: 'pol.ferreira@ejemplo.com',    categoria: 'SUB14',  nacimiento: '2011-11-19' },
+    { nombre: 'Carla',    apellidos: 'Oliveras Puig',       email: 'carla.oliveras@ejemplo.com',  categoria: 'SUB14',  nacimiento: '2012-02-08' },
+    { nombre: 'Sergi',    apellidos: 'Badia Llull',         email: 'sergi.badia@ejemplo.com',     categoria: 'SUB14',  nacimiento: '2011-09-27' },
+    { nombre: 'Gael',     apellidos: 'Navarro Comas',       email: 'gael.navarro@ejemplo.com',    categoria: 'SUB14',  nacimiento: '2012-05-16' },
+    { nombre: 'Mireia',   apellidos: 'Casamitjana Font',    email: 'mireia.casa@ejemplo.com',     categoria: 'SUB14',  nacimiento: '2011-12-01' },
+    // SUB16
+    { nombre: 'Martí',    apellidos: 'Casas Ribas',         email: 'marti.casas@ejemplo.com',     categoria: 'SUB16',  nacimiento: '2009-04-11' },
+    { nombre: 'Hugo',     apellidos: 'Domínguez Vara',      email: 'hugo.dominguez@ejemplo.com',  categoria: 'SUB16',  nacimiento: '2009-08-29' },
+    { nombre: 'Aina',     apellidos: 'Pons Esteve',         email: 'aina.pons@ejemplo.com',       categoria: 'SUB16',  nacimiento: '2010-01-14' },
+    { nombre: 'Dani',     apellidos: 'Correa Blanco',       email: 'dani.correa@ejemplo.com',     categoria: 'SUB16',  nacimiento: '2009-06-23' },
+    { nombre: 'Edu',      apellidos: 'Morales Carrasco',    email: 'edu.morales@ejemplo.com',     categoria: 'SUB16',  nacimiento: '2010-03-07' },
+    { nombre: 'Noa',      apellidos: 'Ros Espinosa',        email: 'noa.ros@ejemplo.com',         categoria: 'SUB16',  nacimiento: '2009-10-18' },
+    // SUB18
+    { nombre: 'Bernat',   apellidos: 'Arenas Coll',         email: 'bernat.arenas@ejemplo.com',   categoria: 'SUB18',  nacimiento: '2007-03-05' },
+    { nombre: 'Guillem',  apellidos: 'Solà Farrés',         email: 'guillem.sola@ejemplo.com',    categoria: 'SUB18',  nacimiento: '2007-07-21' },
+    { nombre: 'Ivet',     apellidos: 'Camprubí Mir',        email: 'ivet.camprubi@ejemplo.com',   categoria: 'SUB18',  nacimiento: '2008-01-30' },
+    { nombre: 'Lluc',     apellidos: 'Batlle Sunyer',       email: 'lluc.batlle@ejemplo.com',     categoria: 'SUB18',  nacimiento: '2007-11-12' },
+    { nombre: 'Ricard',   apellidos: 'Figueras Pont',       email: 'ricard.figueras@ejemplo.com', categoria: 'SUB18',  nacimiento: '2008-04-09' },
+    { nombre: 'Laia',     apellidos: 'Tarragó Valls',       email: 'laia.tarrago@ejemplo.com',    categoria: 'SUB18',  nacimiento: '2007-09-17' },
+    // SENIOR
+    { nombre: 'Marc',     apellidos: 'Puig Batalla',        email: 'marc.puig@ejemplo.com',       categoria: 'SENIOR', nacimiento: '2000-05-14' },
+    { nombre: 'Daniel',   apellidos: 'Moreno Ibáñez',      email: 'daniel.moreno@ejemplo.com',   categoria: 'SENIOR', nacimiento: '1999-08-31' },
+    { nombre: 'Adrià',    apellidos: 'Casanova Pla',        email: 'adria.casanova@ejemplo.com',  categoria: 'SENIOR', nacimiento: '2001-02-22' },
+    { nombre: 'Santi',    apellidos: 'Flores Guerrero',     email: 'santi.flores@ejemplo.com',    categoria: 'SENIOR', nacimiento: '1998-11-06' },
+    { nombre: 'Xavi',     apellidos: 'Boada Moll',          email: 'xavi.boada@ejemplo.com',      categoria: 'SENIOR', nacimiento: '2002-07-18' },
+    { nombre: 'Alba',     apellidos: 'Gispert Cros',        email: 'alba.gispert@ejemplo.com',    categoria: 'SENIOR', nacimiento: '2000-03-25' },
+    { nombre: 'Toni',     apellidos: 'Espada Rius',         email: 'toni.espada@ejemplo.com',     categoria: 'SENIOR', nacimiento: '1997-09-03' },
+    { nombre: 'Roc',      apellidos: 'Julià Pagès',         email: 'roc.julia@ejemplo.com',       categoria: 'SENIOR', nacimiento: '2001-12-11' },
+  ];
+
+  for (const j of jugadoresData) {
+    const cat = categorias.find(c => c.nombre === j.categoria);
+    const persona = await prisma.persona.upsert({
+      where: { email: j.email },
+      update: {},
+      create: {
+        nombre: j.nombre,
+        apellidos: j.apellidos,
+        email: j.email,
+        password: hashUser,
+        fechaNacimiento: new Date(j.nacimiento),
+        rol: { create: { tipo: 'JUGADOR' } },
+      },
+    });
+    const inscrExiste = await prisma.inscripcion.findFirst({
+      where: { personaId: persona.id, categoriaId: cat.id },
+    });
+    if (!inscrExiste) {
+      await prisma.inscripcion.create({
+        data: { personaId: persona.id, categoriaId: cat.id, temporada: '2025-2026', estado: 'APROBADA' },
+      });
+    }
+  }
+  console.log(`   ✅ ${jugadoresData.length} jugadores creados\n`);
+
   // ─── 5. Noticias ────────────────────────────────────────────────────────────
   console.log('📰 Creando noticias...');
   const noticiaData = [
     {
-      titulo: 'El CB Granollers arranca la temporada 2024-2025 con grandes expectativas',
+      titulo: 'El CB Granollers arranca la temporada 2025-2026 con grandes expectativas',
       resumen: 'El club granollerí presenta su plantilla más amplia de la historia con 8 equipos en competición.',
-      contenido: `El Club Béisbol Granollers ha comenzado oficialmente la temporada 2024-2025 con una presentación de equipos que llenó las instalaciones del campo municipal. Con más de 150 jugadores federados, el club afronta el curso más ambicioso de su historia.\n\nEl equipo senior, dirigido por Roberto Fuentes, aspira al ascenso a la División de Honor nacional, mientras que las categorías base presentan un estado de forma excelente tras una intensa pretemporada.\n\n"Estamos muy ilusionados con lo que hemos preparado este verano. El nivel de compromiso de los jugadores y de las familias es increíble", declaró el presidente del club durante el acto de presentación.\n\nLa temporada comienza el próximo sábado con el primer partido oficial del equipo senior en casa.`,
-      publicadoEn: new Date('2024-09-10'),
+      contenido: `El Club Béisbol Granollers ha comenzado oficialmente la temporada 2025-2026 con una presentación de equipos que llenó las instalaciones del campo municipal. Con más de 150 jugadores federados, el club afronta el curso más ambicioso de su historia.\n\nEl equipo senior, dirigido por Roberto Fuentes, aspira al ascenso a la División de Honor nacional, mientras que las categorías base presentan un estado de forma excelente tras una intensa pretemporada.\n\n"Estamos muy ilusionados con lo que hemos preparado este verano. El nivel de compromiso de los jugadores y de las familias es increíble", declaró el presidente del club durante el acto de presentación.\n\nLa temporada comienza el próximo sábado con el primer partido oficial del equipo senior en casa.`,
+      publicadoEn: new Date('2025-09-10'),
       autor: 'Redacción CB Granollers',
       destacada: true,
     },
     {
-      titulo: 'El equipo Sub18 se proclama campeón del Torneo de Primavera',
+      titulo: 'El equipo Sub18 se proclama campeón del Torneo de Primavera 2025',
       resumen: 'Los jóvenes jugadores granolleríes ganaron el torneo invictos con 5 victorias en 5 partidos.',
-      contenido: `El equipo Sub18 del CB Granollers se coronó campeón del XXI Torneo de Primavera disputado en Hospitalet de Llobregat. Los jugadores dirigidos por Àlex Ribera completaron una actuación perfecta ganando los cinco partidos de la competición.\n\nLa final se disputó el domingo por la tarde ante el CB Vilafranca, a quienes vencieron por 8-2 en un partido dominado de principio a fin. El MVP del torneo fue el lanzador Martí Casas, quien completó dos aperturas sin carreras limpias en contra.\n\n"Estos chicos han trabajado muchísimo y se lo merecen. El equipo ha crecido un 100% respecto al año pasado", comentó orgulloso el entrenador Àlex Ribera.\n\nEl trofeo ya está expuesto en la sede del club junto a los demás reconocimientos de la temporada.`,
-      publicadoEn: new Date('2024-05-20'),
+      contenido: `El equipo Sub18 del CB Granollers se coronó campeón del XXII Torneo de Primavera disputado en Hospitalet de Llobregat. Los jugadores dirigidos por Àlex Ribera completaron una actuación perfecta ganando los cinco partidos de la competición.\n\nLa final se disputó el domingo por la tarde ante el CB Vilafranca, a quienes vencieron por 8-2 en un partido dominado de principio a fin. El MVP del torneo fue el lanzador Martí Casas, quien completó dos aperturas sin carreras limpias en contra.\n\n"Estos chicos han trabajado muchísimo y se lo merecen. El equipo ha crecido un 100% respecto al año pasado", comentó orgulloso el entrenador Àlex Ribera.\n\nEl trofeo ya está expuesto en la sede del club junto a los demás reconocimientos de la temporada.`,
+      publicadoEn: new Date('2025-05-20'),
       autor: 'Redacción CB Granollers',
       destacada: true,
     },
     {
-      titulo: 'Nuevas instalaciones en el campo municipal',
-      resumen: 'El Ayuntamiento de Granollers invierte en la mejora del campo de béisbol con nuevos vestuarios y tribuna.',
-      contenido: `El Ayuntamiento de Granollers ha aprobado una inversión de 120.000 euros para la mejora de las instalaciones del campo municipal de béisbol. Las obras incluyen la construcción de nuevos vestuarios, la ampliación de la tribuna principal y la mejora del sistema de iluminación para entrenamientos nocturnos.\n\n"Es un reconocimiento al trabajo que lleva haciendo el club durante más de 20 años. Granollers se merece unas instalaciones acordes al nivel del béisbol que se practica aquí", declaró la regidora de deportes.\n\nLas obras comenzarán a finales de octubre y se prevé que estén finalizadas antes de la Navidad, a tiempo para la segunda vuelta de la temporada.`,
-      publicadoEn: new Date('2024-10-05'),
+      titulo: 'Nuevas instalaciones en el campo municipal completadas',
+      resumen: 'El Ayuntamiento de Granollers completa la reforma del campo de béisbol con nuevos vestuarios y tribuna ampliada.',
+      contenido: `El Ayuntamiento de Granollers ha finalizado las obras de mejora de las instalaciones del campo municipal de béisbol. Los nuevos vestuarios, la ampliación de la tribuna principal y el nuevo sistema de iluminación LED ya están listos para la temporada 2025-2026.\n\n"Es un reconocimiento al trabajo que lleva haciendo el club durante más de 20 años. Granollers se merece unas instalaciones acordes al nivel del béisbol que se practica aquí", declaró la regidora de deportes durante la inauguración oficial.\n\nEl campo renovado fue estrenado en el primer partido de liga de la temporada ante el CB Hospitalet, con más de 300 espectadores en las gradas.`,
+      publicadoEn: new Date('2025-09-22'),
       autor: 'Redacción CB Granollers',
       destacada: false,
     },
     {
-      titulo: 'Jornada de puertas abiertas para niños de 6 a 12 años',
-      resumen: 'El próximo sábado el club organiza una jornada de iniciación al béisbol para los más pequeños.',
-      contenido: `El CB Granollers organiza una jornada de puertas abiertas el próximo sábado 16 de noviembre de 10:00 a 13:00 horas en el campo municipal. La actividad está dirigida a niños y niñas de entre 6 y 12 años que quieran conocer el béisbol de primera mano.\n\nLos entrenadores del club prepararán juegos y actividades adaptadas a cada edad, y los pequeños podrán batear, lanzar y atrapar en un ambiente divertido y seguro. La entrada es gratuita y no es necesaria inscripción previa.\n\nSi tu hijo o hija tiene curiosidad por este deporte, ¡es la oportunidad perfecta para descubrirlo!`,
-      publicadoEn: new Date('2024-11-10'),
+      titulo: 'Jornada de puertas abiertas: más de 80 niños descubren el béisbol',
+      resumen: 'El club organizó una exitosa jornada de iniciación con récord de participación infantil.',
+      contenido: `El CB Granollers organizó el pasado sábado una jornada de puertas abiertas que superó todas las expectativas con la participación de más de 80 niños y niñas de entre 6 y 12 años. Los entrenadores del club prepararon juegos y actividades adaptadas a cada edad.\n\nLos pequeños pudieron batear, lanzar y atrapar en un ambiente divertido y seguro. La jornada culminó con un partido amistoso entre los participantes que arrancó los aplausos de los padres presentes.\n\n"Es la cantera del futuro. Ver la ilusión de estos chavales nos llena de energía para seguir trabajando", declaró el coordinador de cantera del club.\n\nEl club ha abierto el plazo de inscripción para la categoría Sub10 de la temporada 2025-2026.`,
+      publicadoEn: new Date('2025-10-18'),
       autor: 'Redacción CB Granollers',
       destacada: false,
     },
     {
-      titulo: 'Resumen de la primera vuelta: el senior lidera la clasificación',
-      resumen: 'Con 7 victorias y 2 derrotas, el equipo senior de Granollers encabeza el grupo A de la División de Honor catalana.',
-      contenido: `Tras completar la primera vuelta de la temporada, el equipo senior del CB Granollers lidera la clasificación del Grupo A de la División de Honor de béisbol catalán con 7 victorias y tan solo 2 derrotas.\n\nEl balance es muy positivo para un equipo que hace solo dos temporadas militaba en Primera División. El trabajo de Roberto Fuentes está dando sus frutos y la afición granollerina empieza a soñar con la posibilidad de una clasificación para el campeonato nacional.\n\nDestacados de la primera vuelta: el lanzador Daniel Moreno acumula 45 strikeouts en 6 aperturas, mientras que el campo interior ha cometido solo 3 errores en 9 partidos. Los próximos compromisos serán cruciales para mantener el liderato.`,
-      publicadoEn: new Date('2024-12-01'),
+      titulo: 'El senior lidera la clasificación tras una brillante primera vuelta',
+      resumen: 'Con 8 victorias y 1 derrota, el equipo senior de Granollers encabeza el grupo A de la División de Honor catalana.',
+      contenido: `Tras completar la primera vuelta de la temporada 2025-2026, el equipo senior del CB Granollers lidera la clasificación del Grupo A de la División de Honor de béisbol catalán con 8 victorias y tan solo 1 derrota.\n\nEl balance es histórico para el club granollerí. El trabajo de Roberto Fuentes está dando sus frutos y la afición empieza a soñar en serio con el título.\n\nDestacados de la primera vuelta: el lanzador Daniel Moreno acumula 52 strikeouts en 7 aperturas con un ERA de 1.84, mientras que el campo interior ha cometido solo 2 errores en 9 partidos. El bateador Marc Puig lidera el equipo con un promedio de .342.\n\nLos próximos compromisos de la segunda vuelta serán cruciales para mantener el liderato y conseguir la clasificación para el campeonato nacional.`,
+      publicadoEn: new Date('2025-12-08'),
       autor: 'Redacción CB Granollers',
       destacada: true,
     },
@@ -199,7 +311,12 @@ async function main() {
   for (const noticia of noticiaData) {
     await prisma.noticia.upsert({
       where: { titulo: noticia.titulo },
-      update: {},
+      update: {
+        publicadoEn: noticia.publicadoEn,
+        resumen: noticia.resumen,
+        contenido: noticia.contenido,
+        destacada: noticia.destacada,
+      },
       create: noticia,
     });
   }
@@ -480,110 +597,165 @@ async function main() {
   const categoriaSenior = categorias.find(c => c.nombre === 'SENIOR');
   const categoriaSub18 = categorias.find(c => c.nombre === 'SUB18');
   const categoriaSub16 = categorias.find(c => c.nombre === 'SUB16');
+  const categoriaSub10 = categorias.find(c => c.nombre === 'SUB10');
+  const categoriaSub12 = categorias.find(c => c.nombre === 'SUB12');
+
+  const rivalList = ['CB Hospitalet', 'CB Vilafranca', 'CB Sabadell', 'CB Badalona', 'CB Mataró', 'CB Mollet', 'CB Reus', 'CB Terrassa', 'CB Barcelona', 'CB Granollers B'];
+  const campos = {
+    'CB Hospitalet': 'Camp Municipal de Hospitalet',
+    'CB Vilafranca': 'Camp Municipal de Vilafranca',
+    'CB Sabadell': 'Camp Municipal de Sabadell',
+    'CB Badalona': 'Camp Municipal de Badalona',
+    'CB Mataró': 'Camp Municipal de Mataró',
+    'CB Mollet': 'Camp Municipal de Mollet',
+    'CB Reus': 'Camp Municipal de Reus',
+    'CB Terrassa': 'Camp Municipal de Terrassa',
+    'CB Barcelona': 'Camp Municipal de Barcelona',
+    'CB Granollers B': 'Campo Municipal Granollers',
+  };
 
   const partidosData = [
-    // Partidos pasados con resultado
-    {
-      categoriaId: categoriaSenior.id,
-      rival: 'CB Hospitalet',
-      fecha: new Date('2024-10-05T11:00:00'),
-      esLocal: true,
-      campo: 'Campo Municipal Granollers',
-      resultado: '7-3',
-      descripcion: 'Gran victoria en el primer partido en casa de la temporada.',
-    },
-    {
-      categoriaId: categoriaSenior.id,
-      rival: 'CB Vilafranca',
-      fecha: new Date('2024-10-12T11:00:00'),
-      esLocal: false,
-      campo: 'Camp Municipal de Vilafranca',
-      resultado: '5-8',
-      descripcion: 'Derrota ajustada en el partido más disputado de la jornada.',
-    },
-    {
-      categoriaId: categoriaSub18.id,
-      rival: 'CB Sabadell',
-      fecha: new Date('2024-10-19T10:00:00'),
-      esLocal: true,
-      campo: 'Campo Municipal Granollers',
-      resultado: '12-4',
-      descripcion: 'Contundente victoria del Sub18. Martí Casas lanzó 6 innings perfectos.',
-    },
-    {
-      categoriaId: categoriaSenior.id,
-      rival: 'CB Badalona',
-      fecha: new Date('2024-10-26T11:00:00'),
-      esLocal: true,
-      campo: 'Campo Municipal Granollers',
-      resultado: '9-2',
-      descripcion: 'El senior golea a Badalona y se pone líder de la clasificación.',
-    },
-    {
-      categoriaId: categoriaSub16.id,
-      rival: 'CB Mataró',
-      fecha: new Date('2024-11-02T10:00:00'),
-      esLocal: false,
-      campo: 'Camp Municipal de Mataró',
-      resultado: '6-6',
-      descripcion: 'Empate en un partido muy disputado con remontada incluida.',
-    },
-    // Próximos partidos
-    {
-      categoriaId: categoriaSenior.id,
-      rival: 'CB Mollet',
-      fecha: new Date('2025-04-05T11:00:00'),
-      esLocal: true,
-      campo: 'Campo Municipal Granollers',
-      resultado: null,
-      descripcion: null,
-    },
-    {
-      categoriaId: categoriaSub18.id,
-      rival: 'CB Terrassa',
-      fecha: new Date('2025-04-06T10:00:00'),
-      esLocal: false,
-      campo: 'Camp Municipal de Terrassa',
-      resultado: null,
-      descripcion: null,
-    },
-    {
-      categoriaId: categoriaSenior.id,
-      rival: 'CB Reus',
-      fecha: new Date('2025-04-12T11:00:00'),
-      esLocal: false,
-      campo: 'Camp Municipal de Reus',
-      resultado: null,
-      descripcion: null,
-    },
-    {
-      categoriaId: categoriaSub16.id,
-      rival: 'CB Hospitalet',
-      fecha: new Date('2025-04-13T10:00:00'),
-      esLocal: true,
-      campo: 'Campo Municipal Granollers',
-      resultado: null,
-      descripcion: null,
-    },
-    {
-      categoriaId: categoriaSenior.id,
-      rival: 'CB Vilafranca',
-      fecha: new Date('2025-04-19T11:00:00'),
-      esLocal: true,
-      campo: 'Campo Municipal Granollers',
-      resultado: null,
-      descripcion: 'Partido de revancha, crucial para el liderato.',
-    },
+
+    // ══════════════════════════════════════════════════════════════════
+    // RESULTADOS — TEMPORADA 2025-2026 (sep 2025 – mar 2026)
+    // ══════════════════════════════════════════════════════════════════
+
+    // ── SENIOR ──────────────────────────────────────────────────────
+    { categoriaId: categoriaSenior.id, rival: 'CB Hospitalet',  fecha: new Date('2025-09-13T11:00:00'), esLocal: true,  campo: 'Campo Municipal Granollers',    resultado: '7-3',  descripcion: 'Gran victoria en el estreno de las nuevas instalaciones. Llenazo en tribuna.' },
+    { categoriaId: categoriaSenior.id, rival: 'CB Vilafranca',  fecha: new Date('2025-09-27T11:00:00'), esLocal: false, campo: 'Camp Municipal de Vilafranca',   resultado: '5-8',  descripcion: 'Primera derrota en una salida muy disputada.' },
+    { categoriaId: categoriaSenior.id, rival: 'CB Badalona',    fecha: new Date('2025-10-11T11:00:00'), esLocal: true,  campo: 'Campo Municipal Granollers',    resultado: '9-2',  descripcion: 'Golea a Badalona y se consolida líder.' },
+    { categoriaId: categoriaSenior.id, rival: 'CB Mollet',      fecha: new Date('2025-10-25T11:00:00'), esLocal: true,  campo: 'Campo Municipal Granollers',    resultado: '11-0', descripcion: 'Blanqueada perfecta. Daniel Moreno lanzó partido completo.' },
+    { categoriaId: categoriaSenior.id, rival: 'CB Reus',        fecha: new Date('2025-11-08T11:00:00'), esLocal: false, campo: 'Camp Municipal de Reus',        resultado: '6-4',  descripcion: 'Victoria clave fuera de casa.' },
+    { categoriaId: categoriaSenior.id, rival: 'CB Sabadell',    fecha: new Date('2025-11-22T11:00:00'), esLocal: true,  campo: 'Campo Municipal Granollers',    resultado: '8-1',  descripcion: 'Tercera blanqueada de la temporada. Liderato reforzado.' },
+    { categoriaId: categoriaSenior.id, rival: 'CB Terrassa',    fecha: new Date('2025-12-06T11:00:00'), esLocal: false, campo: 'Camp Municipal de Terrassa',    resultado: '4-4',  descripcion: 'Empate en el último inning tras remontar un 4-1 en contra.' },
+    { categoriaId: categoriaSenior.id, rival: 'CB Barcelona',   fecha: new Date('2025-12-20T11:00:00'), esLocal: true,  campo: 'Campo Municipal Granollers',    resultado: '3-5',  descripcion: 'Primera derrota en casa ante un rival de gran nivel.' },
+    { categoriaId: categoriaSenior.id, rival: 'CB Hospitalet',  fecha: new Date('2026-01-17T11:00:00'), esLocal: false, campo: 'Camp Municipal de Hospitalet',  resultado: '6-2',  descripcion: 'Arranque sólido de la segunda vuelta fuera de casa.' },
+    { categoriaId: categoriaSenior.id, rival: 'CB Vilafranca',  fecha: new Date('2026-01-31T11:00:00'), esLocal: true,  campo: 'Campo Municipal Granollers',    resultado: '7-5',  descripcion: 'Revancha conseguida ante Vilafranca en un gran partido.' },
+    { categoriaId: categoriaSenior.id, rival: 'CB Badalona',    fecha: new Date('2026-02-14T11:00:00'), esLocal: false, campo: 'Camp Municipal de Badalona',    resultado: '10-3', descripcion: 'Paliza en Badalona. Marc Puig batea 2 jonrones.' },
+    { categoriaId: categoriaSenior.id, rival: 'CB Mollet',      fecha: new Date('2026-02-28T11:00:00'), esLocal: false, campo: 'Camp Municipal de Mollet',      resultado: '5-5',  descripcion: 'Empate en Mollet con remontada en el noveno inning.' },
+    { categoriaId: categoriaSenior.id, rival: 'CB Reus',        fecha: new Date('2026-03-14T11:00:00'), esLocal: true,  campo: 'Campo Municipal Granollers',    resultado: '8-2',  descripcion: 'Sólida victoria ante Reus que refuerza el liderato en la recta final.' },
+
+    // ── SUB18 ──────────────────────────────────────────────────────
+    { categoriaId: categoriaSub18.id, rival: 'CB Sabadell',   fecha: new Date('2025-09-20T10:00:00'), esLocal: true,  campo: 'Campo Municipal Granollers',   resultado: '12-4', descripcion: 'Martí Casas lanzó 6 innings perfectos en la primera jornada.' },
+    { categoriaId: categoriaSub18.id, rival: 'CB Terrassa',   fecha: new Date('2025-10-04T10:00:00'), esLocal: false, campo: 'Camp Municipal de Terrassa',   resultado: '4-7',  descripcion: 'Derrota ante un rival muy sólido.' },
+    { categoriaId: categoriaSub18.id, rival: 'CB Hospitalet', fecha: new Date('2025-10-18T10:00:00'), esLocal: true,  campo: 'Campo Municipal Granollers',   resultado: '7-2',  descripcion: 'Dominio total ante Hospitalet.' },
+    { categoriaId: categoriaSub18.id, rival: 'CB Mataró',     fecha: new Date('2025-11-01T10:00:00'), esLocal: false, campo: 'Camp Municipal de Mataró',     resultado: '3-3',  descripcion: 'Empate en un partido muy igualado.' },
+    { categoriaId: categoriaSub18.id, rival: 'CB Mollet',     fecha: new Date('2025-11-15T10:00:00'), esLocal: true,  campo: 'Campo Municipal Granollers',   resultado: '9-1',  descripcion: 'Clara victoria que lleva al Sub18 a la segunda posición.' },
+    { categoriaId: categoriaSub18.id, rival: 'CB Vilafranca', fecha: new Date('2025-11-29T10:00:00'), esLocal: false, campo: 'Camp Municipal de Vilafranca', resultado: '6-8',  descripcion: 'Derrota ajustada en el partido más difícil del año.' },
+    { categoriaId: categoriaSub18.id, rival: 'CB Badalona',   fecha: new Date('2025-12-13T10:00:00'), esLocal: true,  campo: 'Campo Municipal Granollers',   resultado: '8-0',  descripcion: 'Blanqueada del Sub18 para cerrar el año con buenas sensaciones.' },
+    { categoriaId: categoriaSub18.id, rival: 'CB Sabadell',   fecha: new Date('2026-01-24T10:00:00'), esLocal: false, campo: 'Camp Municipal de Sabadell',   resultado: '5-6',  descripcion: 'Derrota por un run en el último inning. Gran partido.' },
+    { categoriaId: categoriaSub18.id, rival: 'CB Terrassa',   fecha: new Date('2026-02-07T10:00:00'), esLocal: true,  campo: 'Campo Municipal Granollers',   resultado: '11-3', descripcion: 'Revancha conseguida con contundencia ante Terrassa.' },
+    { categoriaId: categoriaSub18.id, rival: 'CB Hospitalet', fecha: new Date('2026-02-21T10:00:00'), esLocal: false, campo: 'Camp Municipal de Hospitalet', resultado: '4-4',  descripcion: 'Empate trabajado fuera de casa.' },
+    { categoriaId: categoriaSub18.id, rival: 'CB Mataró',     fecha: new Date('2026-03-07T10:00:00'), esLocal: true,  campo: 'Campo Municipal Granollers',   resultado: '6-2',  descripcion: 'Victoria clave para asegurar el playoff.' },
+    { categoriaId: categoriaSub18.id, rival: 'CB Mollet',     fecha: new Date('2026-03-21T10:00:00'), esLocal: false, campo: 'Camp Municipal de Mollet',     resultado: '7-4',  descripcion: 'Buena victoria fuera que confirma la clasificación.' },
+
+    // ── SUB16 ──────────────────────────────────────────────────────
+    { categoriaId: categoriaSub16.id, rival: 'CB Mataró',     fecha: new Date('2025-09-20T10:00:00'), esLocal: false, campo: 'Camp Municipal de Mataró',     resultado: '6-6',  descripcion: 'Empate agónico con remontada en el noveno inning.' },
+    { categoriaId: categoriaSub16.id, rival: 'CB Sabadell',   fecha: new Date('2025-10-04T10:00:00'), esLocal: true,  campo: 'Campo Municipal Granollers',   resultado: '9-3',  descripcion: 'Gran partido con cuatro jonrones en el encuentro.' },
+    { categoriaId: categoriaSub16.id, rival: 'CB Hospitalet', fecha: new Date('2025-10-18T10:00:00'), esLocal: false, campo: 'Camp Municipal de Hospitalet', resultado: '2-7',  descripcion: 'Derrota clara fuera de casa ante un rival directo.' },
+    { categoriaId: categoriaSub16.id, rival: 'CB Vilafranca', fecha: new Date('2025-11-01T10:00:00'), esLocal: true,  campo: 'Campo Municipal Granollers',   resultado: '5-4',  descripcion: 'Victoria sufrida en el último at-bat de la entrada.' },
+    { categoriaId: categoriaSub16.id, rival: 'CB Badalona',   fecha: new Date('2025-11-15T10:00:00'), esLocal: false, campo: 'Camp Municipal de Badalona',   resultado: '8-2',  descripcion: 'Excelente actuación fuera de casa. Mejor partido de la temporada.' },
+    { categoriaId: categoriaSub16.id, rival: 'CB Terrassa',   fecha: new Date('2025-11-29T10:00:00'), esLocal: true,  campo: 'Campo Municipal Granollers',   resultado: '3-5',  descripcion: 'Derrota en casa que complica la clasificación.' },
+    { categoriaId: categoriaSub16.id, rival: 'CB Mollet',     fecha: new Date('2025-12-13T10:00:00'), esLocal: true,  campo: 'Campo Municipal Granollers',   resultado: '7-1',  descripcion: 'Victoria contundente para cerrar la primera vuelta con buen sabor.' },
+    { categoriaId: categoriaSub16.id, rival: 'CB Mataró',     fecha: new Date('2026-01-24T10:00:00'), esLocal: true,  campo: 'Campo Municipal Granollers',   resultado: '4-4',  descripcion: 'Empate con el rival directo. La clasificación sigue abierta.' },
+    { categoriaId: categoriaSub16.id, rival: 'CB Sabadell',   fecha: new Date('2026-02-07T10:00:00'), esLocal: false, campo: 'Camp Municipal de Sabadell',   resultado: '6-5',  descripcion: 'Victoria por un run en la segunda vuelta. Grupo muy igualado.' },
+    { categoriaId: categoriaSub16.id, rival: 'CB Hospitalet', fecha: new Date('2026-02-21T10:00:00'), esLocal: true,  campo: 'Campo Municipal Granollers',   resultado: '8-3',  descripcion: 'Revancha conseguida en casa ante Hospitalet.' },
+    { categoriaId: categoriaSub16.id, rival: 'CB Vilafranca', fecha: new Date('2026-03-07T10:00:00'), esLocal: false, campo: 'Camp Municipal de Vilafranca', resultado: '1-6',  descripcion: 'Derrota clara que complica las opciones del Sub16 de cara al playoff.' },
+    { categoriaId: categoriaSub16.id, rival: 'CB Badalona',   fecha: new Date('2026-03-21T10:00:00'), esLocal: true,  campo: 'Campo Municipal Granollers',   resultado: '9-4',  descripcion: 'Gran remontada en los últimos innings para llevarse el partido.' },
+
+    // ── SUB14 ──────────────────────────────────────────────────────
+    { categoriaId: categoriaSub14.id, rival: 'CB Granollers B', fecha: new Date('2025-09-27T10:00:00'), esLocal: true,  campo: 'Campo Municipal Granollers',   resultado: '8-5',  descripcion: 'Derby interno con victoria del equipo A. Partido muy emotivo.' },
+    { categoriaId: categoriaSub14.id, rival: 'CB Hospitalet',   fecha: new Date('2025-10-11T10:00:00'), esLocal: false, campo: 'Camp Municipal de Hospitalet', resultado: '4-6',  descripcion: 'Derrota ajustada fuera de casa en el debut en liga.' },
+    { categoriaId: categoriaSub14.id, rival: 'CB Mataró',       fecha: new Date('2025-10-25T10:00:00'), esLocal: true,  campo: 'Campo Municipal Granollers',   resultado: '7-3',  descripcion: 'Sólida victoria ante Mataró con buen pitcheo.' },
+    { categoriaId: categoriaSub14.id, rival: 'CB Sabadell',     fecha: new Date('2025-11-08T10:00:00'), esLocal: false, campo: 'Camp Municipal de Sabadell',   resultado: '5-5',  descripcion: 'Empate en un partido muy igualado donde nadie quiso perder.' },
+    { categoriaId: categoriaSub14.id, rival: 'CB Vilafranca',   fecha: new Date('2025-11-22T10:00:00'), esLocal: true,  campo: 'Campo Municipal Granollers',   resultado: '6-2',  descripcion: 'Victoria cómoda ante Vilafranca con buena defensa.' },
+    { categoriaId: categoriaSub14.id, rival: 'CB Terrassa',     fecha: new Date('2025-12-06T10:00:00'), esLocal: false, campo: 'Camp Municipal de Terrassa',   resultado: '2-8',  descripcion: 'Derrota clara en Terrassa. El equipo aprende de la derrota.' },
+    { categoriaId: categoriaSub14.id, rival: 'CB Hospitalet',   fecha: new Date('2026-01-17T10:00:00'), esLocal: true,  campo: 'Campo Municipal Granollers',   resultado: '9-2',  descripcion: 'Revancha conseguida en casa ante Hospitalet. Muy buena actuación.' },
+    { categoriaId: categoriaSub14.id, rival: 'CB Mataró',       fecha: new Date('2026-01-31T10:00:00'), esLocal: false, campo: 'Camp Municipal de Mataró',     resultado: '3-4',  descripcion: 'Derrota por un run en Mataró en un partido muy igualado.' },
+    { categoriaId: categoriaSub14.id, rival: 'CB Sabadell',     fecha: new Date('2026-02-14T10:00:00'), esLocal: true,  campo: 'Campo Municipal Granollers',   resultado: '7-1',  descripcion: 'Dominante victoria en casa con tres jonrones del equipo.' },
+    { categoriaId: categoriaSub14.id, rival: 'CB Vilafranca',   fecha: new Date('2026-02-28T10:00:00'), esLocal: false, campo: 'Camp Municipal de Vilafranca', resultado: '4-3',  descripcion: 'Emocionante victoria en el último inning fuera de casa.' },
+    { categoriaId: categoriaSub14.id, rival: 'CB Terrassa',     fecha: new Date('2026-03-14T10:00:00'), esLocal: true,  campo: 'Campo Municipal Granollers',   resultado: '8-4',  descripcion: 'Revancha ante Terrassa con gran actuación colectiva.' },
+
+    // ── SUB12 ──────────────────────────────────────────────────────
+    { categoriaId: categoriaSub12.id, rival: 'CB Hospitalet',   fecha: new Date('2025-10-04T10:00:00'), esLocal: true,  campo: 'Campo Municipal Granollers',   resultado: '5-3',  descripcion: 'Primera victoria de la temporada para los chicos del Sub12.' },
+    { categoriaId: categoriaSub12.id, rival: 'CB Sabadell',     fecha: new Date('2025-10-18T10:00:00'), esLocal: false, campo: 'Camp Municipal de Sabadell',   resultado: '2-6',  descripcion: 'Derrota fuera de casa con buenas sensaciones de juego.' },
+    { categoriaId: categoriaSub12.id, rival: 'CB Mataró',       fecha: new Date('2025-11-01T10:00:00'), esLocal: true,  campo: 'Campo Municipal Granollers',   resultado: '4-4',  descripcion: 'Empate muy disputado. Gran nivel para la categoría.' },
+    { categoriaId: categoriaSub12.id, rival: 'CB Vilafranca',   fecha: new Date('2025-11-15T10:00:00'), esLocal: false, campo: 'Camp Municipal de Vilafranca', resultado: '3-5',  descripcion: 'Derrota ajustada con mejora notable en la defensa.' },
+    { categoriaId: categoriaSub12.id, rival: 'CB Terrassa',     fecha: new Date('2025-11-29T10:00:00'), esLocal: true,  campo: 'Campo Municipal Granollers',   resultado: '6-2',  descripcion: 'Buena victoria en casa. Los niños disfrutan del béisbol.' },
+    { categoriaId: categoriaSub12.id, rival: 'CB Badalona',     fecha: new Date('2025-12-13T10:00:00'), esLocal: false, campo: 'Camp Municipal de Badalona',   resultado: '1-7',  descripcion: 'Derrota abultada lejos de casa. Mucho por mejorar.' },
+    { categoriaId: categoriaSub12.id, rival: 'CB Hospitalet',   fecha: new Date('2026-01-24T10:00:00'), esLocal: false, campo: 'Camp Municipal de Hospitalet', resultado: '4-2',  descripcion: 'Victoria fuera de casa que levanta el ánimo del equipo.' },
+    { categoriaId: categoriaSub12.id, rival: 'CB Sabadell',     fecha: new Date('2026-02-07T10:00:00'), esLocal: true,  campo: 'Campo Municipal Granollers',   resultado: '5-4',  descripcion: 'Remontada en el último inning para sumar tres puntos vitales.' },
+    { categoriaId: categoriaSub12.id, rival: 'CB Mataró',       fecha: new Date('2026-02-21T10:00:00'), esLocal: false, campo: 'Camp Municipal de Mataró',     resultado: '3-3',  descripcion: 'Empate justo ante Mataró en partido muy igualado.' },
+    { categoriaId: categoriaSub12.id, rival: 'CB Vilafranca',   fecha: new Date('2026-03-07T10:00:00'), esLocal: true,  campo: 'Campo Municipal Granollers',   resultado: '7-5',  descripcion: 'Revancha conseguida en casa ante Vilafranca.' },
+
+    // ── SUB10 ──────────────────────────────────────────────────────
+    { categoriaId: categoriaSub10.id, rival: 'CB Hospitalet',   fecha: new Date('2025-10-11T10:00:00'), esLocal: true,  campo: 'Campo Municipal Granollers',   resultado: '4-3',  descripcion: 'Primer partido oficial de la temporada. Gran ambiente familiar.' },
+    { categoriaId: categoriaSub10.id, rival: 'CB Mataró',       fecha: new Date('2025-10-25T10:00:00'), esLocal: false, campo: 'Camp Municipal de Mataró',     resultado: '2-5',  descripcion: 'Derrota pero mucho aprendizaje para los más pequeños.' },
+    { categoriaId: categoriaSub10.id, rival: 'CB Sabadell',     fecha: new Date('2025-11-08T10:00:00'), esLocal: true,  campo: 'Campo Municipal Granollers',   resultado: '6-1',  descripcion: 'Victoria clara con dos jonrones de los benjamines.' },
+    { categoriaId: categoriaSub10.id, rival: 'CB Vilafranca',   fecha: new Date('2025-11-22T10:00:00'), esLocal: false, campo: 'Camp Municipal de Vilafranca', resultado: '3-3',  descripcion: 'Empate divertido. Los niños lo pasan genial jugando.' },
+    { categoriaId: categoriaSub10.id, rival: 'CB Terrassa',     fecha: new Date('2025-12-06T10:00:00'), esLocal: true,  campo: 'Campo Municipal Granollers',   resultado: '5-2',  descripcion: 'Buena victoria para cerrar la primera vuelta de los benjamines.' },
+    { categoriaId: categoriaSub10.id, rival: 'CB Hospitalet',   fecha: new Date('2026-01-31T10:00:00'), esLocal: false, campo: 'Camp Municipal de Hospitalet', resultado: '2-4',  descripcion: 'Derrota fuera de casa. La defensa sigue mejorando.' },
+    { categoriaId: categoriaSub10.id, rival: 'CB Mataró',       fecha: new Date('2026-02-14T10:00:00'), esLocal: true,  campo: 'Campo Municipal Granollers',   resultado: '5-5',  descripcion: 'Empate emocionante con gol en el último inning.' },
+    { categoriaId: categoriaSub10.id, rival: 'CB Sabadell',     fecha: new Date('2026-02-28T10:00:00'), esLocal: false, campo: 'Camp Municipal de Sabadell',   resultado: '4-2',  descripcion: 'Victoria importante fuera de casa para el Sub10.' },
+    { categoriaId: categoriaSub10.id, rival: 'CB Vilafranca',   fecha: new Date('2026-03-14T10:00:00'), esLocal: true,  campo: 'Campo Municipal Granollers',   resultado: '3-4',  descripcion: 'Derrota por un run en el último inning. Partido muy disputado.' },
+
+    // ══════════════════════════════════════════════════════════════════
+    // PRÓXIMOS PARTIDOS — abril, mayo y junio 2026
+    // ══════════════════════════════════════════════════════════════════
+
+    // ── SENIOR ──────────────────────────────────────────────────────
+    { categoriaId: categoriaSenior.id, rival: 'CB Sabadell',   fecha: new Date('2026-04-04T11:00:00'), esLocal: false, campo: 'Camp Municipal de Sabadell',   resultado: null, descripcion: null },
+    { categoriaId: categoriaSenior.id, rival: 'CB Vilafranca', fecha: new Date('2026-04-18T11:00:00'), esLocal: true,  campo: 'Campo Municipal Granollers',   resultado: null, descripcion: 'Partido de revancha, crucial para mantener el liderato.' },
+    { categoriaId: categoriaSenior.id, rival: 'CB Terrassa',   fecha: new Date('2026-05-02T11:00:00'), esLocal: true,  campo: 'Campo Municipal Granollers',   resultado: null, descripcion: null },
+    { categoriaId: categoriaSenior.id, rival: 'CB Barcelona',  fecha: new Date('2026-05-16T11:00:00'), esLocal: false, campo: 'Camp Municipal de Barcelona',  resultado: null, descripcion: 'Visita al segundo clasificado. Partido decisivo para el título.' },
+    { categoriaId: categoriaSenior.id, rival: 'CB Hospitalet', fecha: new Date('2026-05-30T11:00:00'), esLocal: true,  campo: 'Campo Municipal Granollers',   resultado: null, descripcion: 'Última jornada regular. El título puede decidirse aquí.' },
+    { categoriaId: categoriaSenior.id, rival: 'CB Mollet',     fecha: new Date('2026-06-06T11:00:00'), esLocal: false, campo: 'Camp Municipal de Mollet',     resultado: null, descripcion: 'Partido de playoff si la clasificación lo permite.' },
+
+    // ── SUB18 ──────────────────────────────────────────────────────
+    { categoriaId: categoriaSub18.id, rival: 'CB Vilafranca', fecha: new Date('2026-04-05T10:00:00'), esLocal: true,  campo: 'Campo Municipal Granollers',   resultado: null, descripcion: null },
+    { categoriaId: categoriaSub18.id, rival: 'CB Badalona',   fecha: new Date('2026-04-19T10:00:00'), esLocal: false, campo: 'Camp Municipal de Badalona',   resultado: null, descripcion: null },
+    { categoriaId: categoriaSub18.id, rival: 'CB Sabadell',   fecha: new Date('2026-05-03T10:00:00'), esLocal: true,  campo: 'Campo Municipal Granollers',   resultado: null, descripcion: 'Partido decisivo para la clasificación del Sub18.' },
+    { categoriaId: categoriaSub18.id, rival: 'CB Terrassa',   fecha: new Date('2026-05-17T10:00:00'), esLocal: false, campo: 'Camp Municipal de Terrassa',   resultado: null, descripcion: null },
+    { categoriaId: categoriaSub18.id, rival: 'CB Hospitalet', fecha: new Date('2026-05-31T10:00:00'), esLocal: true,  campo: 'Campo Municipal Granollers',   resultado: null, descripcion: 'Última jornada de la fase regular Sub18.' },
+    { categoriaId: categoriaSub18.id, rival: 'CB Mataró',     fecha: new Date('2026-06-07T10:00:00'), esLocal: false, campo: 'Camp Municipal de Mataró',     resultado: null, descripcion: null },
+
+    // ── SUB16 ──────────────────────────────────────────────────────
+    { categoriaId: categoriaSub16.id, rival: 'CB Terrassa',   fecha: new Date('2026-04-05T10:00:00'), esLocal: false, campo: 'Camp Municipal de Terrassa',   resultado: null, descripcion: null },
+    { categoriaId: categoriaSub16.id, rival: 'CB Badalona',   fecha: new Date('2026-04-19T10:00:00'), esLocal: true,  campo: 'Campo Municipal Granollers',   resultado: null, descripcion: null },
+    { categoriaId: categoriaSub16.id, rival: 'CB Mollet',     fecha: new Date('2026-05-03T10:00:00'), esLocal: false, campo: 'Camp Municipal de Mollet',     resultado: null, descripcion: null },
+    { categoriaId: categoriaSub16.id, rival: 'CB Sabadell',   fecha: new Date('2026-05-17T10:00:00'), esLocal: true,  campo: 'Campo Municipal Granollers',   resultado: null, descripcion: 'Partido clave para la clasificación Sub16.' },
+    { categoriaId: categoriaSub16.id, rival: 'CB Mataró',     fecha: new Date('2026-05-31T10:00:00'), esLocal: false, campo: 'Camp Municipal de Mataró',     resultado: null, descripcion: null },
+    { categoriaId: categoriaSub16.id, rival: 'CB Hospitalet', fecha: new Date('2026-06-07T10:00:00'), esLocal: true,  campo: 'Campo Municipal Granollers',   resultado: null, descripcion: 'Último partido de liga para el Sub16.' },
+
+    // ── SUB14 ──────────────────────────────────────────────────────
+    { categoriaId: categoriaSub14.id, rival: 'CB Granollers B', fecha: new Date('2026-04-04T10:00:00'), esLocal: false, campo: 'Campo Municipal Granollers',   resultado: null, descripcion: 'Derby de Granollers, segunda vuelta.' },
+    { categoriaId: categoriaSub14.id, rival: 'CB Sabadell',     fecha: new Date('2026-04-18T10:00:00'), esLocal: true,  campo: 'Campo Municipal Granollers',   resultado: null, descripcion: null },
+    { categoriaId: categoriaSub14.id, rival: 'CB Terrassa',     fecha: new Date('2026-05-02T10:00:00'), esLocal: false, campo: 'Camp Municipal de Terrassa',   resultado: null, descripcion: null },
+    { categoriaId: categoriaSub14.id, rival: 'CB Hospitalet',   fecha: new Date('2026-05-16T10:00:00'), esLocal: true,  campo: 'Campo Municipal Granollers',   resultado: null, descripcion: null },
+    { categoriaId: categoriaSub14.id, rival: 'CB Mataró',       fecha: new Date('2026-05-30T10:00:00'), esLocal: false, campo: 'Camp Municipal de Mataró',     resultado: null, descripcion: 'Penúltimo partido del Sub14.' },
+    { categoriaId: categoriaSub14.id, rival: 'CB Vilafranca',   fecha: new Date('2026-06-06T10:00:00'), esLocal: true,  campo: 'Campo Municipal Granollers',   resultado: null, descripcion: 'Final de temporada Sub14.' },
+
+    // ── SUB12 ──────────────────────────────────────────────────────
+    { categoriaId: categoriaSub12.id, rival: 'CB Terrassa',   fecha: new Date('2026-04-04T10:00:00'), esLocal: true,  campo: 'Campo Municipal Granollers',   resultado: null, descripcion: null },
+    { categoriaId: categoriaSub12.id, rival: 'CB Badalona',   fecha: new Date('2026-04-18T10:00:00'), esLocal: false, campo: 'Camp Municipal de Badalona',   resultado: null, descripcion: null },
+    { categoriaId: categoriaSub12.id, rival: 'CB Vilafranca', fecha: new Date('2026-05-02T10:00:00'), esLocal: true,  campo: 'Campo Municipal Granollers',   resultado: null, descripcion: null },
+    { categoriaId: categoriaSub12.id, rival: 'CB Hospitalet', fecha: new Date('2026-05-16T10:00:00'), esLocal: false, campo: 'Camp Municipal de Hospitalet', resultado: null, descripcion: null },
+    { categoriaId: categoriaSub12.id, rival: 'CB Mataró',     fecha: new Date('2026-05-30T10:00:00'), esLocal: true,  campo: 'Campo Municipal Granollers',   resultado: null, descripcion: 'Penúltima jornada Sub12.' },
+    { categoriaId: categoriaSub12.id, rival: 'CB Terrassa',   fecha: new Date('2026-06-06T10:00:00'), esLocal: false, campo: 'Camp Municipal de Terrassa',   resultado: null, descripcion: 'Último partido de la temporada Sub12.' },
+
+    // ── SUB10 ──────────────────────────────────────────────────────
+    { categoriaId: categoriaSub10.id, rival: 'CB Terrassa',   fecha: new Date('2026-04-04T10:00:00'), esLocal: false, campo: 'Camp Municipal de Terrassa',   resultado: null, descripcion: null },
+    { categoriaId: categoriaSub10.id, rival: 'CB Badalona',   fecha: new Date('2026-04-18T10:00:00'), esLocal: true,  campo: 'Campo Municipal Granollers',   resultado: null, descripcion: null },
+    { categoriaId: categoriaSub10.id, rival: 'CB Vilafranca', fecha: new Date('2026-05-02T10:00:00'), esLocal: false, campo: 'Camp Municipal de Vilafranca', resultado: null, descripcion: null },
+    { categoriaId: categoriaSub10.id, rival: 'CB Hospitalet', fecha: new Date('2026-05-16T10:00:00'), esLocal: true,  campo: 'Campo Municipal Granollers',   resultado: null, descripcion: null },
+    { categoriaId: categoriaSub10.id, rival: 'CB Sabadell',   fecha: new Date('2026-05-30T10:00:00'), esLocal: false, campo: 'Camp Municipal de Sabadell',   resultado: null, descripcion: 'Penúltima jornada de los benjamines.' },
+    { categoriaId: categoriaSub10.id, rival: 'CB Mataró',     fecha: new Date('2026-06-06T10:00:00'), esLocal: true,  campo: 'Campo Municipal Granollers',   resultado: null, descripcion: 'Fiesta de fin de temporada Sub10. ¡Todos a animarles!' },
   ];
 
-  // Creamos los partidos sin upsert porque no tienen campo único natural
-  const partidosExistentes = await prisma.partido.count();
-  if (partidosExistentes === 0) {
-    await prisma.partido.createMany({ data: partidosData });
-    console.log(`   ✅ ${partidosData.length} partidos creados\n`);
-  } else {
-    console.log(`   ⏭️  Partidos ya existentes, omitiendo\n`);
-  }
+  // Borramos y recreamos los partidos para asegurar fechas actualizadas
+  await prisma.partido.deleteMany({});
+  await prisma.partido.createMany({ data: partidosData });
+  console.log(`   ✅ ${partidosData.length} partidos creados\n`);
 
   // ─── Resumen final ──────────────────────────────────────────────────────────
   console.log('────────────────────────────────────────────────────');

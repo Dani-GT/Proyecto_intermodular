@@ -43,7 +43,7 @@
             </div>
             <div>
               <p style="font-size:.75rem;font-weight:700;text-transform:uppercase;color:var(--text3);letter-spacing:.06em;margin-bottom:.25rem">Temporada</p>
-              <p style="font-weight:600">2024-2025</p>
+              <p style="font-weight:600">2025-2026</p>
             </div>
             <div>
               <p style="font-size:.75rem;font-weight:700;text-transform:uppercase;color:var(--text3);letter-spacing:.06em;margin-bottom:.25rem">Jugadores</p>
@@ -76,6 +76,47 @@
             <div class="card" style="padding:1.5rem;text-align:center;color:var(--text2)">Sin partidos programados</div>
           <% } %>
         </div>
+
+        <!-- Plantilla: técnicos y jugadores -->
+        <div class="section-header" style="margin-top:2rem">
+          <h2 style="font-size:1.2rem">Cuerpo técnico</h2>
+        </div>
+        <% if (typeof tecnicos !== 'undefined' && tecnicos.length > 0) { %>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1rem;margin-bottom:1.5rem">
+            <% tecnicos.forEach(function(i) { %>
+              <div class="card" style="padding:1rem;text-align:center">
+                <div style="width:52px;height:52px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.25rem;font-weight:700;margin:0 auto .75rem">
+                  <%= i.persona.nombre.charAt(0) %><%= i.persona.apellidos.charAt(0) %>
+                </div>
+                <p style="font-weight:700;font-size:.9rem;margin:0"><%= i.persona.nombre %> <%= i.persona.apellidos %></p>
+                <span class="badge badge-info badge-sm" style="margin-top:.35rem">Técnico</span>
+              </div>
+            <% }) %>
+          </div>
+        <% } else { %>
+          <div class="card" style="padding:1rem;color:var(--text2);margin-bottom:1.5rem">
+            <p style="margin:0;font-size:.9rem">Entrenador/a: <strong><%= categoria.entrenador || 'Por confirmar' %></strong></p>
+          </div>
+        <% } %>
+
+        <div class="section-header" style="margin-top:1.5rem">
+          <h2 style="font-size:1.2rem">Jugadores (<%= typeof jugadores !== 'undefined' ? jugadores.length : 0 %>)</h2>
+        </div>
+        <% if (typeof jugadores !== 'undefined' && jugadores.length > 0) { %>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:.75rem;margin-bottom:1.5rem">
+            <% jugadores.forEach(function(i) { %>
+              <div class="card" style="padding:.9rem;text-align:center">
+                <div style="width:44px;height:44px;border-radius:50%;background:var(--secondary,#e8f4fd);color:var(--primary);display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:700;margin:0 auto .6rem">
+                  <%= i.persona.nombre.charAt(0) %><%= i.persona.apellidos.charAt(0) %>
+                </div>
+                <p style="font-weight:600;font-size:.85rem;margin:0"><%= i.persona.nombre %> <%= i.persona.apellidos %></p>
+                <span class="badge badge-success badge-sm" style="margin-top:.3rem">Jugador</span>
+              </div>
+            <% }) %>
+          </div>
+        <% } else { %>
+          <div class="card" style="padding:1.5rem;text-align:center;color:var(--text2);margin-bottom:1.5rem">Sin jugadores inscritos esta temporada</div>
+        <% } %>
 
         <!-- Últimos resultados -->
         <div class="section-header" style="margin-top:2rem">

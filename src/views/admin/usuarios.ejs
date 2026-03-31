@@ -35,6 +35,7 @@
                 <th>Rol actual</th>
                 <th>Cambiar rol</th>
                 <th>Registro</th>
+                <th>Acciones</th>
               </tr>
             </thead>
             <tbody>
@@ -68,10 +69,19 @@
                       </form>
                     </td>
                     <td style="color:var(--text2);font-size:.82rem"><%= new Date(u.createdAt).toLocaleDateString('es') %></td>
+                    <td>
+                      <% if (rolActual !== 'ADMIN') { %>
+                        <form action="/admin/usuarios/<%= u.id %>/eliminar" method="POST" class="inline-form" onsubmit="return confirm('¿Eliminar a <%= u.nombre %> <%= u.apellidos %>? Se borrarán también sus inscripciones y compras.')">
+                          <button type="submit" class="btn btn-sm" style="background:#ef4444;color:#fff;padding:.25rem .6rem;font-size:.78rem">Eliminar</button>
+                        </form>
+                      <% } else { %>
+                        <span style="color:var(--text3);font-size:.8rem">—</span>
+                      <% } %>
+                    </td>
                   </tr>
                 <% }) %>
               <% } else { %>
-                <tr><td colspan="6" style="text-align:center;color:var(--text3);padding:3rem">Sin usuarios registrados</td></tr>
+                <tr><td colspan="7" style="text-align:center;color:var(--text3);padding:3rem">Sin usuarios registrados</td></tr>
               <% } %>
             </tbody>
           </table>
