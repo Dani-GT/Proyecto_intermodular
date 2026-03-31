@@ -28,7 +28,7 @@
       <div>
         <span class="badge badge-primary" style="margin-bottom:.75rem"><%= producto.categoria %></span>
         <h1 style="font-size:1.8rem;font-weight:900;margin-bottom:.75rem"><%= producto.nombre %></h1>
-        <div style="font-size:2rem;font-weight:900;color:var(--accent);margin-bottom:1.5rem"><%= producto.precio.toFixed(2) %> €</div>
+        <div style="font-size:2rem;font-weight:900;color:var(--accent);margin-bottom:1.5rem"><%= Number(producto.precio).toFixed(2) %> €</div>
 
         <p style="color:var(--text2);line-height:1.7;margin-bottom:1.5rem"><%= producto.descripcion %></p>
 

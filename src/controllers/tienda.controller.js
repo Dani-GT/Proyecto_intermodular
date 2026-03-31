@@ -5,14 +5,11 @@ exports.index = async (req, res) => {
     const { categoria } = req.query;
     try {
         const where = {};
-        if (categoria) where.categoria = categoria;
+        if (categoria && categoria !== 'TODOS') where.categoria = categoria;
 
         const [productos, totalProductos] = await Promise.all([
-            prisma.producto.findMany({
-                where,
-                orderBy: { nombre: 'asc' }
-            }),
-            prisma.producto.count({ where: {} })
+            prisma.producto.findMany({ where, orderBy: { nombre: 'asc' } }),
+            prisma.producto.count(),
         ]);
 
         res.render('tienda/index', {
@@ -33,21 +30,15 @@ exports.index = async (req, res) => {
 exports.show = async (req, res) => {
     const { id } = req.params;
     try {
-        const producto = await prisma.producto.findUnique({
-            where: { id: parseInt(id) }
-        });
-
+        const producto = await prisma.producto.findUnique({ where: { id: parseInt(id) } });
         if (!producto) {
             req.flash('error', 'Producto no encontrado.');
             return res.redirect('/tienda');
         }
-
-        // Productos relacionados
         const relacionados = await prisma.producto.findMany({
             where: { categoria: producto.categoria, id: { not: producto.id } },
             take: 4,
         });
-
         res.render('tienda/producto', {
             title: `${producto.nombre} | Tienda CB Granollers`,
             producto,
@@ -60,7 +51,7 @@ exports.show = async (req, res) => {
     }
 };
 
-// ─── Ver carrito (desde sesión) ───────────────────────────────────────────────
+// ─── Ver carrito ──────────────────────────────────────────────────────────────
 exports.verCarrito = async (req, res) => {
     try {
         const carrito = req.session.carrito || [];
@@ -73,10 +64,10 @@ exports.verCarrito = async (req, res) => {
 
             items = carrito.map(item => {
                 const producto = productos.find(p => p.id === item.productoId);
-                const subtotal = producto ? parseFloat(producto.precio) * item.cantidad : 0;
+                const subtotal = producto ? Number(producto.precio) * item.cantidad : 0;
                 total += subtotal;
                 return { ...item, producto, subtotal };
-            });
+            }).filter(item => item.producto); // eliminar items sin producto
         }
 
         res.render('tienda/carrito', {
@@ -95,30 +86,22 @@ exports.verCarrito = async (req, res) => {
 exports.addToCart = async (req, res) => {
     const { productoId, cantidad } = req.body;
     const qty = parseInt(cantidad) || 1;
-
     try {
-        const producto = await prisma.producto.findUnique({
-            where: { id: parseInt(productoId) }
-        });
-
+        const producto = await prisma.producto.findUnique({ where: { id: parseInt(productoId) } });
         if (!producto || producto.stock < qty) {
             req.flash('error', 'Producto no disponible o sin stock suficiente.');
             return res.redirect('/tienda');
         }
-
         if (!req.session.carrito) req.session.carrito = [];
-
         const existingIndex = req.session.carrito.findIndex(
             item => item.productoId === parseInt(productoId)
         );
-
         if (existingIndex >= 0) {
             req.session.carrito[existingIndex].cantidad += qty;
         } else {
             req.session.carrito.push({ productoId: parseInt(productoId), cantidad: qty });
         }
-
-        req.flash('exito', `${producto.nombre} añadido al carrito.`);
+        req.flash('exito', `"${producto.nombre}" añadido al carrito.`);
         res.redirect('/tienda/carrito');
     } catch (error) {
         console.error('Error al añadir al carrito:', error);
@@ -127,15 +110,11 @@ exports.addToCart = async (req, res) => {
     }
 };
 
-// ─── Actualizar cantidad en carrito ──────────────────────────────────────────
+// ─── Actualizar cantidad ──────────────────────────────────────────────────────
 exports.updateCart = (req, res) => {
     const { productoId, cantidad } = req.body;
     const qty = parseInt(cantidad);
-
-    if (!req.session.carrito) {
-        return res.redirect('/tienda/carrito');
-    }
-
+    if (!req.session.carrito) return res.redirect('/tienda/carrito');
     if (qty <= 0) {
         req.session.carrito = req.session.carrito.filter(
             item => item.productoId !== parseInt(productoId)
@@ -146,31 +125,28 @@ exports.updateCart = (req, res) => {
         );
         if (index >= 0) req.session.carrito[index].cantidad = qty;
     }
-
     res.redirect('/tienda/carrito');
 };
 
-// ─── Eliminar del carrito ──────────────────────────────────────────────────────
+// ─── Eliminar del carrito ─────────────────────────────────────────────────────
 exports.removeFromCart = (req, res) => {
-    const { productoId } = req.params;
+    const productoId = parseInt(req.body.productoId);
     if (req.session.carrito) {
         req.session.carrito = req.session.carrito.filter(
-            item => item.productoId !== parseInt(productoId)
+            item => item.productoId !== productoId
         );
     }
     req.flash('exito', 'Producto eliminado del carrito.');
     res.redirect('/tienda/carrito');
 };
 
-// ─── Checkout ─────────────────────────────────────────────────────────────────
+// ─── Checkout: resumen del pedido ─────────────────────────────────────────────
 exports.showCheckout = async (req, res) => {
     const carrito = req.session.carrito || [];
-
     if (carrito.length === 0) {
         req.flash('error', 'Tu carrito está vacío.');
         return res.redirect('/tienda');
     }
-
     try {
         const ids = carrito.map(item => item.productoId);
         const productos = await prisma.producto.findMany({ where: { id: { in: ids } } });
@@ -178,13 +154,13 @@ exports.showCheckout = async (req, res) => {
         let total = 0;
         const items = carrito.map(item => {
             const producto = productos.find(p => p.id === item.productoId);
-            const subtotal = producto ? parseFloat(producto.precio) * item.cantidad : 0;
+            const subtotal = producto ? Number(producto.precio) * item.cantidad : 0;
             total += subtotal;
             return { ...item, producto, subtotal };
-        });
+        }).filter(item => item.producto);
 
         res.render('tienda/checkout', {
-            title: 'Checkout | CB Granollers',
+            title: 'Confirmar pedido | CB Granollers',
             items,
             total: total.toFixed(2),
         });
@@ -195,8 +171,42 @@ exports.showCheckout = async (req, res) => {
     }
 };
 
-// ─── Confirmar compra ──────────────────────────────────────────────────────────
-exports.confirmarCompra = async (req, res) => {
+// ─── Mock pago: pantalla de datos de tarjeta ──────────────────────────────────
+exports.showMockPayment = async (req, res) => {
+    const carrito = req.session.carrito || [];
+    if (carrito.length === 0) {
+        req.flash('error', 'Tu carrito está vacío.');
+        return res.redirect('/tienda');
+    }
+    try {
+        const ids = carrito.map(item => item.productoId);
+        const productos = await prisma.producto.findMany({ where: { id: { in: ids } } });
+
+        let total = 0;
+        const items = carrito.map(item => {
+            const producto = productos.find(p => p.id === item.productoId);
+            const subtotal = producto ? Number(producto.precio) * item.cantidad : 0;
+            total += subtotal;
+            return { ...item, producto, subtotal };
+        }).filter(item => item.producto);
+
+        const { direccion } = req.body;
+
+        res.render('tienda/pago', {
+            title: 'Pago seguro | CB Granollers',
+            items,
+            total: total.toFixed(2),
+            direccion: direccion || '',
+        });
+    } catch (error) {
+        console.error('Error en mock pago:', error);
+        req.flash('error', 'Error al cargar el pago.');
+        res.redirect('/tienda/checkout');
+    }
+};
+
+// ─── Procesar pago y guardar pedido ──────────────────────────────────────────
+exports.procesarPago = async (req, res) => {
     const carrito = req.session.carrito || [];
     const personaId = req.session.usuario.id;
 
@@ -212,12 +222,12 @@ exports.confirmarCompra = async (req, res) => {
         let total = 0;
         const items = carrito.map(item => {
             const producto = productos.find(p => p.id === item.productoId);
-            const precio = producto ? parseFloat(producto.precio) : 0;
+            const precio = producto ? Number(producto.precio) : 0;
             total += precio * item.cantidad;
             return { productoId: item.productoId, cantidad: item.cantidad, precioUnit: precio };
         });
 
-        // Crear la compra en una transacción
+        // Crear compra + líneas en transacción atómica
         const compra = await prisma.$transaction(async (tx) => {
             const nuevaCompra = await tx.compra.create({
                 data: {
@@ -229,55 +239,51 @@ exports.confirmarCompra = async (req, res) => {
                             productoId: item.productoId,
                             cantidad: item.cantidad,
                             precioUnit: item.precioUnit,
-                        }))
-                    }
+                        })),
+                    },
                 },
-                include: { CompraProducto: { include: { producto: true } } }
+                include: { CompraProducto: { include: { producto: true } } },
             });
 
             // Descontar stock
             for (const item of items) {
                 await tx.producto.update({
                     where: { id: item.productoId },
-                    data: { stock: { decrement: item.cantidad } }
+                    data: { stock: { decrement: item.cantidad } },
                 });
             }
-
             return nuevaCompra;
         });
 
-        // Limpiar carrito
+        // Limpiar carrito de sesión
         req.session.carrito = [];
-
-        req.flash('exito', `¡Compra realizada con éxito! Número de pedido: #${compra.id}`);
+        req.flash('exito', `¡Pedido #${compra.id.substring(0, 8).toUpperCase()} realizado con éxito!`);
         res.redirect(`/tienda/compra/${compra.id}`);
 
     } catch (error) {
-        console.error('Error al confirmar compra:', error);
-        req.flash('error', 'Error al procesar la compra. Inténtalo de nuevo.');
-        res.redirect('/tienda/carrito');
+        console.error('Error al procesar pago:', error);
+        req.flash('error', 'Error al procesar el pago. Inténtalo de nuevo.');
+        res.redirect('/tienda/checkout');
     }
 };
 
-// ─── Confirmación de compra ────────────────────────────────────────────────────
+// ─── Confirmación de compra ───────────────────────────────────────────────────
 exports.showCompra = async (req, res) => {
     const { id } = req.params;
     try {
         const compra = await prisma.compra.findUnique({
-            where: { id: id, personaId: req.session.usuario.id },
+            where: { id, personaId: req.session.usuario.id },
             include: {
                 CompraProducto: { include: { producto: true } },
-                persona: { select: { nombre: true, apellidos: true, email: true } }
-            }
+                persona: { select: { nombre: true, apellidos: true, email: true } },
+            },
         });
-
         if (!compra) {
-            req.flash('error', 'Compra no encontrada.');
+            req.flash('error', 'Pedido no encontrado.');
             return res.redirect('/auth/perfil');
         }
-
         res.render('tienda/confirmacion', {
-            title: `Pedido #${compra.id} | CB Granollers`,
+            title: `Pedido confirmado | CB Granollers`,
             compra,
         });
     } catch (error) {

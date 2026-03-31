@@ -95,7 +95,7 @@
                       <%= c.CompraProducto.map(cp => cp.producto ? cp.producto.nombre : '?').join(', ').substring(0,50) + (c.CompraProducto.length > 1 ? '…' : '') %>
                     <% } %>
                   </td>
-                  <td><strong><%= c.total ? c.total.toFixed(2) + ' €' : '–' %></strong></td>
+                  <td><strong><%= c.total ? Number(c.total).toFixed(2) + ' €' : '–' %></strong></td>
                   <td>
                     <span class="badge <%= c.estado === 'COMPLETADA' ? 'badge-success' : c.estado === 'CANCELADA' ? 'badge-danger' : 'badge-warning' %>">
                       <%= c.estado %>

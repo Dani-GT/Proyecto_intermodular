@@ -4,7 +4,6 @@ const prisma = require('../lib/prisma');
 exports.showForm = async (req, res) => {
     try {
         const categorias = await prisma.categoria.findMany({
-            where: { activa: true },
             orderBy: { nombre: 'asc' }
         });
 
@@ -25,12 +24,14 @@ exports.inscribir = async (req, res) => {
     const personaId = req.session.usuario.id;
 
     try {
+        const temporadaFinal = temporada || '2025-2026';
+
         // Verificar si ya está inscrito en esa categoría y temporada
         const inscripcionExistente = await prisma.inscripcion.findFirst({
             where: {
                 personaId,
                 categoriaId: parseInt(categoriaId),
-                temporada: temporada || '2025-2026',
+                temporada: temporadaFinal,
             }
         });
 
@@ -43,7 +44,7 @@ exports.inscribir = async (req, res) => {
             data: {
                 personaId,
                 categoriaId: parseInt(categoriaId),
-                temporada: temporada || '2025-2026',
+                temporada: temporadaFinal,
                 notas: notas || null,
                 estado: 'PENDIENTE',
             }

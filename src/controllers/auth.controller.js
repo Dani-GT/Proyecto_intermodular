@@ -156,6 +156,8 @@ exports.showPerfil = async (req, res) => {
         res.render('auth/perfil', {
             title: 'Mi Perfil | CB Granollers',
             persona,
+            inscripciones: persona ? persona.inscripciones : [],
+            compras: persona ? persona.compras : [],
         });
     } catch (error) {
         console.error('Error al cargar perfil:', error);

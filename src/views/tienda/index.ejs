@@ -68,7 +68,7 @@
                     <p class="product-cat"><%= producto.categoria %></p>
                     <h3 class="product-name"><%= producto.nombre %></h3>
                     <div class="product-price-row">
-                      <span class="product-price"><%= producto.precio.toFixed(2) %> €</span>
+                      <span class="product-price"><%= Number(producto.precio).toFixed(2) %> €</span>
                       <% if (producto.stock > 0) { %>
                         <form action="/tienda/carrito/agregar" method="POST" onclick="event.stopPropagation()">
                           <input type="hidden" name="productoId" value="<%= producto.id %>">

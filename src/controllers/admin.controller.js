@@ -190,7 +190,7 @@ exports.updateProducto = async (req, res) => {
 exports.noticias = async (req, res) => {
     try {
         const noticias = await prisma.noticia.findMany({
-            include: { autor: { select: { nombre: true } } },
+            // autor es campo String, sin include
             orderBy: { createdAt: 'desc' }
         });
 
@@ -215,8 +215,8 @@ exports.createNoticia = async (req, res) => {
                 titulo,
                 contenido,
                 imagen: imagen || null,
-                publicada: publicada === 'true',
-                autorId: req.session.usuario.id,
+                destacada: publicada === 'true',
+                autor: req.session.usuario.nombre || 'Admin',
             }
         });
 
@@ -237,7 +237,7 @@ exports.partidos = async (req, res) => {
                 include: { categoria: true },
                 orderBy: { fecha: 'desc' }
             }),
-            prisma.categoria.findMany({ where: { activa: true } })
+            prisma.categoria.findMany({ orderBy: { nombre: 'asc' } })
         ]);
 
         res.render('admin/partidos', {

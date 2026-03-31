@@ -4,9 +4,7 @@ const prisma = require('../lib/prisma');
 exports.index = async (req, res) => {
     try {
         const noticias = await prisma.noticia.findMany({
-            where: { publicada: true },
-            orderBy: { createdAt: 'desc' },
-            include: { autor: { select: { nombre: true, apellidos: true } } }
+            orderBy: { publicadoEn: 'desc' },
         });
 
         res.render('noticias/index', {
@@ -25,8 +23,7 @@ exports.show = async (req, res) => {
     const { id } = req.params;
     try {
         const noticia = await prisma.noticia.findUnique({
-            where: { id: parseInt(id), publicada: true },
-            include: { autor: { select: { nombre: true, apellidos: true } } }
+            where: { id: parseInt(id) },
         });
 
         if (!noticia) {
@@ -35,8 +32,8 @@ exports.show = async (req, res) => {
         }
 
         const relacionadas = await prisma.noticia.findMany({
-            where: { publicada: true, id: { not: noticia.id } },
-            orderBy: { createdAt: 'desc' },
+            where: { id: { not: noticia.id } },
+            orderBy: { publicadoEn: 'desc' },
             take: 3,
         });
 

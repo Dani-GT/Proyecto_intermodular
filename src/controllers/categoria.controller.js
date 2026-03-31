@@ -4,7 +4,7 @@ const prisma = require('../lib/prisma');
 exports.index = async (req, res) => {
     try {
         const categorias = await prisma.categoria.findMany({
-            where: { activa: true },
+            orderBy: { nombre: 'asc' },
             include: {
                 _count: { select: { inscripciones: true } }
             },

@@ -68,7 +68,7 @@
                   <tr class="<%= p.stock === 0 ? 'row-disabled' : '' %>">
                     <td><strong><%= p.nombre %></strong><br><span style="font-size:.78rem;color:var(--text3)"><%= p.descripcion ? p.descripcion.substring(0,60) + '…' : '' %></span></td>
                     <td><span class="badge badge-neutral badge-sm"><%= p.categoria %></span></td>
-                    <td><strong><%= p.precio.toFixed(2) %> €</strong></td>
+                    <td><strong><%= Number(p.precio).toFixed(2) %> €</strong></td>
                     <td>
                       <span class="badge <%= p.stock === 0 ? 'badge-danger' : p.stock < 5 ? 'badge-warning' : 'badge-success' %> badge-sm">
                         <%= p.stock === 0 ? 'Agotado' : p.stock + ' uds.' %>
