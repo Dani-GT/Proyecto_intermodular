@@ -5,19 +5,16 @@ exports.renderHome = async (req, res) => {
     try {
         const [noticias, proximosPartidos, categorias] = await Promise.all([
             prisma.noticia.findMany({
-                where: { publicada: true },
-                orderBy: { createdAt: 'desc' },
+                orderBy: { publicadoEn: 'desc' },
                 take: 3,
-                include: { autor: { select: { nombre: true } } }
             }),
             prisma.partido.findMany({
-                where: { fecha: { gte: new Date() }, finalizado: false },
+                where: { fecha: { gte: new Date() } },
                 orderBy: { fecha: 'asc' },
                 take: 3,
                 include: { categoria: true }
             }),
             prisma.categoria.findMany({
-                where: { activa: true },
                 orderBy: { nombre: 'asc' }
             })
         ]);

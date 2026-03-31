@@ -149,7 +149,7 @@ exports.showPerfil = async (req, res) => {
             include: {
                 rol: true,
                 inscripciones: { include: { categoria: true } },
-                compras: { include: { items: { include: { producto: true } } } },
+                compras: { include: { CompraProducto: { include: { producto: true } } } },
             }
         });
 
