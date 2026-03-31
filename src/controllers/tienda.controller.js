@@ -4,7 +4,7 @@ const prisma = require('../lib/prisma');
 exports.index = async (req, res) => {
     const { categoria } = req.query;
     try {
-        const where = { activo: true };
+        const where = {};
         if (categoria) where.categoria = categoria;
 
         const [productos, totalProductos] = await Promise.all([
@@ -12,7 +12,7 @@ exports.index = async (req, res) => {
                 where,
                 orderBy: { nombre: 'asc' }
             }),
-            prisma.producto.count({ where: { activo: true } })
+            prisma.producto.count({ where: {} })
         ]);
 
         res.render('tienda/index', {
@@ -20,7 +20,7 @@ exports.index = async (req, res) => {
             productos,
             totalProductos,
             categoriaFiltro: categoria || null,
-            categorias: ['UNIFORME', 'EQUIPAMIENTO', 'ACCESORIO', 'OTRO'],
+            categorias: ['ROPA', 'EQUIPAMIENTO', 'MERCHANDISING'],
         });
     } catch (error) {
         console.error('Error al cargar tienda:', error);
@@ -34,7 +34,7 @@ exports.show = async (req, res) => {
     const { id } = req.params;
     try {
         const producto = await prisma.producto.findUnique({
-            where: { id: parseInt(id), activo: true }
+            where: { id: parseInt(id) }
         });
 
         if (!producto) {
@@ -44,7 +44,7 @@ exports.show = async (req, res) => {
 
         // Productos relacionados
         const relacionados = await prisma.producto.findMany({
-            where: { categoria: producto.categoria, activo: true, id: { not: producto.id } },
+            where: { categoria: producto.categoria, id: { not: producto.id } },
             take: 4,
         });
 
@@ -98,7 +98,7 @@ exports.addToCart = async (req, res) => {
 
     try {
         const producto = await prisma.producto.findUnique({
-            where: { id: parseInt(productoId), activo: true }
+            where: { id: parseInt(productoId) }
         });
 
         if (!producto || producto.stock < qty) {
@@ -224,7 +224,7 @@ exports.confirmarCompra = async (req, res) => {
                     personaId,
                     total,
                     estado: 'PAGADA',
-                    items: {
+                    CompraProducto: {
                         create: items.map(item => ({
                             productoId: item.productoId,
                             cantidad: item.cantidad,
@@ -232,7 +232,7 @@ exports.confirmarCompra = async (req, res) => {
                         }))
                     }
                 },
-                include: { items: { include: { producto: true } } }
+                include: { CompraProducto: { include: { producto: true } } }
             });
 
             // Descontar stock
@@ -264,9 +264,9 @@ exports.showCompra = async (req, res) => {
     const { id } = req.params;
     try {
         const compra = await prisma.compra.findUnique({
-            where: { id: parseInt(id), personaId: req.session.usuario.id },
+            where: { id: id, personaId: req.session.usuario.id },
             include: {
-                items: { include: { producto: true } },
+                CompraProducto: { include: { producto: true } },
                 persona: { select: { nombre: true, apellidos: true, email: true } }
             }
         });
