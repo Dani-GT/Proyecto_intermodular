@@ -37,15 +37,15 @@ enum EstadoInscripcion {
 enum EstadoCompra {
   PENDIENTE
   PAGADA
+  COMPLETADA
   CANCELADA
   ENVIADA
 }
 
 enum CategoriaProducto {
-  UNIFORME
+  ROPA
   EQUIPAMIENTO
-  ACCESORIO
-  OTRO
+  MERCHANDISING
 }
 
 // ─── MODELOS ─────────────────────────────────────────────────────────────────
@@ -62,30 +62,11 @@ model Persona {
   updatedAt       DateTime      @updatedAt
 
   // Relaciones
-  rol             Rol?
-  compras         Compra[]
-  inscripciones   Inscripcion[]
-  noticias        Noticia[]
-  tutor           MadrePadre?   @relation("TutorDePersona")
-  tutorId         Int?
-  tutorLegal      MadrePadre?   @relation("PersonaTutorLegal", fields: [tutorId], references: [id])
+  rol           Rol?
+  compras       Compra[]
+  inscripciones Inscripcion[]
 
   @@map("personas")
-}
-
-model MadrePadre {
-  id        Int      @id @default(autoincrement())
-  nombre    String   @db.VarChar(100)
-  apellidos String   @db.VarChar(100)
-  email     String   @db.VarChar(255)
-  telefono  String   @db.VarChar(20)
-  createdAt DateTime @default(now())
-
-  // Relaciones
-  hijos     Persona[] @relation("PersonaTutorLegal")
-  persona   Persona?  @relation("TutorDePersona")
-
-  @@map("madres_padres")
 }
 
 model Rol {
@@ -94,21 +75,19 @@ model Rol {
   personaId Int      @unique
   createdAt DateTime @default(now())
 
-  // Relaciones
-  persona   Persona  @relation(fields: [personaId], references: [id], onDelete: Cascade)
+  persona Persona @relation(fields: [personaId], references: [id], onDelete: Cascade)
 
   @@map("roles")
 }
 
 model Categoria {
-  id          Int             @id @default(autoincrement())
-  nombre      NombreCategoria @unique
-  descripcion String?         @db.Text
-  edadMin     Int?
-  edadMax     Int?
-  activa      Boolean         @default(true)
+  id                   Int             @id @default(autoincrement())
+  nombre               NombreCategoria @unique
+  descripcion          String?         @db.Text
+  entrenador           String?         @db.VarChar(100)
+  horarioEntrenamiento String?         @db.VarChar(200)
+  createdAt            DateTime        @default(now())
 
-  // Relaciones
   inscripciones Inscripcion[]
   partidos      Partido[]
 
@@ -116,18 +95,17 @@ model Categoria {
 }
 
 model Inscripcion {
-  id           Int               @id @default(autoincrement())
-  personaId    Int
-  categoriaId  Int
-  estado       EstadoInscripcion @default(PENDIENTE)
-  temporada    String            @db.VarChar(10) // Ej: "2025-2026"
-  notas        String?           @db.Text
-  createdAt    DateTime          @default(now())
-  updatedAt    DateTime          @updatedAt
+  id          Int               @id @default(autoincrement())
+  personaId   Int
+  categoriaId Int
+  estado      EstadoInscripcion @default(PENDIENTE)
+  temporada   String            @db.VarChar(10)
+  notas       String?           @db.Text
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
 
-  // Relaciones
-  persona      Persona           @relation(fields: [personaId], references: [id], onDelete: Cascade)
-  categoria    Categoria         @relation(fields: [categoriaId], references: [id])
+  persona   Persona   @relation(fields: [personaId], references: [id], onDelete: Cascade)
+  categoria Categoria @relation(fields: [categoriaId], references: [id])
 
   @@unique([personaId, categoriaId, temporada])
   @@map("inscripciones")
@@ -137,79 +115,72 @@ model Partido {
   id          Int       @id @default(autoincrement())
   rival       String    @db.VarChar(100)
   fecha       DateTime
-  lugar       String    @db.VarChar(200)
+  campo       String?   @db.VarChar(200)
   esLocal     Boolean   @default(true)
-  golesFavor  Int?
-  golesContra Int?
-  finalizado  Boolean   @default(false)
+  resultado   String?   @db.VarChar(20)
+  descripcion String?   @db.Text
   categoriaId Int
   createdAt   DateTime  @default(now())
 
-  // Relaciones
-  categoria   Categoria @relation(fields: [categoriaId], references: [id])
+  categoria Categoria @relation(fields: [categoriaId], references: [id])
 
   @@map("partidos")
 }
 
 model Noticia {
   id          Int      @id @default(autoincrement())
-  titulo      String   @db.VarChar(255)
+  titulo      String   @unique @db.VarChar(255)
+  resumen     String?  @db.VarChar(500)
   contenido   String   @db.Text
   imagen      String?  @db.VarChar(500)
-  publicada   Boolean  @default(false)
-  autorId     Int
+  autor       String?  @db.VarChar(100)
+  publicadoEn DateTime @default(now())
+  destacada   Boolean  @default(false)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-
-  // Relaciones
-  autor       Persona  @relation(fields: [autorId], references: [id])
 
   @@map("noticias")
 }
 
 model Producto {
   id          Int               @id @default(autoincrement())
-  nombre      String            @db.VarChar(255)
+  nombre      String            @unique @db.VarChar(255)
   descripcion String?           @db.Text
   precio      Decimal           @db.Decimal(10, 2)
   stock       Int               @default(0)
   imagen      String?           @db.VarChar(500)
-  categoria   CategoriaProducto @default(OTRO)
-  activo      Boolean           @default(true)
+  categoria   CategoriaProducto @default(MERCHANDISING)
   createdAt   DateTime          @default(now())
   updatedAt   DateTime          @updatedAt
 
-  // Relaciones
-  compraItems CompraProducto[]
+  CompraProducto CompraProducto[]
 
   @@map("productos")
 }
 
 model Compra {
-  id        Int          @id @default(autoincrement())
+  id        String       @id @default(uuid())
   personaId Int
   total     Decimal      @db.Decimal(10, 2)
   estado    EstadoCompra @default(PENDIENTE)
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
 
-  // Relaciones
-  persona   Persona        @relation(fields: [personaId], references: [id])
-  items     CompraProducto[]
+  persona        Persona          @relation(fields: [personaId], references: [id])
+  CompraProducto CompraProducto[]
 
   @@map("compras")
 }
 
 model CompraProducto {
   id         Int     @id @default(autoincrement())
-  compraId   Int
+  compraId   String
   productoId Int
   cantidad   Int     @default(1)
   precioUnit Decimal @db.Decimal(10, 2)
 
-  // Relaciones
-  compra     Compra   @relation(fields: [compraId], references: [id], onDelete: Cascade)
-  producto   Producto @relation(fields: [productoId], references: [id])
+  compra   Compra   @relation(fields: [compraId], references: [id], onDelete: Cascade)
+  producto Producto @relation(fields: [productoId], references: [id])
 
   @@map("compra_productos")
 }
