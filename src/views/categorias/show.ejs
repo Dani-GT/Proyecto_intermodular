@@ -52,14 +52,14 @@
           </div>
         </div>
 
-        <!-- Próximos partidos -->
+        <!-- Proximos partidos -->
         <div class="section-header">
           <h2 style="font-size:1.2rem">Próximos partidos</h2>
           <a href="/categorias/<%= categoria.nombre.toLowerCase() %>/calendario" class="btn btn-ghost btn-sm">Ver calendario →</a>
         </div>
         <div class="match-list">
-          <% if (typeof partidos !== 'undefined' && partidos && partidos.filter(p => !p.resultado).length > 0) { %>
-            <% partidos.filter(p => !p.resultado).slice(0,4).forEach(function(p) { %>
+          <% if (typeof proximosPartidos !== 'undefined' && proximosPartidos.length > 0) { %>
+            <% proximosPartidos.forEach(function(p) { %>
               <% const fecha = new Date(p.fecha); %>
               <div class="match-item">
                 <div class="match-date-box">
@@ -68,7 +68,7 @@
                 </div>
                 <div class="match-info">
                   <div class="match-vs">CB Granollers <small>vs</small> <%= p.rival %></div>
-                  <div class="match-meta"><%= p.esLocal ? '🏠 Local' : '✈️ Visitante' %> · <%= fecha.toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit'}) %></div>
+                  <div class="match-meta"><%= p.esLocal ? '🏠 Local' : '✈️ Visitante' %> · <%= fecha.toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit'}) %> · <%= p.campo || '' %></div>
                 </div>
               </div>
             <% }) %>
@@ -124,8 +124,8 @@
           <a href="/categorias/<%= categoria.nombre.toLowerCase() %>/resultados" class="btn btn-ghost btn-sm">Ver todos →</a>
         </div>
         <div class="results-grid">
-          <% if (typeof partidos !== 'undefined' && partidos && partidos.filter(p => p.resultado).length > 0) { %>
-            <% partidos.filter(p => p.resultado).slice(0,3).forEach(function(p) { %>
+          <% if (typeof ultimosResultados !== 'undefined' && ultimosResultados.length > 0) { %>
+            <% ultimosResultados.slice(0,3).forEach(function(p) { %>
               <% const partes = p.resultado.split('-'); %>
               <% const pL = parseInt(partes[0]); const pV = parseInt(partes[1]); %>
               <% const gano = (p.esLocal && pL > pV) || (!p.esLocal && pV > pL); %>

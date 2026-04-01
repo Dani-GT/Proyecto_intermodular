@@ -9,19 +9,20 @@
       <a href="/categorias">Categorías</a><span class="breadcrumb-sep">›</span>
       <span>Resultados</span>
     </div>
-    <h1 class="page-header-title">Resultados</h1>
-    <p class="page-header-desc">Consulta los últimos resultados de todos los equipos del club.</p>
+    <h1 class="page-header-title">Resultados<%= (typeof categoriaFiltro !== 'undefined' && categoriaFiltro) ? ' — ' + categoriaFiltro.nombre : '' %></h1>
+    <p class="page-header-desc">Consulta los últimos resultados <%= (typeof categoriaFiltro !== 'undefined' && categoriaFiltro) ? 'del equipo ' + categoriaFiltro.nombre : 'de todos los equipos del club' %>.</p>
   </div>
 </div>
 
 <main>
   <div class="container section-py">
     <!-- Tabs por categoría -->
+    <% const filtroActivo = (typeof categoriaFiltro !== 'undefined' && categoriaFiltro) ? categoriaFiltro.nombre : 'TODAS'; %>
     <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:2rem">
-      <button class="btn btn-primary btn-sm" onclick="filtrarCat('TODAS')" id="btn-TODAS">Todas</button>
+      <a href="/categorias/resultados" class="btn <%= filtroActivo === 'TODAS' ? 'btn-primary' : 'btn-outline' %> btn-sm">Todas</a>
       <% const catNames = ['SUB10','SUB12','SUB14','SUB16','SUB18','SENIOR']; %>
       <% catNames.forEach(function(c) { %>
-        <button class="btn btn-outline btn-sm" onclick="filtrarCat('<%= c %>')" id="btn-<%= c %>"><%= c %></button>
+        <a href="/categorias/<%= c.toLowerCase() %>/resultados" class="btn <%= filtroActivo === c ? 'btn-primary' : 'btn-outline' %> btn-sm"><%= c %></a>
       <% }) %>
     </div>
 

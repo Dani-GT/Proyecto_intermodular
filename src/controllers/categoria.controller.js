@@ -34,7 +34,6 @@ exports.show = async (req, res) => {
         const categoria = await prisma.categoria.findUnique({
             where: whereClause,
             include: {
-                partidos: { orderBy: { fecha: 'desc' }, take: 10 },
                 inscripciones: {
                     where: { estado: 'APROBADA' },
                     include: {
@@ -52,6 +51,20 @@ exports.show = async (req, res) => {
             return res.redirect('/categorias');
         }
 
+        // Cargar próximos partidos y resultados por separado
+        const [proximosPartidos, ultimosResultados] = await Promise.all([
+            prisma.partido.findMany({
+                where: { categoriaId: categoria.id, resultado: null, fecha: { gte: new Date() } },
+                orderBy: { fecha: 'asc' },
+                take: 5,
+            }),
+            prisma.partido.findMany({
+                where: { categoriaId: categoria.id, resultado: { not: null } },
+                orderBy: { fecha: 'desc' },
+                take: 5,
+            }),
+        ]);
+
         // Separar jugadores y técnicos
         const jugadores = categoria.inscripciones.filter(i =>
             i.persona.rol && (i.persona.rol.tipo === 'JUGADOR')
@@ -66,6 +79,8 @@ exports.show = async (req, res) => {
             inscripciones: categoria.inscripciones,
             jugadores,
             tecnicos,
+            proximosPartidos,
+            ultimosResultados,
         });
     } catch (error) {
         console.error('Error al cargar categoría:', error);
@@ -131,9 +146,10 @@ exports.calendarioCategoria = async (req, res) => {
             return res.redirect('/categorias');
         }
 
-        // Cargar TODOS los partidos para que los filtros funcionen
+        // Cargar solo partidos de esta categoría
         const partidos = await prisma.partido.findMany({
             where: {
+                categoriaId: categoria.id,
                 resultado: null,
                 fecha: { gte: new Date() }
             },
@@ -166,14 +182,15 @@ exports.resultadosCategoria = async (req, res) => {
             return res.redirect('/categorias');
         }
 
-        // Cargar TODOS los resultados para que los filtros funcionen
+        // Cargar solo resultados de esta categoría
         const partidos = await prisma.partido.findMany({
             where: {
+                categoriaId: categoria.id,
                 resultado: { not: null }
             },
             orderBy: { fecha: 'desc' },
             include: { categoria: true },
-            take: 50,
+            take: 30,
         });
 
         res.render('categorias/resultados', {

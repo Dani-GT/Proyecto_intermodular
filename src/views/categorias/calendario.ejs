@@ -9,19 +9,20 @@
       <a href="/categorias">Categorías</a><span class="breadcrumb-sep">›</span>
       <span>Calendario</span>
     </div>
-    <h1 class="page-header-title">Calendario de partidos</h1>
-    <p class="page-header-desc">Consulta los próximos partidos de todos los equipos del club.</p>
+    <h1 class="page-header-title">Calendario de partidos<%= (typeof categoriaFiltro !== 'undefined' && categoriaFiltro) ? ' — ' + categoriaFiltro.nombre : '' %></h1>
+    <p class="page-header-desc">Consulta los próximos partidos <%= (typeof categoriaFiltro !== 'undefined' && categoriaFiltro) ? 'del equipo ' + categoriaFiltro.nombre : 'de todos los equipos del club' %>.</p>
   </div>
 </div>
 
 <main>
   <div class="container section-py">
     <!-- Filtros -->
+    <% const filtroActivo = (typeof categoriaFiltro !== 'undefined' && categoriaFiltro) ? categoriaFiltro.nombre : 'TODAS'; %>
     <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:2rem">
-      <button class="btn btn-primary btn-sm" onclick="filtrarCal('TODAS')" id="cal-TODAS">Todos</button>
+      <a href="/categorias/calendario" class="btn <%= filtroActivo === 'TODAS' ? 'btn-primary' : 'btn-outline' %> btn-sm" id="cal-TODAS">Todos</a>
       <% const catNames = ['SUB10','SUB12','SUB14','SUB16','SUB18','SENIOR']; %>
       <% catNames.forEach(function(c) { %>
-        <button class="btn btn-outline btn-sm" onclick="filtrarCal('<%= c %>')" id="cal-<%= c %>"><%= c %></button>
+        <a href="/categorias/<%= c.toLowerCase() %>/calendario" class="btn <%= filtroActivo === c ? 'btn-primary' : 'btn-outline' %> btn-sm" id="cal-<%= c %>"><%= c %></a>
       <% }) %>
     </div>
 
