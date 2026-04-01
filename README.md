@@ -1,34 +1,153 @@
-# ⚾ CB Granollers — Web Oficial
+# ⚾ Club Béisbol Granollers — Web Oficial
 
-Proyecto web del Club Béisbol Granollers, desarrollado como Proyecto Intermodular del CFGS DAW.
+[Ver en producción](https://proyecto-intermodular-nf0w.onrender.com/)
+> Proyecto Intermodular · CFGS Desarrollo de Aplicaciones Web · 2025-2026  
+> Desarrollado por **Daniel Galán Tavares**
 
-**Stack:** Node.js · Express · EJS · Prisma ORM · PostgreSQL (Supabase) · Despliegue en Render
+
+Aplicación web completa para el Club Béisbol Granollers. Permite a los socios consultar información del club, inscribirse en categorías, comprar en la tienda y mantenerse al día con las noticias y el calendario de partidos. El club puede gestionar todo desde un panel de administración.
 
 ---
 
-## Tabla de contenidos
+## Índice
 
-- [Requisitos previos](#requisitos-previos)
-- [Instalación local](#instalación-local)
-- [Configurar Supabase (base de datos)](#configurar-supabase)
-- [Ejecutar en local](#ejecutar-en-local)
-- [Desplegar en Render](#desplegar-en-render)
-- [Scripts disponibles](#scripts-disponibles)
-- [Credenciales de prueba](#credenciales-de-prueba)
+- [Tecnologías utilizadas](#tecnologías-utilizadas)
+- [Funcionalidades](#funcionalidades)
 - [Estructura del proyecto](#estructura-del-proyecto)
+- [Instalación en local](#instalación-en-local)
+- [Variables de entorno](#variables-de-entorno)
+- [Base de datos (Supabase)](#base-de-datos-supabase)
+- [Despliegue en Render](#despliegue-en-render)
+- [Scripts disponibles](#scripts-disponibles)
+- [Usuarios de prueba](#usuarios-de-prueba)
+- [Modelo de datos](#modelo-de-datos-resumen)
 
 ---
 
-## Requisitos previos
+## Tecnologías utilizadas
+
+| Capa | Tecnología |
+|------|-----------|
+| Servidor | Node.js + Express |
+| Vistas | EJS (Embedded JavaScript Templates) |
+| ORM | Prisma v5 |
+| Base de datos | PostgreSQL (alojada en Supabase) |
+| Autenticación | express-session + bcryptjs |
+| Subida de ficheros | Multer |
+| Despliegue | Render |
+
+El proyecto sigue una arquitectura **MVC** (Modelo–Vista–Controlador):
+- Los **modelos** los define Prisma en `schema.prisma`
+- Los **controladores** contienen toda la lógica de negocio
+- Las **vistas** son plantillas EJS con partials reutilizables (navbar, footer, flash...)
+
+---
+
+## Funcionalidades
+
+### Usuarios y acceso
+- Registro e inicio de sesión con contraseñas hasheadas con bcrypt
+- Cuatro roles: `SOCIO`, `JUGADOR`, `TÉCNICO` y `ADMIN`
+- Cada usuario solo puede ver y editar sus propios datos desde su perfil
+- Rutas protegidas según rol (middleware `requireAuth` y `requireAdmin`)
+
+### Inscripciones
+- Formulario de inscripción a categorías (Sub10, Sub12, Sub14, Sub16, Sub18, Sénior)
+- El usuario elige si quiere inscribirse como **jugador** o como **técnico**
+- Si el inscrito es **menor de edad**, se exigen los datos del padre/madre o tutor legal (nombre, apellidos y DNI)
+- No se puede enviar una nueva solicitud si ya hay una `PENDIENTE` o `APROBADA`
+- Al aprobar una solicitud desde el panel admin, el rol del usuario cambia automáticamente de `SOCIO` a `JUGADOR` o `TÉCNICO`
+- Al rechazar, el rol vuelve a `SOCIO`
+
+### Categorías
+- Página propia para cada categoría con el cuerpo técnico y la plantilla de jugadores
+- Calendario de próximos partidos y últimos resultados por categoría
+- Filtro por categoría en las páginas de calendario y resultados globales
+
+### Tienda
+- Catálogo de productos con filtros por categoría
+- Carrito gestionado en sesión
+- Proceso de compra simulado: carrito → datos de envío → pago → confirmación
+
+### Noticias
+- Listado con noticia destacada, grid de noticias y sidebar de recientes
+- Página de detalle de cada noticia
+
+### Panel de administración (`/admin`)
+- **Dashboard** con estadísticas generales
+- **Usuarios**: listado, cambio de rol y eliminación
+- **Inscripciones**: listado con rol solicitado, datos del tutor legal si aplica, y cambio de estado
+- **Jugadores y técnicos**: creación directa desde el panel sin pasar por el proceso de inscripción
+- **Productos**: alta, edición y gestión de stock, con subida de imagen directa
+- **Noticias**: alta y edición con subida de imagen directa
+- **Partidos**: creación y registro de resultados por categoría
+
+---
+
+## Estructura del proyecto
+
+```
+Proyecto_intermodular/
+├── app.js                        # Punto de entrada de Express
+├── package.json
+├── render.yaml                   # Configuración del despliegue en Render
+├── prisma/
+│   ├── schema.prisma             # Modelos y relaciones de la BD
+│   ├── seed.js                   # Datos de prueba
+│   └── migrations/               # Historial de migraciones
+└── src/
+    ├── controllers/
+    │   ├── admin.controller.js
+    │   ├── auth.controller.js
+    │   ├── categoria.controller.js
+    │   ├── index.controller.js
+    │   ├── inscripcion.controller.js
+    │   ├── noticia.controller.js
+    │   └── tienda.controller.js
+    ├── middleware/
+    │   ├── auth.middleware.js     # requireAuth, requireAdmin, redirectIfAuth
+    │   └── upload.middleware.js   # Multer para imágenes de noticias y productos
+    ├── routes/
+    │   ├── admin.routes.js
+    │   ├── auth.routes.js
+    │   ├── categoria.routes.js
+    │   ├── index.routes.js
+    │   ├── inscripcion.routes.js
+    │   ├── noticia.routes.js
+    │   └── tienda.routes.js
+    ├── lib/
+    │   └── prisma.js             # Instancia singleton del cliente Prisma
+    ├── views/
+    │   ├── partials/             # head.ejs, navbar.ejs, footer.ejs, flash.ejs
+    │   ├── admin/                # dashboard, usuarios, inscripciones, productos, noticias, partidos
+    │   ├── auth/                 # login.ejs, registro.ejs, perfil.ejs
+    │   ├── categorias/           # index, show, calendario, resultados
+    │   ├── inscripcion/          # form.ejs, mis-inscripciones.ejs
+    │   ├── noticias/             # index.ejs, show.ejs
+    │   ├── tienda/               # index, producto, carrito, checkout, pago, confirmacion
+    │   ├── index.ejs
+    │   ├── club.ejs
+    │   ├── contacto.ejs
+    │   └── 404.ejs
+    └── public/
+        ├── css/style.css
+        ├── js/main.js
+        └── images/
+            ├── noticias/         # Imágenes subidas para noticias
+            └── productos/        # Imágenes subidas para productos
+```
+
+---
+
+## Instalación en local
+
+### Requisitos previos
 
 - [Node.js](https://nodejs.org/) v18 o superior
-- Una cuenta en [Supabase](https://supabase.com) (gratuita)
-- Una cuenta en [Render](https://render.com) (gratuita)
+- Una cuenta gratuita en [Supabase](https://supabase.com)
 - Git
 
----
-
-## Instalación local
+### Pasos
 
 ```bash
 # 1. Clona el repositorio
@@ -38,127 +157,101 @@ cd Proyecto_intermodular
 # 2. Instala las dependencias
 npm install
 
-# 3. Crea el archivo .env a partir del ejemplo
+# 3. Crea el archivo de variables de entorno (ver sección siguiente)
 cp .env.example .env
 ```
 
-A continuación, rellena el archivo `.env` con tus valores reales (ver sección siguiente).
-
 ---
 
-## Configurar Supabase
+## Variables de entorno
 
-### 1. Crear el proyecto en Supabase
-
-1. Ve a [supabase.com](https://supabase.com) → **New project**
-2. Pon un nombre (ej. `cb-granollers`), elige una región (EU West) y una contraseña segura
-3. Espera a que el proyecto se inicialice (~1 min)
-
-### 2. Obtener la cadena de conexión
-
-1. En el panel de Supabase ve a **Settings** → **Database**
-2. Baja hasta **Connection string** → selecciona la pestaña **URI**
-3. Copia la URL; tiene este formato:
-   ```
-   postgresql://postgres:[YOUR-PASSWORD]@db.xxxxxxxxxxxx.supabase.co:5432/postgres
-   ```
-4. Sustituye `[YOUR-PASSWORD]` por la contraseña que elegiste al crear el proyecto
-
-### 3. Configurar el .env local
-
-Edita el archivo `.env`:
+Crea un archivo `.env` en la raíz del proyecto:
 
 ```env
-DATABASE_URL="postgresql://postgres:TU_PASSWORD@db.xxxxxxxxxxxx.supabase.co:5432/postgres"
-SESSION_SECRET="una-cadena-aleatoria-larga-y-segura"
+# URL de conexión a Supabase
+DATABASE_URL="postgresql://postgres:TU_PASSWORD@db.XXXXXXXXXX.supabase.co:5432/postgres"
+
+# Necesaria para migraciones con prisma migrate
+DIRECT_URL="postgresql://postgres:TU_PASSWORD@db.XXXXXXXXXX.supabase.co:5432/postgres"
+
+# Clave secreta para las sesiones (cualquier cadena larga)
+SESSION_SECRET="cambia-esto-por-algo-secreto"
+
 NODE_ENV="development"
 PORT=3000
 ```
 
-> **Tip:** Genera un SESSION_SECRET seguro con: `openssl rand -base64 32`
+> Para generar un SESSION_SECRET seguro:
+> ```bash
+> node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+> ```
 
-### 4. Aplicar el esquema y sembrar datos
+---
+
+## Base de datos (Supabase)
+
+### Crear el proyecto
+
+1. Entra en [supabase.com](https://supabase.com) → **New project**
+2. Elige un nombre, región (EU West recomendado) y contraseña
+3. Espera a que se inicialice
+
+### Obtener la URL de conexión
+
+Ve a **Settings → Database → Connection string**, copia la URI y pégala en el `.env` como `DATABASE_URL`. Recuerda sustituir `[YOUR-PASSWORD]` por tu contraseña.
+
+### Aplicar el esquema y cargar datos
 
 ```bash
-# Genera el cliente de Prisma
+# Genera el cliente de Prisma (obligatorio tras clonar)
 npm run db:generate
 
-# Aplica el esquema a la base de datos de Supabase
+# Sincroniza el esquema con la base de datos
 npm run db:push
 
-# (Opcional pero recomendado) Carga datos de prueba
+# Carga los datos de prueba
 npm run db:seed
 ```
-
-> **Nota sobre migraciones:** En desarrollo se usa `db:push` para sincronizar rápido.
-> En producción, Render ejecuta `prisma migrate deploy` usando las migraciones versionadas.
-> Si prefieres el flujo de migraciones en local, usa `npm run db:migrate` en lugar de `db:push`.
 
 ---
 
 ## Ejecutar en local
 
 ```bash
-# Modo desarrollo (con hot-reload gracias a nodemon)
+# Modo desarrollo (se reinicia solo al guardar cambios)
 npm run dev
 
 # Modo producción
 npm start
 ```
 
-La aplicación estará disponible en: [http://localhost:3000](http://localhost:3000)
+Abre el navegador en [http://localhost:3000](http://localhost:3000)
 
 ---
 
-## Desplegar en Render
+## Despliegue en Render
 
-### Opción A — Usando render.yaml (recomendado)
+El repositorio incluye un `render.yaml` que Render detecta automáticamente.
 
-El repositorio incluye un `render.yaml` con toda la configuración. Render lo detecta automáticamente.
-
-1. Ve a [render.com](https://render.com) → **New** → **Web Service**
+1. Ve a [render.com](https://render.com) → **New → Web Service**
 2. Conecta tu repositorio de GitHub
-3. Render detectará el `render.yaml` y preconfigurar todo
-4. Añade la variable de entorno **manualmente** en el dashboard de Render:
-   - `DATABASE_URL` → tu cadena de conexión de Supabase
-5. Haz clic en **Deploy**
+3. Render leerá el `render.yaml` y configurará el build solo
+4. En **Environment**, añade manualmente la variable `DATABASE_URL` con tu URL de Supabase
+5. El resto de variables ya están definidas en el `render.yaml`
 
-### Opción B — Configuración manual en Render
-
-Si prefieres configurar a mano:
-
-| Campo | Valor |
-|-------|-------|
-| **Environment** | Node |
-| **Build Command** | `npm install && npx prisma generate && npx prisma migrate deploy` |
-| **Start Command** | `node app.js` |
-
-Variables de entorno a añadir en Render → **Environment**:
-
-| Variable | Valor |
-|----------|-------|
-| `DATABASE_URL` | Tu URL de Supabase |
-| `SESSION_SECRET` | Una cadena aleatoria segura |
-| `NODE_ENV` | `production` |
-
-> **Importante:** `SESSION_SECRET` se puede generar automáticamente desde Render marcando "Generate Value".
-
-### Preparar migraciones para producción
-
-Antes del primer despliegue en Render, genera la migración inicial en local:
-
-```bash
-# Crea la migración inicial (necesita un .env con DATABASE_URL configurado)
-npm run db:migrate
-# Cuando pregunte el nombre, escribe algo como: init
-
-# Sube los cambios a GitHub incluyendo la carpeta prisma/migrations/
-git add prisma/migrations/
-git commit -m "chore: add initial migration"
-git push
+El comando de build configurado es:
+```
+npm install && npx prisma generate && npx prisma migrate deploy
 ```
 
-Render ejecutará `prisma migrate deploy` en cada despliegue para aplicar migraciones pendientes.
+> **Importante:** para que `prisma migrate deploy` funcione en Render necesitas subir la carpeta `prisma/migrations/` al repositorio. Si usas `db:push` en local, genera la migración inicial antes del primer despliegue:
+> ```bash
+> npm run db:migrate
+> # Escribe un nombre como "init" cuando lo pida
+> git add prisma/migrations/
+> git commit -m "add initial migration"
+> git push
+> ```
 
 ---
 
@@ -166,90 +259,50 @@ Render ejecutará `prisma migrate deploy` en cada despliegue para aplicar migrac
 
 | Script | Descripción |
 |--------|-------------|
-| `npm start` | Inicia el servidor en producción |
-| `npm run dev` | Inicia con nodemon (hot-reload) |
+| `npm start` | Arranca el servidor |
+| `npm run dev` | Arranca con nodemon (recarga automática) |
 | `npm run db:generate` | Genera el cliente de Prisma |
-| `npm run db:migrate` | Crea y aplica una nueva migración (dev) |
-| `npm run db:push` | Sincroniza el esquema sin migraciones (dev rápido) |
-| `npm run db:studio` | Abre Prisma Studio (interfaz visual de la BD) |
-| `npm run db:seed` | Carga datos de prueba en la base de datos |
+| `npm run db:push` | Sincroniza el schema con la BD sin crear migraciones (útil en desarrollo) |
+| `npm run db:migrate` | Crea y aplica una migración versionada |
+| `npm run db:studio` | Abre Prisma Studio (interfaz gráfica de la BD en el navegador) |
+| `npm run db:seed` | Puebla la base de datos con datos de prueba |
 
 ---
 
-## Credenciales de prueba
+## Usuarios de prueba
 
-Tras ejecutar `npm run db:seed`:
+Después de ejecutar `npm run db:seed` puedes entrar con estas cuentas:
 
 | Rol | Email | Contraseña |
 |-----|-------|------------|
-| **Admin** | admin@cbgranollers.cat | Admin1234! |
-| **Socio** | socio@ejemplo.com | User1234! |
-| **Jugador** | jugador@ejemplo.com | User1234! |
+| Admin | admin@cbgranollers.cat | Admin1234! |
+| Socio | socio@ejemplo.com | User1234! |
+| Jugador (Sub14) | jugador@ejemplo.com | User1234! |
 
 ---
 
-## Estructura del proyecto
+## Modelo de datos (resumen)
 
 ```
-Proyecto_intermodular/
-├── app.js                    # Punto de entrada, configuración de Express
-├── package.json
-├── render.yaml               # Configuración de despliegue en Render
-├── .env                      # Variables de entorno
-├── prisma/
-│   ├── schema.prisma         # Modelos de base de datos
-│   ├── seed.js               # Datos de prueba
-│   └── migrations/           # Migraciones versionadas
-└── src/
-    ├── controllers/          # Lógica de negocio
-    │   ├── auth.controller.js
-    │   ├── index.controller.js
-    │   ├── categoria.controller.js
-    │   ├── inscripcion.controller.js
-    │   ├── tienda.controller.js
-    │   ├── noticia.controller.js
-    │   └── admin.controller.js
-    ├── routes/               # Definición de rutas
-    │   ├── index.routes.js
-    │   ├── auth.routes.js
-    │   ├── categoria.routes.js
-    │   ├── inscripcion.routes.js
-    │   ├── tienda.routes.js
-    │   ├── noticia.routes.js
-    │   └── admin.routes.js
-    ├── middleware/
-    │   └── auth.middleware.js # requireAuth, requireAdmin, redirectIfAuth
-    ├── lib/
-    │   └── prisma.js         # Singleton del cliente Prisma
-    ├── views/                # Templates EJS
-    │   ├── partials/         # head, navbar, footer, flash
-    │   ├── auth/             # login, registro, perfil
-    │   ├── categorias/       # index, show, calendario, resultados
-    │   ├── tienda/           # index, producto, carrito, checkout, confirmacion
-    │   ├── noticias/         # index, show
-    │   ├── admin/            # dashboard, usuarios, inscripciones, productos, noticias, partidos
-    │   ├── index.ejs
-    │   ├── club.ejs
-    │   ├── contacto.ejs
-    │   └── 404.ejs
-    └── public/
-        ├── css/style.css     # Estilos globales
-        ├── js/main.js        # Scripts del cliente
-        └── images/           # Imágenes estáticas
+Persona ──< Rol
+        ──< Inscripcion ──< TutorLegal
+        ──< Compra ──< CompraProducto ──> Producto
+
+Categoria ──< Inscripcion
+          ──< Partido
 ```
 
+Los modelos principales son:
+
+- **Persona** — usuarios registrados
+- **Rol** — tipo de usuario (SOCIO, JUGADOR, TÉCNICO, ADMIN)
+- **Categoria** — Sub10 a Sénior
+- **Inscripcion** — solicitud de un usuario para unirse a una categoría, con estado (PENDIENTE / APROBADA / RECHAZADA)
+- **TutorLegal** — datos del tutor, obligatorios si el inscrito es menor de edad
+- **Partido** — partidos con rival, fecha, campo y resultado
+- **Noticia** — artículos del club
+- **Producto / Compra / CompraProducto** — tienda online
+
 ---
 
-## Funcionalidades principales
-
-- **Registro e inicio de sesión** con contraseñas hasheadas (bcrypt)
-- **Roles de usuario:** SOCIO, JUGADOR, TÉCNICO, ADMIN
-- **Inscripción a categorías** (Sub10 a Senior)
-- **Tienda online** con carrito en sesión y proceso de compra
-- **Noticias** del club
-- **Calendario y resultados** por categoría
-- **Panel de administración** — gestión de usuarios, inscripciones, productos, noticias y partidos
-
----
-
-*Desarrollado por Daniel Galán Tavares — CFGS DAW — Proyecto Intermodular 2026*
+*Proyecto realizado para el módulo de Proyecto Intermodular del CFGS DAW · Curso 2025-2026*
