@@ -113,6 +113,8 @@ input, textarea, select { font-family: var(--font-body); }
 .btn-danger:hover { background: #dc2626; color: #fff; }
 .btn-white    { background: #fff; color: var(--text-dark); border-color: #fff; }
 .btn-white:hover { background: #f1f5f9; color: var(--text-dark); }
+.btn-outline-white { background: transparent; color: #fff; border-color: #fff; }
+.btn-outline-white:hover { background: rgba(255, 255, 255, 0.1); color: #fff; }
 .btn-lg   { padding: .85rem 2rem; font-size: 1rem; border-radius: var(--radius); }
 .btn-sm   { padding: .3rem .85rem; font-size: .8rem; }
 .btn-full { width: 100%; }

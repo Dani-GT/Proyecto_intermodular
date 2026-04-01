@@ -1,77 +1,88 @@
 <%- include('../partials/head', { title: 'Inscripción' }) %>
-<%- include('../partials/navbar') %>
-<%- include('../partials/flash') %>
+  <%- include('../partials/navbar') %>
+    <%- include('../partials/flash') %>
 
-<div class="page-header">
-  <div class="container">
-    <div class="breadcrumb">
-      <a href="/">Inicio</a><span class="breadcrumb-sep">›</span><span>Inscripción</span>
-    </div>
-    <h1 class="page-header-title">Formulario de inscripción</h1>
-    <p class="page-header-desc">Selecciona la categoría en la que deseas inscribirte para la temporada 2024-2025.</p>
-  </div>
-</div>
-
-<main>
-  <div class="container section-py">
-    <div style="max-width:700px;margin:0 auto">
-
-      <form action="/inscripcion" method="POST">
-        <div class="card" style="padding:2rem;margin-bottom:1.5rem">
-          <h3 style="margin-bottom:1.5rem">Selecciona tu categoría</h3>
-
-          <% const catColors = {SUB10:'cat-sub10',SUB12:'cat-sub12',SUB14:'cat-sub14',SUB16:'cat-sub16',SUB18:'cat-sub18',SENIOR:'cat-senior'}; %>
-          <% const catEmoji = {SUB10:'🧢',SUB12:'⚾',SUB14:'🥊',SUB16:'💪',SUB18:'🔥',SENIOR:'🏆'}; %>
-          <% const catEdad = {SUB10:'Hasta 10 años',SUB12:'11-12 años',SUB14:'13-14 años',SUB16:'15-16 años',SUB18:'17-18 años',SENIOR:'+18 años'}; %>
-
-          <div class="inscripcion-grid">
-            <% if (typeof categorias !== 'undefined' && categorias) { %>
-              <% categorias.forEach(function(cat) { %>
-                <div class="inscripcion-option">
-                  <input type="radio" name="categoriaId" id="cat-<%= cat.id %>" value="<%= cat.id %>" required>
-                  <label class="inscripcion-label" for="cat-<%= cat.id %>">
-                    <div class="cat-badge <%= catColors[cat.nombre] || '' %>">
-                      <%= catEmoji[cat.nombre] || '⚾' %>
-                    </div>
-                    <strong><%= cat.nombre %></strong>
-                    <small><%= catEdad[cat.nombre] || '' %></small>
-                  </label>
-                </div>
-              <% }) %>
-            <% } %>
+      <div class="page-header">
+        <div class="container">
+          <div class="breadcrumb">
+            <a href="/">Inicio</a><span class="breadcrumb-sep">›</span><span>Inscripción</span>
           </div>
-        </div>
-
-        <div class="card" style="padding:2rem;margin-bottom:1.5rem">
-          <h3 style="margin-bottom:1.25rem">Temporada</h3>
-          <div class="form-group">
-            <label class="form-label">Temporada</label>
-            <select name="temporada" class="form-control" required>
-              <option value="2024-2025" selected>2024-2025</option>
-              <option value="2025-2026">2025-2026</option>
-            </select>
-          </div>
-          <div class="form-group" style="margin-bottom:0">
-            <label class="form-label">Notas adicionales (opcional)</label>
-            <textarea name="notas" class="form-control" rows="3" placeholder="Lesiones, experiencia previa, preferencias…" style="resize:vertical"></textarea>
-          </div>
-        </div>
-
-        <div class="card" style="padding:1.5rem;margin-bottom:1.5rem;background:rgba(var(--accent-rgb),.06);border-color:rgba(var(--accent-rgb),.2)">
-          <h4 style="margin-bottom:.75rem;font-size:.95rem">📋 Documentación requerida</h4>
-          <p style="font-size:.85rem;color:var(--text2);line-height:1.7">
-            Tras enviar esta solicitud, deberás aportar en el club: DNI o pasaporte, certificado médico deportivo y justificante del pago de la cuota anual.
-            La inscripción quedará pendiente de aprobación por parte de la directiva.
+          <h1 class="page-header-title">Formulario de inscripción</h1>
+          <p class="page-header-desc">Selecciona la categoría en la que deseas inscribirte para la temporada 2024-2025.
           </p>
         </div>
+      </div>
 
-        <button type="submit" class="btn btn-primary btn-full btn-lg">
-          Enviar solicitud de inscripción
-        </button>
-      </form>
+      <main>
+        <div class="container section-py">
+          <div style="max-width:700px;margin:0 auto">
 
-    </div>
-  </div>
-</main>
+            <form action="/inscripcion" method="POST">
+              <div class="card" style="padding:2rem;margin-bottom:1.5rem">
+                <h3 style="margin-bottom:1.5rem">Selecciona tu categoría</h3>
 
-<%- include('../partials/footer') %>
+                <% const
+                  catColors={SUB10:'cat-sub10',SUB12:'cat-sub12',SUB14:'cat-sub14',SUB16:'cat-sub16',SUB18:'cat-sub18',SENIOR:'cat-senior'};
+                  %>
+                  <% const catEmoji={SUB10:'🧢',SUB12:'⚾',SUB14:'🥊',SUB16:'💪',SUB18:'🔥',SENIOR:'🏆'}; %>
+                  <% const catEdad={SUB10:'Hasta 10 años',SUB12:'11-12 años',SUB14:'13-14 años',SUB16:'15-16 años',SUB18:'17-18 años',SENIOR:'+18 años'}; %>
+
+                      <div class="inscripcion-grid">
+                        <% if (typeof categorias !=='undefined' && categorias) { %>
+                          <% categorias.forEach(function(cat) { %>
+                            <div class="inscripcion-option">
+                              <input type="radio" name="categoriaId" id="cat-<%= cat.id %>" value="<%= cat.id %>"
+                                required>
+                              <label class="inscripcion-label" for="cat-<%= cat.id %>">
+                                <div class="cat-badge <%= catColors[cat.nombre] || '' %>">
+                                  <%= catEmoji[cat.nombre] || '⚾' %>
+                                </div>
+                                <strong>
+                                  <%= cat.nombre %>
+                                </strong>
+                                <small>
+                                  <%= catEdad[cat.nombre] || '' %>
+                                </small>
+                              </label>
+                            </div>
+                            <% }) %>
+                              <% } %>
+                      </div>
+              </div>
+
+              <div class="card" style="padding:2rem;margin-bottom:1.5rem">
+                <h3 style="margin-bottom:1.25rem">Temporada</h3>
+                <div class="form-group">
+                  <label class="form-label">Temporada</label>
+                  <select name="temporada" class="form-control" required>
+                    <option value="2025-2026" selected>2025-2026</option>
+                    <option value="2026-2027">2026-2027</option>
+                  </select>
+                </div>
+                <div class="form-group" style="margin-bottom:0">
+                  <label class="form-label">Notas adicionales (opcional)</label>
+                  <textarea name="notas" class="form-control" rows="3"
+                    placeholder="Lesiones, experiencia previa, preferencias…" style="resize:vertical"></textarea>
+                </div>
+              </div>
+
+              <div class="card"
+                style="padding:1.5rem;margin-bottom:1.5rem;background:rgba(var(--accent-rgb),.06);border-color:rgba(var(--accent-rgb),.2)">
+                <h4 style="margin-bottom:.75rem;font-size:.95rem">📋 Documentación requerida</h4>
+                <p style="font-size:.85rem;color:var(--text2);line-height:1.7">
+                  Tras enviar esta solicitud, deberás aportar en el club: DNI o pasaporte, certificado médico deportivo
+                  y justificante del pago de la cuota anual.
+                  La inscripción quedará pendiente de aprobación por parte de la directiva.
+                </p>
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-full btn-lg">
+                Enviar solicitud de inscripción
+              </button>
+            </form>
+
+          </div>
+        </div>
+      </main>
+
+      <%- include('../partials/footer') %>
