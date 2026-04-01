@@ -96,20 +96,35 @@ model Categoria {
 }
 
 model Inscripcion {
-  id          Int               @id @default(autoincrement())
-  personaId   Int
-  categoriaId Int
-  estado      EstadoInscripcion @default(PENDIENTE)
-  temporada   String            @db.VarChar(10)
-  notas       String?           @db.Text
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
+  id             Int               @id @default(autoincrement())
+  personaId      Int
+  categoriaId    Int
+  estado         EstadoInscripcion @default(PENDIENTE)
+  rolSolicitado  TipoRol           @default(JUGADOR)
+  temporada      String            @db.VarChar(10)
+  notas          String?           @db.Text
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
 
-  persona   Persona   @relation(fields: [personaId], references: [id], onDelete: Cascade)
-  categoria Categoria @relation(fields: [categoriaId], references: [id])
+  persona    Persona     @relation(fields: [personaId], references: [id], onDelete: Cascade)
+  categoria  Categoria   @relation(fields: [categoriaId], references: [id])
+  tutorLegal TutorLegal?
 
   @@unique([personaId, categoriaId, temporada])
   @@map("inscripciones")
+}
+
+model TutorLegal {
+  id            Int         @id @default(autoincrement())
+  inscripcionId Int         @unique
+  nombre        String      @db.VarChar(100)
+  apellidos     String      @db.VarChar(100)
+  dni           String      @db.VarChar(20)
+  createdAt     DateTime    @default(now())
+
+  inscripcion Inscripcion @relation(fields: [inscripcionId], references: [id], onDelete: Cascade)
+
+  @@map("tutores_legales")
 }
 
 model Partido {

@@ -79,8 +79,9 @@ exports.inscripciones = async (req, res) => {
         const [inscripciones, categorias] = await Promise.all([
             prisma.inscripcion.findMany({
                 include: {
-                    persona: { select: { nombre: true, apellidos: true, email: true, rol: true } },
-                    categoria: true
+                    persona: { select: { id: true, nombre: true, apellidos: true, email: true, fechaNacimiento: true, rol: true } },
+                    categoria: true,
+                    tutorLegal: true,
                 },
                 orderBy: { createdAt: 'desc' }
             }),
@@ -100,14 +101,44 @@ exports.inscripciones = async (req, res) => {
 };
 
 // ─── Actualizar estado de inscripción ─────────────────────────────────────────
+// Al APROBAR: cambia el rol de la persona de SOCIO → rolSolicitado (JUGADOR/TECNICO)
+// Al RECHAZAR: vuelve el rol a SOCIO si seguía siendo SOCIO
 exports.updateInscripcion = async (req, res) => {
     const { id } = req.params;
     const { estado } = req.body;
 
     try {
-        await prisma.inscripcion.update({
-            where: { id: parseInt(id) },
-            data: { estado }
+        await prisma.$transaction(async (tx) => {
+            const inscripcion = await tx.inscripcion.update({
+                where: { id: parseInt(id) },
+                data: { estado },
+                include: { persona: { include: { rol: true } } },
+            });
+
+            if (estado === 'APROBADA') {
+                // Cambiar rol a lo que el usuario solicitó (JUGADOR o TECNICO)
+                const nuevoRol = inscripcion.rolSolicitado || 'JUGADOR';
+                await tx.rol.update({
+                    where: { personaId: inscripcion.personaId },
+                    data: { tipo: nuevoRol },
+                });
+            } else if (estado === 'RECHAZADA') {
+                // Si el rol actual aún es JUGADOR o TECNICO y fue por esta inscripción,
+                // devolver a SOCIO solo si no tiene otra inscripción aprobada
+                const otraAprobada = await tx.inscripcion.findFirst({
+                    where: {
+                        personaId: inscripcion.personaId,
+                        estado: 'APROBADA',
+                        id: { not: parseInt(id) },
+                    },
+                });
+                if (!otraAprobada) {
+                    await tx.rol.update({
+                        where: { personaId: inscripcion.personaId },
+                        data: { tipo: 'SOCIO' },
+                    });
+                }
+            }
         });
 
         req.flash('exito', 'Estado de inscripción actualizado.');

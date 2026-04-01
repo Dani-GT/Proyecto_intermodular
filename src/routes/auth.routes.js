@@ -12,5 +12,7 @@ router.post('/login', redirectIfAuth, controller.login);
 router.post('/logout', controller.logout);
 
 router.get('/perfil', requireAuth, controller.showPerfil);
+router.post('/perfil/editar', requireAuth, controller.updatePerfil);
+router.post('/perfil/password', requireAuth, controller.updatePassword);
 
 module.exports = router;

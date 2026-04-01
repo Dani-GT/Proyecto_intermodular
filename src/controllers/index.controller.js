@@ -3,15 +3,21 @@ const prisma = require('../lib/prisma');
 // ─── Página principal ─────────────────────────────────────────────────────────
 exports.renderHome = async (req, res) => {
     try {
-        const [noticias, proximosPartidos, categorias] = await Promise.all([
+        const [noticias, proximosPartidos, ultimosResultados, categorias] = await Promise.all([
             prisma.noticia.findMany({
                 orderBy: { publicadoEn: 'desc' },
                 take: 3,
             }),
             prisma.partido.findMany({
-                where: { fecha: { gte: new Date() } },
+                where: { resultado: null, fecha: { gte: new Date() } },
                 orderBy: { fecha: 'asc' },
-                take: 3,
+                take: 4,
+                include: { categoria: true }
+            }),
+            prisma.partido.findMany({
+                where: { resultado: { not: null } },
+                orderBy: { fecha: 'desc' },
+                take: 4,
                 include: { categoria: true }
             }),
             prisma.categoria.findMany({
@@ -23,6 +29,7 @@ exports.renderHome = async (req, res) => {
             title: 'Inicio | Club Béisbol Granollers',
             noticias,
             proximosPartidos,
+            ultimosResultados,
             categorias,
         });
     } catch (error) {
@@ -31,6 +38,7 @@ exports.renderHome = async (req, res) => {
             title: 'Inicio | Club Béisbol Granollers',
             noticias: [],
             proximosPartidos: [],
+            ultimosResultados: [],
             categorias: [],
         });
     }

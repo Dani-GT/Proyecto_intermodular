@@ -11,16 +11,16 @@
 <main>
   <div class="container section-py">
 
-    <!-- Cabecera de perfil -->
+    <!-- Cabecera -->
     <div class="profile-header">
-      <div class="profile-avatar-big"><%= usuario.nombre.charAt(0).toUpperCase() %></div>
+      <div class="profile-avatar-big"><%= persona.nombre.charAt(0).toUpperCase() %></div>
       <div>
-        <h2 class="profile-name"><%= usuario.nombre %> <%= usuario.apellidos %></h2>
-        <p class="profile-email"><%= usuario.email %></p>
+        <h2 class="profile-name"><%= persona.nombre %> <%= persona.apellidos %></h2>
+        <p class="profile-email"><%= persona.email %></p>
         <div style="margin-top:.5rem;display:flex;gap:.5rem;flex-wrap:wrap">
-          <span class="badge badge-primary"><%= usuario.rol %></span>
-          <% if (usuario.telefono) { %><span class="badge badge-neutral">📞 <%= usuario.telefono %></span><% } %>
-          <% if (usuario.fechaNacimiento) { %><span class="badge badge-neutral">🎂 <%= new Date(usuario.fechaNacimiento).toLocaleDateString('es') %></span><% } %>
+          <span class="badge badge-primary"><%= persona.rol ? persona.rol.tipo : 'SOCIO' %></span>
+          <% if (persona.telefono) { %><span class="badge badge-neutral">📞 <%= persona.telefono %></span><% } %>
+          <% if (persona.fechaNacimiento) { %><span class="badge badge-neutral">🎂 <%= new Date(persona.fechaNacimiento).toLocaleDateString('es') %></span><% } %>
         </div>
       </div>
     </div>
@@ -29,6 +29,7 @@
     <div class="profile-tabs">
       <button class="profile-tab active" data-tab="inscripciones">📋 Mis inscripciones</button>
       <button class="profile-tab" data-tab="compras">🛍️ Mis compras</button>
+      <button class="profile-tab" data-tab="editar">✏️ Editar datos</button>
     </div>
 
     <!-- Panel inscripciones -->
@@ -39,6 +40,7 @@
             <thead>
               <tr>
                 <th>Categoría</th>
+                <th>Rol solicitado</th>
                 <th>Temporada</th>
                 <th>Estado</th>
                 <th>Fecha solicitud</th>
@@ -49,7 +51,8 @@
               <% inscripciones.forEach(function(ins) { %>
                 <tr>
                   <td><strong><%= ins.categoria ? ins.categoria.nombre : '–' %></strong></td>
-                  <td><%= ins.temporada || '2024-2025' %></td>
+                  <td><%= ins.rolSolicitado || 'JUGADOR' %></td>
+                  <td><%= ins.temporada || '2025-2026' %></td>
                   <td>
                     <span class="badge <%= ins.estado === 'APROBADA' ? 'badge-success' : ins.estado === 'RECHAZADA' ? 'badge-danger' : 'badge-warning' %>">
                       <%= ins.estado %>
@@ -58,6 +61,13 @@
                   <td style="color:var(--text2);font-size:.85rem"><%= new Date(ins.createdAt).toLocaleDateString('es') %></td>
                   <td style="color:var(--text2);font-size:.85rem"><%= ins.notas || '–' %></td>
                 </tr>
+                <% if (ins.tutorLegal) { %>
+                <tr style="background:rgba(var(--accent-rgb),.04)">
+                  <td colspan="6" style="font-size:.82rem;color:var(--text2);padding:.5rem 1rem">
+                    👪 <strong>Tutor legal:</strong> <%= ins.tutorLegal.nombre %> <%= ins.tutorLegal.apellidos %> — DNI: <%= ins.tutorLegal.dni %>
+                  </td>
+                </tr>
+                <% } %>
               <% }) %>
             </tbody>
           </table>
@@ -117,7 +127,76 @@
       <% } %>
     </div>
 
+    <!-- Panel edición de datos propios -->
+    <div id="tab-editar" class="profile-panel" style="display:none">
+      <div style="display:grid;gap:1.5rem;grid-template-columns:1fr 1fr">
+
+        <!-- Datos personales -->
+        <div class="card" style="padding:2rem">
+          <h3 style="margin-bottom:1.25rem">✏️ Mis datos personales</h3>
+          <form action="/auth/perfil/editar" method="POST">
+            <div class="form-group">
+              <label class="form-label">Nombre</label>
+              <input type="text" name="nombre" class="form-control" value="<%= persona.nombre %>" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Apellidos</label>
+              <input type="text" name="apellidos" class="form-control" value="<%= persona.apellidos %>" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Teléfono</label>
+              <input type="tel" name="telefono" class="form-control" value="<%= persona.telefono || '' %>" placeholder="600 000 000">
+            </div>
+            <div class="form-group" style="margin-bottom:1.5rem">
+              <label class="form-label">Fecha de nacimiento</label>
+              <input type="date" name="fechaNacimiento" class="form-control" value="<%= persona.fechaNacimiento ? new Date(persona.fechaNacimiento).toISOString().split('T')[0] : '' %>">
+            </div>
+            <p style="font-size:.8rem;color:var(--text2);margin-bottom:1rem">
+              ⚠️ No puedes cambiar tu correo electrónico ni los datos de otras personas.
+            </p>
+            <button type="submit" class="btn btn-primary btn-full">Guardar cambios</button>
+          </form>
+        </div>
+
+        <!-- Cambiar contraseña -->
+        <div class="card" style="padding:2rem">
+          <h3 style="margin-bottom:1.25rem">🔒 Cambiar contraseña</h3>
+          <form action="/auth/perfil/password" method="POST">
+            <div class="form-group">
+              <label class="form-label">Contraseña actual</label>
+              <input type="password" name="passwordActual" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Nueva contraseña</label>
+              <input type="password" name="passwordNueva" class="form-control" minlength="8" required>
+            </div>
+            <div class="form-group" style="margin-bottom:1.5rem">
+              <label class="form-label">Confirmar nueva contraseña</label>
+              <input type="password" name="passwordConfirmar" class="form-control" minlength="8" required>
+            </div>
+            <button type="submit" class="btn btn-outline btn-full">Cambiar contraseña</button>
+          </form>
+        </div>
+
+      </div>
+    </div>
+
   </div>
 </main>
+
+<script>
+document.querySelectorAll('.profile-tab').forEach(function(tab) {
+  tab.addEventListener('click', function() {
+    document.querySelectorAll('.profile-tab').forEach(function(t) { t.classList.remove('active'); });
+    document.querySelectorAll('.profile-panel').forEach(function(p) { p.style.display = 'none'; });
+    tab.classList.add('active');
+    document.getElementById('tab-' + tab.dataset.tab).style.display = '';
+  });
+});
+// Abrir tab de edición si viene parámetro
+if (window.location.hash === '#editar') {
+  document.querySelector('[data-tab="editar"]').click();
+}
+</script>
 
 <%- include('../partials/footer') %>

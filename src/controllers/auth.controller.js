@@ -148,10 +148,15 @@ exports.showPerfil = async (req, res) => {
             where: { id: req.session.usuario.id },
             include: {
                 rol: true,
-                inscripciones: { include: { categoria: true } },
+                inscripciones: { include: { categoria: true, tutorLegal: true }, orderBy: { createdAt: 'desc' } },
                 compras: { include: { CompraProducto: { include: { producto: true } } } },
             }
         });
+
+        // Refrescar el rol en la sesión por si fue actualizado por el admin
+        if (persona && persona.rol) {
+            req.session.usuario.rol = persona.rol.tipo;
+        }
 
         res.render('auth/perfil', {
             title: 'Mi Perfil | CB Granollers',
@@ -163,5 +168,80 @@ exports.showPerfil = async (req, res) => {
         console.error('Error al cargar perfil:', error);
         req.flash('error', 'Error al cargar el perfil.');
         res.redirect('/');
+    }
+};
+
+// ─── Actualizar datos del perfil propio ───────────────────────────────────────
+exports.updatePerfil = async (req, res) => {
+    const { nombre, apellidos, telefono, fechaNacimiento } = req.body;
+    const personaId = req.session.usuario.id;
+
+    try {
+        if (!nombre || !apellidos) {
+            req.flash('error', 'El nombre y los apellidos son obligatorios.');
+            return res.redirect('/auth/perfil');
+        }
+
+        const persona = await prisma.persona.update({
+            where: { id: personaId },
+            data: {
+                nombre: nombre.trim(),
+                apellidos: apellidos.trim(),
+                telefono: telefono?.trim() || null,
+                fechaNacimiento: fechaNacimiento ? new Date(fechaNacimiento) : null,
+            },
+        });
+
+        // Actualizar sesión con los nuevos datos
+        req.session.usuario = {
+            ...req.session.usuario,
+            nombre: persona.nombre,
+            apellidos: persona.apellidos,
+        };
+
+        req.flash('exito', 'Datos actualizados correctamente.');
+        res.redirect('/auth/perfil');
+    } catch (error) {
+        console.error('Error al actualizar perfil:', error);
+        req.flash('error', 'Error al actualizar los datos.');
+        res.redirect('/auth/perfil');
+    }
+};
+
+// ─── Cambiar contraseña propia ────────────────────────────────────────────────
+exports.updatePassword = async (req, res) => {
+    const { passwordActual, passwordNueva, passwordConfirmar } = req.body;
+    const personaId = req.session.usuario.id;
+
+    try {
+        if (!passwordActual || !passwordNueva || !passwordConfirmar) {
+            req.flash('error', 'Todos los campos de contraseña son obligatorios.');
+            return res.redirect('/auth/perfil');
+        }
+        if (passwordNueva !== passwordConfirmar) {
+            req.flash('error', 'La contraseña nueva y su confirmación no coinciden.');
+            return res.redirect('/auth/perfil');
+        }
+        if (passwordNueva.length < 8) {
+            req.flash('error', 'La contraseña debe tener al menos 8 caracteres.');
+            return res.redirect('/auth/perfil');
+        }
+
+        const persona = await prisma.persona.findUnique({ where: { id: personaId } });
+        const valida = await bcrypt.compare(passwordActual, persona.password);
+        if (!valida) {
+            req.flash('error', 'La contraseña actual no es correcta.');
+            return res.redirect('/auth/perfil');
+        }
+
+        const hash = await bcrypt.hash(passwordNueva, 12);
+        await prisma.persona.update({ where: { id: personaId }, data: { password: hash } });
+
+        req.flash('exito', 'Contraseña actualizada correctamente.');
+        res.redirect('/auth/perfil');
+    } catch (error) {
+        console.error('Error al cambiar contraseña:', error);
+        req.flash('error', 'Error al cambiar la contraseña.');
+        res.redirect('/auth/perfil');
     }
 };

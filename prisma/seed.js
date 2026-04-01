@@ -184,7 +184,7 @@ async function main() {
     });
     if (!inscrExiste) {
       await prisma.inscripcion.create({
-        data: { personaId: persona.id, categoriaId: cat.id, temporada: '2025-2026', estado: 'APROBADA' },
+        data: { personaId: persona.id, categoriaId: cat.id, temporada: '2025-2026', estado: 'APROBADA', rolSolicitado: 'TECNICO' },
       });
     }
   }
@@ -257,7 +257,7 @@ async function main() {
     });
     if (!inscrExiste) {
       await prisma.inscripcion.create({
-        data: { personaId: persona.id, categoriaId: cat.id, temporada: '2025-2026', estado: 'APROBADA' },
+        data: { personaId: persona.id, categoriaId: cat.id, temporada: '2025-2026', estado: 'APROBADA', rolSolicitado: 'JUGADOR' },
       });
     }
   }

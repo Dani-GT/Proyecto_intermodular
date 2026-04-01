@@ -92,24 +92,52 @@
         <div class="table-wrap">
           <table class="table" id="insTable">
             <thead>
-              <tr><th>Jugador</th><th>Email</th><th>Rol</th><th>Categoría</th><th>Temporada</th><th>Estado</th><th>Cambiar estado</th><th>Acciones</th></tr>
+              <tr>
+                <th>Persona</th>
+                <th>Email</th>
+                <th>Rol actual / Solicitado</th>
+                <th>Categoría</th>
+                <th>Temporada</th>
+                <th>Estado</th>
+                <th>Tutor legal</th>
+                <th>Cambiar estado</th>
+                <th>Acciones</th>
+              </tr>
             </thead>
             <tbody>
               <% if (typeof inscripciones !== 'undefined' && inscripciones && inscripciones.length > 0) { %>
                 <% inscripciones.forEach(function(ins) { %>
                   <tr data-estado="<%= ins.estado %>">
-                    <td><strong><%= ins.persona ? ins.persona.nombre + ' ' + ins.persona.apellidos : '–' %></strong></td>
+                    <td>
+                      <strong><%= ins.persona ? ins.persona.nombre + ' ' + ins.persona.apellidos : '–' %></strong>
+                      <% if (ins.persona && ins.persona.fechaNacimiento) {
+                           const hoy = new Date();
+                           const nac = new Date(ins.persona.fechaNacimiento);
+                           let edad = hoy.getFullYear() - nac.getFullYear();
+                           if (hoy.getMonth() < nac.getMonth() || (hoy.getMonth() === nac.getMonth() && hoy.getDate() < nac.getDate())) edad--;
+                      %>
+                        <br><small style="color:var(--text2)"><%= edad %> años</small>
+                      <% } %>
+                    </td>
                     <td style="color:var(--text2);font-size:.85rem"><%= ins.persona ? ins.persona.email : '–' %></td>
                     <td>
-                      <% const rolTipo = ins.persona && ins.persona.rol ? ins.persona.rol.tipo : 'SOCIO'; %>
-                      <span class="badge <%= rolTipo === 'TECNICO' ? 'badge-primary' : rolTipo === 'JUGADOR' ? 'badge-success' : 'badge-neutral' %> badge-sm"><%= rolTipo %></span>
+                      <% const rolActual = ins.persona && ins.persona.rol ? ins.persona.rol.tipo : 'SOCIO'; %>
+                      <span class="badge <%= rolActual === 'TECNICO' ? 'badge-primary' : rolActual === 'JUGADOR' ? 'badge-success' : 'badge-neutral' %> badge-sm"><%= rolActual %></span>
+                      <br><small style="color:var(--text2)">→ <strong><%= ins.rolSolicitado || 'JUGADOR' %></strong></small>
                     </td>
                     <td><span class="badge badge-primary badge-sm"><%= ins.categoria ? ins.categoria.nombre : '–' %></span></td>
                     <td style="color:var(--text2)"><%= ins.temporada || '–' %></td>
                     <td><span class="badge <%= ins.estado === 'APROBADA' ? 'badge-success' : ins.estado === 'RECHAZADA' ? 'badge-danger' : 'badge-warning' %> badge-sm"><%= ins.estado %></span></td>
+                    <td style="font-size:.8rem">
+                      <% if (ins.tutorLegal) { %>
+                        <strong><%= ins.tutorLegal.nombre %> <%= ins.tutorLegal.apellidos %></strong><br>
+                        <span style="color:var(--text2)">DNI: <%= ins.tutorLegal.dni %></span>
+                      <% } else { %>
+                        <span style="color:var(--text3)">–</span>
+                      <% } %>
+                    </td>
                     <td>
                       <form action="/admin/inscripciones/<%= ins.id %>" method="POST" class="inline-form">
-                        <input type="hidden" name="_method" value="PUT">
                         <select name="estado" class="form-control" style="padding:.3rem .6rem;font-size:.82rem;width:auto" onchange="this.form.submit()">
                           <% ['PENDIENTE','APROBADA','RECHAZADA'].forEach(function(e) { %><option value="<%= e %>" <%= ins.estado === e ? 'selected' : '' %>><%= e %></option><% }) %>
                         </select>
@@ -123,7 +151,7 @@
                   </tr>
                 <% }) %>
               <% } else { %>
-                <tr><td colspan="8" style="text-align:center;color:var(--text3);padding:3rem">Sin inscripciones</td></tr>
+                <tr><td colspan="9" style="text-align:center;color:var(--text3);padding:3rem">Sin inscripciones</td></tr>
               <% } %>
             </tbody>
           </table>
