@@ -745,6 +745,7 @@ select.form-control { cursor: pointer; }
   .cart-layout { grid-template-columns: 1fr; }
   .news-layout { grid-template-columns: 1fr; }
   .news-sidebar { position: static; }
+  .news-featured-grid { grid-template-columns: 1fr !important; }
   .contact-grid { grid-template-columns: 1fr; }
   .admin-layout { grid-template-columns: 1fr; }
   .club-stats { grid-template-columns: repeat(2,1fr); }

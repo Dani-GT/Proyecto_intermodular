@@ -171,9 +171,14 @@ exports.productos = async (req, res) => {
 
 // ─── Crear producto ────────────────────────────────────────────────────────────
 exports.createProducto = async (req, res) => {
-    const { nombre, descripcion, precio, stock, categoria, imagen } = req.body;
+    const { nombre, descripcion, precio, stock, categoria } = req.body;
 
     try {
+        // Si se subió un archivo, usar su ruta pública; si no, usar URL manual si la pasan
+        const imagenUrl = req.file
+            ? `/images/productos/${req.file.filename}`
+            : (req.body.imagenUrl || null);
+
         await prisma.producto.create({
             data: {
                 nombre,
@@ -181,7 +186,7 @@ exports.createProducto = async (req, res) => {
                 precio: parseFloat(precio),
                 stock: parseInt(stock),
                 categoria,
-                imagen: imagen || null,
+                imagen: imagenUrl,
             }
         });
 
@@ -200,6 +205,13 @@ exports.updateProducto = async (req, res) => {
     const { nombre, descripcion, precio, stock, categoria } = req.body;
 
     try {
+        const productoActual = await prisma.producto.findUnique({ where: { id: parseInt(id) } });
+
+        // Si se sube nueva imagen, usarla; si no, conservar la actual
+        const imagenUrl = req.file
+            ? `/images/productos/${req.file.filename}`
+            : (req.body.imagenUrl || productoActual?.imagen || null);
+
         await prisma.producto.update({
             where: { id: parseInt(id) },
             data: {
@@ -208,6 +220,7 @@ exports.updateProducto = async (req, res) => {
                 precio: parseFloat(precio),
                 stock: parseInt(stock),
                 categoria,
+                imagen: imagenUrl,
             }
         });
 
@@ -241,24 +254,63 @@ exports.noticias = async (req, res) => {
 
 // ─── Crear noticia ─────────────────────────────────────────────────────────────
 exports.createNoticia = async (req, res) => {
-    const { titulo, contenido, imagen, publicada } = req.body;
+    const { titulo, resumen, contenido, publicada, publicadoEn, autor } = req.body;
 
     try {
+        const imagenUrl = req.file
+            ? `/images/noticias/${req.file.filename}`
+            : (req.body.imagenUrl || null);
+
         await prisma.noticia.create({
             data: {
                 titulo,
+                resumen: resumen || null,
                 contenido,
-                imagen: imagen || null,
+                imagen: imagenUrl,
                 destacada: publicada === 'true',
-                autor: req.session.usuario.nombre || 'Admin',
+                autor: autor || req.session.usuario.nombre || 'Admin',
+                publicadoEn: publicadoEn ? new Date(publicadoEn) : new Date(),
             }
         });
 
-        req.flash('exito', 'Noticia creada correctamente.');
+        req.flash('exito', 'Noticia publicada correctamente.');
         res.redirect('/admin/noticias');
     } catch (error) {
         console.error('Error al crear noticia:', error);
         req.flash('error', 'Error al crear la noticia.');
+        res.redirect('/admin/noticias');
+    }
+};
+
+// ─── Actualizar noticia ────────────────────────────────────────────────────────
+exports.updateNoticia = async (req, res) => {
+    const { id } = req.params;
+    const { titulo, resumen, contenido, publicada, autor } = req.body;
+
+    try {
+        const noticiaActual = await prisma.noticia.findUnique({ where: { id: parseInt(id) } });
+
+        const imagenUrl = req.file
+            ? `/images/noticias/${req.file.filename}`
+            : (req.body.imagenUrl || noticiaActual?.imagen || null);
+
+        await prisma.noticia.update({
+            where: { id: parseInt(id) },
+            data: {
+                titulo,
+                resumen: resumen || null,
+                contenido,
+                imagen: imagenUrl,
+                destacada: publicada === 'true',
+                autor: autor || noticiaActual?.autor,
+            }
+        });
+
+        req.flash('exito', 'Noticia actualizada correctamente.');
+        res.redirect('/admin/noticias');
+    } catch (error) {
+        console.error('Error al actualizar noticia:', error);
+        req.flash('error', 'Error al actualizar la noticia.');
         res.redirect('/admin/noticias');
     }
 };

@@ -52,7 +52,27 @@
               <label class="form-label">Descripción</label>
               <textarea name="descripcion" class="form-control" rows="2" placeholder="Descripción del producto…"></textarea>
             </div>
-            <button type="submit" class="btn btn-primary">Crear producto</button>
+
+            <!-- Imagen -->
+            <div class="form-group" style="margin-bottom:0">
+              <label class="form-label">Imagen del producto</label>
+              <div style="display:flex;gap:1rem;align-items:flex-start;flex-wrap:wrap">
+                <div style="flex:1;min-width:180px">
+                  <label for="imagenProd" style="display:flex;flex-direction:column;align-items:center;justify-content:center;border:2px dashed var(--border);border-radius:var(--radius);padding:1.5rem;cursor:pointer;transition:border-color .2s;text-align:center" id="labelProd">
+                    <span style="font-size:2rem;margin-bottom:.5rem">🖼️</span>
+                    <span style="font-size:.85rem;color:var(--text2)">Haz clic para subir imagen</span>
+                    <span style="font-size:.75rem;color:var(--text3);margin-top:.25rem">JPG, PNG, WEBP · máx. 5 MB</span>
+                  </label>
+                  <input type="file" name="imagen" id="imagenProd" accept="image/*" style="display:none" onchange="previewProd(this)">
+                </div>
+                <div id="prevProd" style="display:none;flex-shrink:0">
+                  <img id="prevImgProd" src="" alt="Preview" style="width:120px;height:90px;object-fit:cover;border-radius:var(--radius);border:1px solid var(--border)">
+                  <button type="button" onclick="clearProd()" style="display:block;margin-top:.4rem;font-size:.75rem;color:#ef4444;background:none;border:none;cursor:pointer">✕ Quitar imagen</button>
+                </div>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="margin-top:1.25rem">Crear producto</button>
           </form>
         </div>
 
@@ -60,13 +80,23 @@
         <div class="table-wrap">
           <table class="table">
             <thead>
-              <tr><th>Producto</th><th>Categoría</th><th>Precio</th><th>Stock</th><th>Acciones</th></tr>
+              <tr><th>Imagen</th><th>Producto</th><th>Categoría</th><th>Precio</th><th>Stock</th><th>Acciones</th></tr>
             </thead>
             <tbody>
               <% if (typeof productos !== 'undefined' && productos && productos.length > 0) { %>
                 <% productos.forEach(function(p) { %>
                   <tr class="<%= p.stock === 0 ? 'row-disabled' : '' %>">
-                    <td><strong><%= p.nombre %></strong><br><span style="font-size:.78rem;color:var(--text3)"><%= p.descripcion ? p.descripcion.substring(0,60) + '…' : '' %></span></td>
+                    <td style="width:70px">
+                      <% if (p.imagen) { %>
+                        <img src="<%= p.imagen %>" alt="<%= p.nombre %>" style="width:60px;height:60px;object-fit:cover;border-radius:8px;border:1px solid var(--border)">
+                      <% } else { %>
+                        <div style="width:60px;height:60px;border-radius:8px;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:1.5rem">🛍️</div>
+                      <% } %>
+                    </td>
+                    <td>
+                      <strong><%= p.nombre %></strong><br>
+                      <span style="font-size:.78rem;color:var(--text3)"><%= p.descripcion ? p.descripcion.substring(0,60) + '…' : '' %></span>
+                    </td>
                     <td><span class="badge badge-neutral badge-sm"><%= p.categoria %></span></td>
                     <td><strong><%= Number(p.precio).toFixed(2) %> €</strong></td>
                     <td>
@@ -75,18 +105,60 @@
                       </span>
                     </td>
                     <td>
-                      <div style="display:flex;gap:.5rem">
-                        <form action="/admin/productos/<%= p.id %>" method="POST" class="inline-form">
-                          <input type="hidden" name="_method" value="PUT">
-                          <input type="number" name="stock" value="<%= p.stock %>" min="0" class="form-control" style="width:70px;padding:.3rem .5rem;font-size:.82rem">
+                      <button class="btn btn-outline btn-sm" onclick="toggleEditProd(<%= p.id %>)">✏️ Editar</button>
+                    </td>
+                  </tr>
+                  <!-- Fila edición inline -->
+                  <tr id="editProd-<%= p.id %>" style="display:none;background:var(--bg2)">
+                    <td colspan="6" style="padding:1.25rem">
+                      <form action="/admin/productos/<%= p.id %>" method="POST" enctype="multipart/form-data">
+                        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:.75rem;margin-bottom:.75rem">
+                          <div>
+                            <label class="form-label" style="font-size:.8rem">Nombre</label>
+                            <input type="text" name="nombre" class="form-control" value="<%= p.nombre %>" required>
+                          </div>
+                          <div>
+                            <label class="form-label" style="font-size:.8rem">Categoría</label>
+                            <select name="categoria" class="form-control">
+                              <option value="ROPA" <%= p.categoria==='ROPA'?'selected':'' %>>Ropa</option>
+                              <option value="EQUIPAMIENTO" <%= p.categoria==='EQUIPAMIENTO'?'selected':'' %>>Equipamiento</option>
+                              <option value="MERCHANDISING" <%= p.categoria==='MERCHANDISING'?'selected':'' %>>Merchandising</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label class="form-label" style="font-size:.8rem">Precio (€)</label>
+                            <input type="number" name="precio" step="0.01" class="form-control" value="<%= Number(p.precio).toFixed(2) %>" required>
+                          </div>
+                          <div>
+                            <label class="form-label" style="font-size:.8rem">Stock</label>
+                            <input type="number" name="stock" min="0" class="form-control" value="<%= p.stock %>" required>
+                          </div>
+                          <div style="grid-column:1/-1">
+                            <label class="form-label" style="font-size:.8rem">Descripción</label>
+                            <input type="text" name="descripcion" class="form-control" value="<%= p.descripcion || '' %>">
+                          </div>
+                          <div style="grid-column:1/-1">
+                            <label class="form-label" style="font-size:.8rem">Nueva imagen (opcional — deja vacío para conservar la actual)</label>
+                            <div style="display:flex;gap:1rem;align-items:center;flex-wrap:wrap">
+                              <input type="file" name="imagen" accept="image/*" class="form-control" style="padding:.3rem;max-width:280px" onchange="previewEditProd(this,<%= p.id %>)">
+                              <div id="prevEditProd<%= p.id %>">
+                                <% if (p.imagen) { %>
+                                  <img src="<%= p.imagen %>" style="width:70px;height:56px;object-fit:cover;border-radius:6px;border:1px solid var(--border)">
+                                <% } %>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div style="display:flex;gap:.5rem">
                           <button type="submit" class="btn btn-primary btn-sm">Guardar</button>
-                        </form>
-                      </div>
+                          <button type="button" class="btn btn-outline btn-sm" onclick="toggleEditProd(<%= p.id %>)">Cancelar</button>
+                        </div>
+                      </form>
                     </td>
                   </tr>
                 <% }) %>
               <% } else { %>
-                <tr><td colspan="5" style="text-align:center;color:var(--text3);padding:3rem">Sin productos</td></tr>
+                <tr><td colspan="6" style="text-align:center;color:var(--text3);padding:3rem">Sin productos</td></tr>
               <% } %>
             </tbody>
           </table>
@@ -95,5 +167,36 @@
     </div>
   </div>
 </main>
+
+<script>
+function previewProd(input) {
+  if (!input.files || !input.files[0]) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    document.getElementById('prevImgProd').src = e.target.result;
+    document.getElementById('prevProd').style.display = '';
+    document.getElementById('labelProd').style.borderColor = 'var(--accent)';
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+function clearProd() {
+  document.getElementById('imagenProd').value = '';
+  document.getElementById('prevProd').style.display = 'none';
+  document.getElementById('labelProd').style.borderColor = '';
+}
+function previewEditProd(input, id) {
+  if (!input.files || !input.files[0]) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    document.getElementById('prevEditProd' + id).innerHTML =
+      '<img src="' + e.target.result + '" style="width:70px;height:56px;object-fit:cover;border-radius:6px;border:1px solid var(--border)">';
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+function toggleEditProd(id) {
+  const row = document.getElementById('editProd-' + id);
+  row.style.display = row.style.display === 'none' ? '' : 'none';
+}
+</script>
 
 <%- include('../partials/footer') %>

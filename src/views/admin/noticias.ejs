@@ -25,7 +25,7 @@
         <!-- Formulario nueva noticia -->
         <div class="card" style="padding:1.75rem;margin-bottom:2rem">
           <h3 style="margin-bottom:1.25rem;font-size:1rem">➕ Nueva noticia</h3>
-          <form action="/admin/noticias" method="POST">
+          <form action="/admin/noticias" method="POST" enctype="multipart/form-data">
             <div class="form-group">
               <label class="form-label">Título</label>
               <input type="text" name="titulo" class="form-control" placeholder="Título de la noticia" required>
@@ -38,6 +38,26 @@
               <label class="form-label">Contenido</label>
               <textarea name="contenido" class="form-control" rows="5" placeholder="Contenido completo de la noticia…" required style="resize:vertical"></textarea>
             </div>
+
+            <!-- Imagen -->
+            <div class="form-group">
+              <label class="form-label">Imagen</label>
+              <div style="display:flex;gap:1rem;align-items:flex-start;flex-wrap:wrap">
+                <div style="flex:1;min-width:200px">
+                  <label class="upload-area" for="imagenNot" style="display:flex;flex-direction:column;align-items:center;justify-content:center;border:2px dashed var(--border);border-radius:var(--radius);padding:1.5rem;cursor:pointer;transition:border-color .2s;text-align:center">
+                    <span style="font-size:2rem;margin-bottom:.5rem">🖼️</span>
+                    <span style="font-size:.85rem;color:var(--text2)">Haz clic para subir imagen</span>
+                    <span style="font-size:.75rem;color:var(--text3);margin-top:.25rem">JPG, PNG, WEBP · máx. 5 MB</span>
+                  </label>
+                  <input type="file" name="imagen" id="imagenNot" accept="image/*" style="display:none" onchange="previewImg(this,'prevNot','areaLabelNot')">
+                </div>
+                <div id="prevNot" style="display:none;flex-shrink:0">
+                  <img id="prevImgNot" src="" alt="Preview" style="width:140px;height:100px;object-fit:cover;border-radius:var(--radius);border:1px solid var(--border)">
+                  <button type="button" onclick="clearImg('imagenNot','prevNot','areaLabelNot')" style="display:block;margin-top:.4rem;font-size:.75rem;color:#ef4444;background:none;border:none;cursor:pointer">✕ Quitar imagen</button>
+                </div>
+              </div>
+            </div>
+
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
               <div class="form-group" style="margin-bottom:0">
                 <label class="form-label">Autor</label>
@@ -49,8 +69,8 @@
               </div>
             </div>
             <div style="display:flex;align-items:center;gap:.75rem;margin-top:1rem">
-              <input type="checkbox" name="destacada" id="destacada" value="true" style="width:16px;height:16px">
-              <label for="destacada" style="font-size:.88rem;cursor:pointer">Marcar como noticia destacada</label>
+              <input type="checkbox" name="publicada" id="destacadaN" value="true" style="width:16px;height:16px">
+              <label for="destacadaN" style="font-size:.88rem;cursor:pointer">Marcar como noticia destacada</label>
             </div>
             <button type="submit" class="btn btn-primary" style="margin-top:1rem">Publicar noticia</button>
           </form>
@@ -60,12 +80,19 @@
         <div class="table-wrap">
           <table class="table">
             <thead>
-              <tr><th>Noticia</th><th>Autor</th><th>Destacada</th><th>Publicada</th></tr>
+              <tr><th>Imagen</th><th>Noticia</th><th>Autor</th><th>Destacada</th><th>Publicada</th><th>Editar</th></tr>
             </thead>
             <tbody>
               <% if (typeof noticias !== 'undefined' && noticias && noticias.length > 0) { %>
                 <% noticias.forEach(function(n) { %>
                   <tr>
+                    <td style="width:70px">
+                      <% if (n.imagen) { %>
+                        <img src="<%= n.imagen %>" alt="" style="width:60px;height:44px;object-fit:cover;border-radius:6px;border:1px solid var(--border)">
+                      <% } else { %>
+                        <div style="width:60px;height:44px;border-radius:6px;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:1.2rem">📰</div>
+                      <% } %>
+                    </td>
                     <td>
                       <a href="/noticias/<%= n.id %>" style="font-weight:700" target="_blank"><%= n.titulo %></a>
                       <p style="font-size:.78rem;color:var(--text3);margin-top:.15rem"><%= n.resumen ? n.resumen.substring(0,70) + '…' : '' %></p>
@@ -73,10 +100,53 @@
                     <td style="color:var(--text2);font-size:.85rem"><%= n.autor || '–' %></td>
                     <td><% if (n.destacada) { %><span class="badge badge-primary badge-sm">Destacada</span><% } %></td>
                     <td style="color:var(--text2);font-size:.85rem"><%= new Date(n.publicadoEn).toLocaleDateString('es') %></td>
+                    <td>
+                      <button class="btn btn-outline btn-sm" onclick="toggleEditNot(<%= n.id %>)">✏️ Editar</button>
+                    </td>
+                  </tr>
+                  <!-- Fila edición inline -->
+                  <tr id="editNot-<%= n.id %>" style="display:none;background:var(--bg2)">
+                    <td colspan="6" style="padding:1.25rem">
+                      <form action="/admin/noticias/<%= n.id %>" method="POST" enctype="multipart/form-data">
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:.75rem">
+                          <div>
+                            <label class="form-label" style="font-size:.8rem">Título</label>
+                            <input type="text" name="titulo" class="form-control" value="<%= n.titulo %>" required>
+                          </div>
+                          <div>
+                            <label class="form-label" style="font-size:.8rem">Resumen</label>
+                            <input type="text" name="resumen" class="form-control" value="<%= n.resumen || '' %>">
+                          </div>
+                          <div style="grid-column:1/-1">
+                            <label class="form-label" style="font-size:.8rem">Contenido</label>
+                            <textarea name="contenido" class="form-control" rows="3" required><%= n.contenido %></textarea>
+                          </div>
+                          <div>
+                            <label class="form-label" style="font-size:.8rem">Nueva imagen (opcional)</label>
+                            <input type="file" name="imagen" accept="image/*" class="form-control" style="padding:.3rem" onchange="previewImg(this,'prevEditNot<%= n.id %>')">
+                            <% if (n.imagen) { %>
+                              <div id="prevEditNot<%= n.id %>" style="margin-top:.5rem">
+                                <img src="<%= n.imagen %>" style="width:80px;height:56px;object-fit:cover;border-radius:6px;border:1px solid var(--border)">
+                              </div>
+                            <% } else { %>
+                              <div id="prevEditNot<%= n.id %>"></div>
+                            <% } %>
+                          </div>
+                          <div style="display:flex;align-items:center;gap:.5rem">
+                            <input type="checkbox" name="publicada" value="true" id="dest-<%= n.id %>" <%= n.destacada ? 'checked' : '' %> style="width:15px;height:15px">
+                            <label for="dest-<%= n.id %>" style="font-size:.85rem;cursor:pointer">Destacada</label>
+                          </div>
+                        </div>
+                        <div style="display:flex;gap:.5rem">
+                          <button type="submit" class="btn btn-primary btn-sm">Guardar</button>
+                          <button type="button" class="btn btn-outline btn-sm" onclick="toggleEditNot(<%= n.id %>)">Cancelar</button>
+                        </div>
+                      </form>
+                    </td>
                   </tr>
                 <% }) %>
               <% } else { %>
-                <tr><td colspan="4" style="text-align:center;color:var(--text3);padding:3rem">Sin noticias publicadas</td></tr>
+                <tr><td colspan="6" style="text-align:center;color:var(--text3);padding:3rem">Sin noticias publicadas</td></tr>
               <% } %>
             </tbody>
           </table>
@@ -85,5 +155,42 @@
     </div>
   </div>
 </main>
+
+<script>
+function previewImg(input, previewId, labelId) {
+  const prev = document.getElementById(previewId);
+  if (!input.files || !input.files[0]) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    // Para el formulario de creación (con elemento img separado)
+    const img = document.getElementById('prevImg' + previewId.replace('prev',''));
+    if (img) {
+      img.src = e.target.result;
+      prev.style.display = '';
+      if (labelId) {
+        const lbl = document.getElementById(labelId);
+        if (lbl) lbl.style.borderColor = 'var(--accent)';
+      }
+    } else {
+      // Para edición inline: reemplazar contenido del div
+      prev.innerHTML = '<img src="' + e.target.result + '" style="width:80px;height:56px;object-fit:cover;border-radius:6px;border:1px solid var(--border)">';
+    }
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+function clearImg(inputId, previewId, labelId) {
+  document.getElementById(inputId).value = '';
+  const prev = document.getElementById(previewId);
+  if (prev) prev.style.display = 'none';
+  if (labelId) {
+    const lbl = document.getElementById(labelId);
+    if (lbl) lbl.style.borderColor = '';
+  }
+}
+function toggleEditNot(id) {
+  const row = document.getElementById('editNot-' + id);
+  row.style.display = row.style.display === 'none' ? '' : 'none';
+}
+</script>
 
 <%- include('../partials/footer') %>

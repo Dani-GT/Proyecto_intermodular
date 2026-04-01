@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const controller = require('../controllers/admin.controller');
 const { requireAdmin } = require('../middleware/auth.middleware');
+const { uploadNoticia, uploadProducto, handleUploadError } = require('../middleware/upload.middleware');
 
 // Todas las rutas de admin requieren rol ADMIN
 router.use(requireAdmin);
@@ -21,14 +22,15 @@ router.get('/inscripciones', controller.inscripciones);
 router.post('/inscripciones/:id', controller.updateInscripcion);
 router.post('/inscripciones/:id/eliminar', controller.deleteInscripcion);
 
-// Productos
+// Productos — con subida de imagen
 router.get('/productos', controller.productos);
-router.post('/productos', controller.createProducto);
-router.post('/productos/:id', controller.updateProducto);
+router.post('/productos', handleUploadError(uploadProducto), controller.createProducto);
+router.post('/productos/:id', handleUploadError(uploadProducto), controller.updateProducto);
 
-// Noticias
+// Noticias — con subida de imagen
 router.get('/noticias', controller.noticias);
-router.post('/noticias', controller.createNoticia);
+router.post('/noticias', handleUploadError(uploadNoticia), controller.createNoticia);
+router.post('/noticias/:id', handleUploadError(uploadNoticia), controller.updateNoticia);
 
 // Partidos
 router.get('/partidos', controller.partidos);
