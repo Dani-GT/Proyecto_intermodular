@@ -195,7 +195,7 @@ Proyecto_intermodular/
 ├── app.js                    # Punto de entrada, configuración de Express
 ├── package.json
 ├── render.yaml               # Configuración de despliegue en Render
-├── .env.example              # Plantilla de variables de entorno
+├── .env                      # Variables de entorno
 ├── prisma/
 │   ├── schema.prisma         # Modelos de base de datos
 │   ├── seed.js               # Datos de prueba
@@ -252,4 +252,4 @@ Proyecto_intermodular/
 
 ---
 
-*Desarrollado por Daniel Galán Tavares — CFGS DAW — Proyecto Intermodular 2024-2025*
+*Desarrollado por Daniel Galán Tavares — CFGS DAW — Proyecto Intermodular 2026*
