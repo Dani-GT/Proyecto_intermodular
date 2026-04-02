@@ -8,6 +8,9 @@ const methodOverride = require('method-override');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// ─── Proxy (necesario en Render/Heroku para cookies seguras) ─────────────────
+app.set('trust proxy', 1);
+
 // ─── Motor de vistas ─────────────────────────────────────────────────────────
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'src/views'));
