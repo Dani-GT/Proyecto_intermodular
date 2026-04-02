@@ -4,6 +4,7 @@ const path = require('path');
 const session = require('express-session');
 const flash = require('connect-flash');
 const methodOverride = require('method-override');
+const PgSessionStore = require('./src/lib/sessionStore');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -21,13 +22,22 @@ app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride('_method'));
 app.use(express.static(path.join(__dirname, 'src/public')));
 
-// ─── Sesiones ────────────────────────────────────────────────────────────────
+// ─── Sesiones (persistidas en PostgreSQL/Supabase) ───────────────────────────
+const sessionStore = new PgSessionStore({
+    connectionString: process.env.DIRECT_URL || process.env.DATABASE_URL,
+    tableName: 'user_sessions',
+    ttl: 60 * 60 * 24 * 7, // 7 días
+});
+
 app.use(session({
+    store: sessionStore,
     secret: process.env.SESSION_SECRET || 'cbg-secret-2025',
     resave: false,
     saveUninitialized: false,
     cookie: {
         secure: process.env.NODE_ENV === 'production',
+        httpOnly: true,
+        sameSite: 'lax',
         maxAge: 1000 * 60 * 60 * 24 * 7 // 7 días
     }
 }));
