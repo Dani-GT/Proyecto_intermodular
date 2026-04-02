@@ -14,7 +14,11 @@
           <p class="hero-desc">Entrenamiento de élite, instalaciones de primer nivel y una cultura de excelencia. Únete
             al mejor programa de béisbol de la región.</p>
           <div class="hero-actions">
-            <a href="/auth/registro" class="btn btn-primary btn-lg">Únete al club</a>
+            <% if (usuario) { %>
+              <a href="/auth/perfil" class="btn btn-primary btn-lg">Mi perfil</a>
+            <% } else { %>
+              <a href="/auth/registro" class="btn btn-primary btn-lg">Únete al club</a>
+            <% } %>
             <a href="/categorias" class="btn btn-outline btn-lg"
               style="color:#fff;border-color:rgba(255,255,255,.4)">Ver categorías</a>
           </div>
@@ -290,7 +294,11 @@
           <h2>¿Listo para subirte al plato?</h2>
           <p>Las inscripciones para la temporada 2026-2027 ya están abiertas. Asegura tu plaza y únete a la familia.</p>
           <div class="cta-actions">
-            <a href="/auth/registro" class="btn btn-white btn-lg">Registrarse ahora</a>
+            <% if (usuario) { %>
+              <a href="/inscripcion" class="btn btn-white btn-lg">Solicitar inscripción</a>
+            <% } else { %>
+              <a href="/auth/registro" class="btn btn-white btn-lg">Registrarse ahora</a>
+            <% } %>
             <a href="/contacto" class="btn btn-outline-white btn-lg">Contactar con el club</a>
           </div>
         </div>

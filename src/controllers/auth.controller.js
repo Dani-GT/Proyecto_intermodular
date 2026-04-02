@@ -143,15 +143,37 @@ exports.logout = (req, res) => {
 
 // ─── Perfil del usuario ───────────────────────────────────────────────────────
 exports.showPerfil = async (req, res) => {
+    let persona = null;
+    let inscripciones = [];
+    let compras = [];
+
     try {
-        const persona = await prisma.persona.findUnique({
-            where: { id: req.session.usuario.id },
-            include: {
-                rol: true,
-                inscripciones: { include: { categoria: true, tutorLegal: true }, orderBy: { createdAt: 'desc' } },
-                compras: { include: { CompraProducto: { include: { producto: true } } } },
+        // Intento completo con inscripciones y tutor legal
+        try {
+            persona = await prisma.persona.findUnique({
+                where: { id: req.session.usuario.id },
+                include: {
+                    rol: true,
+                    inscripciones: { include: { categoria: true, tutorLegal: true }, orderBy: { createdAt: 'desc' } },
+                    compras: { include: { CompraProducto: { include: { producto: true } } } },
+                }
+            });
+            if (persona) {
+                inscripciones = persona.inscripciones || [];
+                compras = persona.compras || [];
             }
-        });
+        } catch (dbError) {
+            // Fallback: puede que la DB no tenga aún las columnas rolSolicitado / tabla tutores_legales
+            console.warn('Perfil: error al cargar inscripciones, usando fallback sin inscripciones:', dbError.message);
+            persona = await prisma.persona.findUnique({
+                where: { id: req.session.usuario.id },
+                include: {
+                    rol: true,
+                    compras: { include: { CompraProducto: { include: { producto: true } } } },
+                }
+            });
+            if (persona) compras = persona.compras || [];
+        }
 
         // Refrescar el rol en la sesión por si fue actualizado por el admin
         if (persona && persona.rol) {
@@ -161,8 +183,8 @@ exports.showPerfil = async (req, res) => {
         res.render('auth/perfil', {
             title: 'Mi Perfil | CB Granollers',
             persona,
-            inscripciones: persona ? persona.inscripciones : [],
-            compras: persona ? persona.compras : [],
+            inscripciones,
+            compras,
         });
     } catch (error) {
         console.error('Error al cargar perfil:', error);

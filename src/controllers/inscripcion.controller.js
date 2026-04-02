@@ -135,12 +135,28 @@ exports.inscribir = async (req, res) => {
 
 // ─── Ver mis inscripciones ─────────────────────────────────────────────────────
 exports.misInscripciones = async (req, res) => {
+    let inscripciones = [];
     try {
-        const inscripciones = await prisma.inscripcion.findMany({
-            where: { personaId: req.session.usuario.id },
-            include: { categoria: true, tutorLegal: true },
-            orderBy: { createdAt: 'desc' },
-        });
+        try {
+            inscripciones = await prisma.inscripcion.findMany({
+                where: { personaId: req.session.usuario.id },
+                include: { categoria: true, tutorLegal: true },
+                orderBy: { createdAt: 'desc' },
+            });
+        } catch (dbError) {
+            // Fallback sin tutorLegal por si la tabla no existe aún en la DB
+            console.warn('misInscripciones: error con tutorLegal, reintentando sin él:', dbError.message);
+            try {
+                inscripciones = await prisma.inscripcion.findMany({
+                    where: { personaId: req.session.usuario.id },
+                    include: { categoria: true },
+                    orderBy: { createdAt: 'desc' },
+                });
+            } catch (fallbackError) {
+                console.error('Error crítico al cargar inscripciones:', fallbackError);
+                req.flash('error', 'Error al cargar tus inscripciones. Puede que la base de datos necesite actualizarse.');
+            }
+        }
 
         res.render('inscripcion/mis-inscripciones', {
             title: 'Mis Inscripciones | CB Granollers',
