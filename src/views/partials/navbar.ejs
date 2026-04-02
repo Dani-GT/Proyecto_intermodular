@@ -43,7 +43,9 @@
               <span class="badge badge-primary badge-sm" style="margin-top:.4rem"><%= usuario.rol %></span>
             </div>
             <a href="/auth/perfil" class="nav-dropdown-item">👤 Mi perfil</a>
-            <a href="/inscripcion" class="nav-dropdown-item">📋 Inscribirme</a>
+            <% if (usuario.rol !== 'ADMIN' && usuario.rol !== 'TECNICO') { %>
+              <a href="/inscripcion" class="nav-dropdown-item">📋 Inscribirme</a>
+            <% } %>
             <a href="/tienda/carrito" class="nav-dropdown-item">🛒 Mi carrito</a>
             <% if (usuario.rol === 'ADMIN' || usuario.rol === 'TECNICO') { %>
               <div class="nav-dropdown-divider"></div>
@@ -98,7 +100,9 @@
 
     <% if (usuario) { %>
       <a href="/auth/perfil" class="nav-mobile-link">👤 Mi perfil</a>
-      <a href="/inscripcion" class="nav-mobile-link">📋 Inscribirme</a>
+      <% if (usuario.rol !== 'ADMIN' && usuario.rol !== 'TECNICO') { %>
+        <a href="/inscripcion" class="nav-mobile-link">📋 Inscribirme</a>
+      <% } %>
       <% if (usuario.rol === 'ADMIN' || usuario.rol === 'TECNICO') { %>
         <a href="/admin/dashboard" class="nav-mobile-link">⚙️ Panel admin</a>
       <% } %>

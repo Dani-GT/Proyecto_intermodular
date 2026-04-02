@@ -76,17 +76,29 @@ exports.cambiarRol = async (req, res) => {
 // ─── Gestión de inscripciones ─────────────────────────────────────────────────
 exports.inscripciones = async (req, res) => {
     try {
-        const [inscripciones, categorias] = await Promise.all([
-            prisma.inscripcion.findMany({
+        let inscripciones = [];
+        try {
+            inscripciones = await prisma.inscripcion.findMany({
                 include: {
                     persona: { select: { id: true, nombre: true, apellidos: true, email: true, fechaNacimiento: true, rol: true } },
                     categoria: true,
                     tutorLegal: true,
                 },
                 orderBy: { createdAt: 'desc' }
-            }),
-            prisma.categoria.findMany({ orderBy: { nombre: 'asc' } })
-        ]);
+            });
+        } catch (dbError) {
+            // Fallback sin tutorLegal si la tabla aún no existe en la DB
+            console.warn('Admin inscripciones: error con tutorLegal, reintentando sin él:', dbError.message);
+            inscripciones = await prisma.inscripcion.findMany({
+                include: {
+                    persona: { select: { id: true, nombre: true, apellidos: true, email: true, fechaNacimiento: true, rol: true } },
+                    categoria: true,
+                },
+                orderBy: { createdAt: 'desc' }
+            });
+        }
+
+        const categorias = await prisma.categoria.findMany({ orderBy: { nombre: 'asc' } });
 
         res.render('admin/inscripciones', {
             title: 'Inscripciones | Admin CB Granollers',

@@ -14,6 +14,13 @@ function calcularEdad(fechaNacimiento) {
 // ─── Formulario de inscripción ────────────────────────────────────────────────
 exports.showForm = async (req, res) => {
     try {
+        // Los administradores y técnicos no pueden inscribirse
+        const rol = req.session.usuario?.rol;
+        if (rol === 'ADMIN' || rol === 'TECNICO') {
+            req.flash('error', 'Los administradores y técnicos no pueden solicitar una inscripción de jugador.');
+            return res.redirect(rol === 'ADMIN' ? '/admin/dashboard' : '/auth/perfil');
+        }
+
         // Comprobar si ya tiene inscripción activa (PENDIENTE o APROBADA)
         const inscripcionActiva = await prisma.inscripcion.findFirst({
             where: {
@@ -64,6 +71,13 @@ exports.inscribir = async (req, res) => {
     const personaId = req.session.usuario.id;
 
     try {
+        // 0. Bloquear admin y técnico
+        const rol = req.session.usuario?.rol;
+        if (rol === 'ADMIN' || rol === 'TECNICO') {
+            req.flash('error', 'Los administradores y técnicos no pueden inscribirse como jugadores.');
+            return res.redirect(rol === 'ADMIN' ? '/admin/dashboard' : '/auth/perfil');
+        }
+
         // 1. Verificar que no haya inscripción activa (PENDIENTE o APROBADA)
         const inscripcionActiva = await prisma.inscripcion.findFirst({
             where: { personaId, estado: { in: ['PENDIENTE', 'APROBADA'] } },
