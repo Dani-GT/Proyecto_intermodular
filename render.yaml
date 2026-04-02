@@ -3,13 +3,15 @@ services:
     name: cb-granollers
     env: node
     plan: free
-    buildCommand: npm install && npx prisma generate && npx prisma migrate deploy
+    buildCommand: npm install && npx prisma generate && npx prisma db push --skip-generate --accept-data-loss
     startCommand: node app.js
     envVars:
       - key: NODE_ENV
         value: production
       - key: DATABASE_URL
-        sync: false          # Lo introduces manualmente en el dashboard de Render
+        sync: false          # Pooled URL de Supabase (Settings > Database > URI con pgbouncer)
+      - key: DIRECT_URL
+        sync: false          # Direct URL de Supabase (Settings > Database > URI sin pgbouncer, puerto 5432)
       - key: SESSION_SECRET
         generateValue: true  # Render genera un valor aleatorio automáticamente
       - key: PORT
