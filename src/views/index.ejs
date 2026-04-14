@@ -305,3 +305,57 @@
       </section>
 
       <%- include('partials/footer') %>
+
+<script>
+/* ── Contador animado del stats-bar ──────────────────────────────────────── */
+(function () {
+  // Configuración de cada stat: valor final, prefijo, sufijo, duración ms
+  var stats = [
+    { selector: '.stat-item:nth-child(1) .stat-num', end: 110, prefix: '+', suffix: '',    duration: 1600, start: 0   },
+    { selector: '.stat-item:nth-child(2) .stat-num', end: 6,   prefix: '',  suffix: '',    duration: 900,  start: 0   },
+    { selector: '.stat-item:nth-child(3) .stat-num', end: 1985,prefix: '',  suffix: '',    duration: 1800, start: 1960 },
+    { selector: '.stat-item:nth-child(4) .stat-num', end: 20,  prefix: '+', suffix: '',    duration: 1200, start: 0   },
+  ];
+
+  // Easing cuadrático out: rápido al principio, frena al final
+  function easeOutQuad(t) { return 1 - (1 - t) * (1 - t); }
+
+  function animateStat(cfg) {
+    var el = document.querySelector(cfg.selector);
+    if (!el) return;
+    var startTime = null;
+    var range = cfg.end - cfg.start;
+
+    function step(timestamp) {
+      if (!startTime) startTime = timestamp;
+      var elapsed = timestamp - startTime;
+      var progress = Math.min(elapsed / cfg.duration, 1);
+      var value = Math.round(cfg.start + range * easeOutQuad(progress));
+      el.textContent = cfg.prefix + value + cfg.suffix;
+      if (progress < 1) requestAnimationFrame(step);
+      else el.textContent = cfg.prefix + cfg.end + cfg.suffix; // asegura el valor exacto
+    }
+
+    requestAnimationFrame(step);
+  }
+
+  var statsBar = document.querySelector('.stats-bar');
+  if (!statsBar) return;
+
+  var fired = false;
+  var observer = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting && !fired) {
+        fired = true;
+        observer.disconnect();
+        stats.forEach(function (cfg, i) {
+          // Pequeño escalonado entre cifras para que no arranquen todas a la vez
+          setTimeout(function () { animateStat(cfg); }, i * 120);
+        });
+      }
+    });
+  }, { threshold: 0.4 });
+
+  observer.observe(statsBar);
+})();
+</script>
