@@ -1,4 +1,5 @@
-const prisma = require('../lib/prisma');
+const prisma  = require('../lib/prisma');
+const mailer  = require('../lib/mailer');
 
 // Calcula la edad en años completos a partir de una fecha
 function calcularEdad(fechaNacimiento) {
@@ -164,8 +165,9 @@ exports.inscribir = async (req, res) => {
         }
 
         // 4. Crear inscripción (y tutor si procede)
+        let inscripcionCreada = null;
         await prisma.$transaction(async (tx) => {
-            const inscripcion = await tx.inscripcion.create({
+            inscripcionCreada = await tx.inscripcion.create({
                 data: {
                     personaId,
                     categoriaId: parseInt(categoriaId),
@@ -174,6 +176,7 @@ exports.inscribir = async (req, res) => {
                     estado: 'PENDIENTE',
                     rolSolicitado: (rolSolicitado === 'TECNICO' ? 'TECNICO' : 'JUGADOR'),
                 },
+                include: { categoria: true },
             });
 
             if (esMenor || sinFecha) {
@@ -191,11 +194,25 @@ exports.inscribir = async (req, res) => {
                     telefono:        tutorTelefono.trim(),
                     fechaNacimiento: new Date(tutorFechaNacimiento),
                 };
-                await tx.tutorLegal.create({
-                    data: { inscripcionId: inscripcion.id, ...tutorData },
+                const tutor = await tx.tutorLegal.create({
+                    data: { inscripcionId: inscripcionCreada.id, ...tutorData },
                 });
+                inscripcionCreada.tutorLegal = tutor;
             }
         });
+
+        // 5. Notificar al administrador por email (sin bloquear la respuesta)
+        if (inscripcionCreada) {
+            const personaCompleta = await prisma.persona.findUnique({
+                where: { id: personaId },
+                select: { nombre: true, apellidos: true, email: true, telefono: true },
+            });
+            if (personaCompleta) {
+                mailer.notificarInscripcion(inscripcionCreada, personaCompleta).catch(err =>
+                    console.error('[Mailer] Error al notificar inscripción:', err.message)
+                );
+            }
+        }
 
         req.flash('exito', '¡Solicitud de inscripción enviada! Te contactaremos cuando sea procesada.');
         res.redirect('/auth/perfil');
