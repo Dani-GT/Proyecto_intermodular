@@ -8,7 +8,7 @@
       <section class="hero" style="min-height:540px">
         <div class="hero-bg"></div>
         <div class="hero-overlay"></div>
-        <div class="container hero-content" style="padding:5rem 0">
+        <div class="container hero-content" style="padding-top:5rem;padding-bottom:5rem">
           <div class="hero-eyebrow">⚾ Est. 1985 · Granollers</div>
           <h1 class="hero-title">Desata tu <span class="highlight">poder</span><br>en el diamante</h1>
           <p class="hero-desc">Entrenamiento de élite, instalaciones de primer nivel y una cultura de excelencia. Únete
@@ -88,7 +88,7 @@
      ══════════════════════════════════════════════════════ -->
       <section class="section-py bg-dark" style="background:var(--bg2)">
         <div class="container">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem">
+          <div class="home-results-grid">
 
             <!-- Resultados recientes -->
             <div>
@@ -101,7 +101,7 @@
               </div>
               <div class="card scoreboard-card">
                 <% if (typeof ultimosResultados !=='undefined' && ultimosResultados && ultimosResultados.length> 0) { %>
-                  <% ultimosResultados.forEach(function(p) { %>
+                  <% ultimosResultados.slice(0,3).forEach(function(p) { %>
                     <% const partes=p.resultado ? p.resultado.split('-') : []; %>
                       <% const local=partes[0] ? parseInt(partes[0]) : 0; %>
                         <% const visitante=partes[1] ? parseInt(partes[1]) : 0; %>

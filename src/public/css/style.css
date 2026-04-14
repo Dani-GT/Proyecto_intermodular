@@ -382,6 +382,7 @@ select.form-control { cursor: pointer; }
 /* ══════════════════════════════════════════════════════════════════════
    HOME — SCOREBOARD
    ══════════════════════════════════════════════════════════════════════ */
+.home-results-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
 .scoreboard-card { padding: 1.5rem; }
 .scoreboard-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; }
 .scoreboard-title { font-size: 1rem; font-weight: 700; display: flex; align-items: center; gap: .5rem; }
@@ -776,8 +777,12 @@ select.form-control { cursor: pointer; }
 
   /* ── Hero ── */
   .hero { min-height: 380px; }
+  .hero-content { padding-left: 1rem; padding-right: 1rem; }
   .hero-actions { flex-direction: column; }
   .hero-actions .btn { width: 100%; }
+
+  /* ── Resultados + Agenda: columna en móvil ── */
+  .home-results-grid { grid-template-columns: 1fr; }
 
   /* ── Scoreboard / resultados: columna en móvil ── */
   .score-item { flex-direction: column; align-items: flex-start; gap: .5rem; }
