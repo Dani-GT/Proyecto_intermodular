@@ -35,7 +35,11 @@
         <% categorias.forEach(function(cat) { %>
           <div class="card category-card card-hover">
             <div class="category-img <%= catColors[cat.nombre] || '' %>">
-              <div class="category-img-placeholder"><%= catEmoji[cat.nombre] || '⚾' %></div>
+              <% if (cat.nombre === 'SUB10') { %>
+                <img src="/images/sub10.webp" alt="Categoría SUB10">
+              <% } else { %>
+                <div class="category-img-placeholder"><%= catEmoji[cat.nombre] || '⚾' %></div>
+              <% } %>
             </div>
             <div class="category-body">
               <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem">
