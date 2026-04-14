@@ -73,35 +73,79 @@
           </div>
         </div>
 
-        <!-- Datos del tutor legal (menores o sin fecha de nacimiento) -->
+        <!-- Datos del tutor legal — OBLIGATORIO para menores de edad -->
         <% if (typeof mostrarTutor !== 'undefined' && mostrarTutor) { %>
-        <div class="card" id="seccionTutor" style="padding:2rem;margin-bottom:1.5rem;border-color:var(--accent)">
+        <div class="card" id="seccionTutor" style="padding:2rem;margin-bottom:1.5rem;border:2px solid var(--accent)">
+
           <h3 style="margin-bottom:.5rem;color:var(--accent)">
             👪 Datos del padre/madre o tutor legal
           </h3>
+
           <% if (typeof esMenor !== 'undefined' && esMenor) { %>
-            <p style="font-size:.85rem;color:var(--text2);margin-bottom:1.25rem">
-              Como menor de edad, es <strong>obligatorio</strong> facilitar los datos de un progenitor o tutor legal para tramitar la inscripción.
-            </p>
+            <div style="background:rgba(var(--accent-rgb),.1);border-left:4px solid var(--accent);padding:.85rem 1rem;border-radius:6px;margin-bottom:1.5rem">
+              <p style="font-size:.88rem;color:var(--text);margin:0;line-height:1.6">
+                Eres menor de edad. Es <strong>obligatorio</strong> facilitar los datos completos de un
+                progenitor o tutor legal para poder tramitar la inscripción. Sin esta información
+                <strong>no se puede procesar la solicitud</strong>.
+              </p>
+            </div>
           <% } else { %>
-            <p style="font-size:.85rem;color:var(--text2);margin-bottom:1.25rem">
-              No tenemos tu fecha de nacimiento registrada. Si eres menor de 18 años, estos datos son <strong>obligatorios</strong>.
-            </p>
+            <div style="background:rgba(var(--accent-rgb),.08);border-left:4px solid var(--accent);padding:.85rem 1rem;border-radius:6px;margin-bottom:1.5rem">
+              <p style="font-size:.88rem;color:var(--text);margin:0;line-height:1.6">
+                No tenemos tu fecha de nacimiento registrada. Si eres menor de 18 años, estos datos
+                son <strong>obligatorios</strong>.
+              </p>
+            </div>
           <% } %>
-          <div style="display:grid;gap:1rem;grid-template-columns:1fr 1fr">
+
+          <!-- Nombre y apellidos -->
+          <div style="display:grid;gap:1rem;grid-template-columns:1fr 1fr;margin-bottom:1rem">
             <div class="form-group" style="margin-bottom:0">
-              <label class="form-label">Nombre del tutor <span style="color:red">*</span></label>
-              <input type="text" name="tutorNombre" class="form-control" placeholder="Nombre" <%= typeof esMenor !== 'undefined' && esMenor ? 'required' : '' %>>
+              <label class="form-label">Nombre <span style="color:red">*</span></label>
+              <input type="text" name="tutorNombre" class="form-control"
+                     placeholder="Nombre del tutor" required
+                     autocomplete="off">
             </div>
             <div class="form-group" style="margin-bottom:0">
-              <label class="form-label">Apellidos del tutor <span style="color:red">*</span></label>
-              <input type="text" name="tutorApellidos" class="form-control" placeholder="Apellidos" <%= typeof esMenor !== 'undefined' && esMenor ? 'required' : '' %>>
+              <label class="form-label">Apellidos <span style="color:red">*</span></label>
+              <input type="text" name="tutorApellidos" class="form-control"
+                     placeholder="Apellidos del tutor" required
+                     autocomplete="off">
             </div>
           </div>
-          <div class="form-group" style="margin-top:1rem;margin-bottom:0">
-            <label class="form-label">DNI del tutor <span style="color:red">*</span></label>
-            <input type="text" name="tutorDni" class="form-control" placeholder="12345678A" pattern="[0-9]{8}[A-Za-z]" title="Formato: 8 dígitos seguidos de una letra" <%= typeof esMenor !== 'undefined' && esMenor ? 'required' : '' %>>
+
+          <!-- DNI y teléfono -->
+          <div style="display:grid;gap:1rem;grid-template-columns:1fr 1fr;margin-bottom:1rem">
+            <div class="form-group" style="margin-bottom:0">
+              <label class="form-label">DNI <span style="color:red">*</span></label>
+              <input type="text" name="tutorDni" class="form-control"
+                     placeholder="12345678A"
+                     pattern="[0-9]{8}[A-Za-z]"
+                     title="8 dígitos seguidos de una letra (ej: 12345678A)"
+                     required
+                     autocomplete="off">
+            </div>
+            <div class="form-group" style="margin-bottom:0">
+              <label class="form-label">Teléfono <span style="color:red">*</span></label>
+              <input type="tel" name="tutorTelefono" class="form-control"
+                     placeholder="600 000 000"
+                     pattern="[0-9+\s\-]{9,15}"
+                     title="Introduce un número de teléfono válido"
+                     required
+                     autocomplete="off">
+            </div>
           </div>
+
+          <!-- Fecha de nacimiento -->
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label">Fecha de nacimiento del tutor <span style="color:red">*</span></label>
+            <input type="date" name="tutorFechaNacimiento" class="form-control"
+                   max="<%= new Date(new Date().setFullYear(new Date().getFullYear() - 18)).toISOString().split('T')[0] %>"
+                   title="El tutor debe ser mayor de 18 años"
+                   required>
+            <small style="color:var(--text3);font-size:.78rem">El tutor/a debe ser mayor de 18 años.</small>
+          </div>
+
         </div>
         <% } %>
 

@@ -115,12 +115,14 @@ model Inscripcion {
 }
 
 model TutorLegal {
-  id            Int         @id @default(autoincrement())
-  inscripcionId Int         @unique
-  nombre        String      @db.VarChar(100)
-  apellidos     String      @db.VarChar(100)
-  dni           String      @db.VarChar(20)
-  createdAt     DateTime    @default(now())
+  id               Int       @id @default(autoincrement())
+  inscripcionId    Int       @unique
+  nombre           String    @db.VarChar(100)
+  apellidos        String    @db.VarChar(100)
+  dni              String    @db.VarChar(20)
+  telefono         String    @db.VarChar(20)
+  fechaNacimiento  DateTime
+  createdAt        DateTime  @default(now())
 
   inscripcion Inscripcion @relation(fields: [inscripcionId], references: [id], onDelete: Cascade)
 

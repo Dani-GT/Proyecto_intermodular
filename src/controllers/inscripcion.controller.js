@@ -45,7 +45,7 @@ exports.showForm = async (req, res) => {
 
         const edad = calcularEdad(persona?.fechaNacimiento);
         const esMenor = edad !== null && edad < 18;
-        // Sin fecha de nacimiento, mostramos campos de tutor por precaución
+        // Sin fecha de nacimiento, mostramos el formulario de tutor por precaución
         const mostrarTutor = esMenor || edad === null;
 
         res.render('inscripcion/form', {
@@ -66,7 +66,7 @@ exports.showForm = async (req, res) => {
 exports.inscribir = async (req, res) => {
     const {
         categoriaId, temporada, notas, rolSolicitado,
-        tutorNombre, tutorApellidos, tutorDni,
+        tutorNombre, tutorApellidos, tutorDni, tutorTelefono, tutorFechaNacimiento,
     } = req.body;
     const personaId = req.session.usuario.id;
 
@@ -97,7 +97,7 @@ exports.inscribir = async (req, res) => {
             return res.redirect('/inscripcion');
         }
 
-        // 3. Comprobar si es menor y si se han aportado los datos del tutor
+        // 3. Comprobar minoría de edad y validar todos los datos del tutor
         const persona = await prisma.persona.findUnique({
             where: { id: personaId },
             select: { fechaNacimiento: true },
@@ -106,10 +106,26 @@ exports.inscribir = async (req, res) => {
         const esMenor = edad !== null && edad < 18;
         const sinFecha = edad === null;
 
-        // Si es menor o no tiene fecha de nacimiento, los datos del tutor son obligatorios
-        if ((esMenor || sinFecha) && (!tutorNombre || !tutorApellidos || !tutorDni)) {
-            req.flash('error', 'Para menores de edad es obligatorio indicar los datos del padre/madre o tutor legal (Nombre, Apellidos y DNI).');
-            return res.redirect('/inscripcion');
+        if (esMenor || sinFecha) {
+            // Todos los campos del tutor son obligatorios para menores
+            const camposFaltantes = [];
+            if (!tutorNombre?.trim())           camposFaltantes.push('nombre');
+            if (!tutorApellidos?.trim())         camposFaltantes.push('apellidos');
+            if (!tutorDni?.trim())               camposFaltantes.push('DNI');
+            if (!tutorTelefono?.trim())          camposFaltantes.push('teléfono');
+            if (!tutorFechaNacimiento?.trim())   camposFaltantes.push('fecha de nacimiento');
+
+            if (camposFaltantes.length > 0) {
+                req.flash('error', `Para menores de edad es obligatorio completar todos los datos del tutor legal. Faltan: ${camposFaltantes.join(', ')}.`);
+                return res.redirect('/inscripcion');
+            }
+
+            // Verificar que el tutor sea mayor de 18 años
+            const edadTutor = calcularEdad(tutorFechaNacimiento);
+            if (edadTutor === null || edadTutor < 18) {
+                req.flash('error', 'El tutor legal debe ser mayor de 18 años.');
+                return res.redirect('/inscripcion');
+            }
         }
 
         // 4. Crear inscripción (y tutor si procede)
@@ -125,13 +141,16 @@ exports.inscribir = async (req, res) => {
                 },
             });
 
-            if (tutorNombre && tutorApellidos && tutorDni) {
+            // Guardar tutor si es menor (o sin fecha registrada) y se han aportado los datos
+            if ((esMenor || sinFecha) && tutorNombre?.trim()) {
                 await tx.tutorLegal.create({
                     data: {
-                        inscripcionId: inscripcion.id,
-                        nombre: tutorNombre.trim(),
-                        apellidos: tutorApellidos.trim(),
-                        dni: tutorDni.trim().toUpperCase(),
+                        inscripcionId:   inscripcion.id,
+                        nombre:          tutorNombre.trim(),
+                        apellidos:       tutorApellidos.trim(),
+                        dni:             tutorDni.trim().toUpperCase(),
+                        telefono:        tutorTelefono.trim(),
+                        fechaNacimiento: new Date(tutorFechaNacimiento),
                     },
                 });
             }
