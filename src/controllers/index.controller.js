@@ -1,5 +1,7 @@
 const prisma = require('../lib/prisma');
 
+const BASE_URL = 'https://cb-granollers.onrender.com';
+
 // ─── Página principal ─────────────────────────────────────────────────────────
 exports.renderHome = async (req, res) => {
     try {
@@ -27,6 +29,8 @@ exports.renderHome = async (req, res) => {
 
         res.render('index', {
             title: 'Inicio | Club Béisbol Granollers',
+            description: 'Club Béisbol Granollers — Entrenamiento de élite, instalaciones de primer nivel y una cultura de excelencia. Inscripciones abiertas para la temporada 2026-2027.',
+            canonical: `${BASE_URL}/`,
             noticias,
             proximosPartidos,
             ultimosResultados,
@@ -36,6 +40,8 @@ exports.renderHome = async (req, res) => {
         console.error('Error en home:', error);
         res.render('index', {
             title: 'Inicio | Club Béisbol Granollers',
+            description: 'Club Béisbol Granollers — Pasión por el béisbol en Granollers desde 1985.',
+            canonical: `${BASE_URL}/`,
             noticias: [],
             proximosPartidos: [],
             ultimosResultados: [],
@@ -46,10 +52,18 @@ exports.renderHome = async (req, res) => {
 
 // ─── Página "Sobre el Club" ───────────────────────────────────────────────────
 exports.renderClub = (req, res) => {
-    res.render('club', { title: 'El Club | CB Granollers' });
+    res.render('club', {
+        title: 'El Club | CB Granollers',
+        description: 'Conoce la historia, los valores y la estructura del Club Béisbol Granollers, fundado en 1985 en Granollers, Barcelona.',
+        canonical: `${BASE_URL}/club`,
+    });
 };
 
 // ─── Página de contacto ───────────────────────────────────────────────────────
 exports.renderContacto = (req, res) => {
-    res.render('contacto', { title: 'Contacto | CB Granollers' });
+    res.render('contacto', {
+        title: 'Contacto | CB Granollers',
+        description: 'Contacta con el Club Béisbol Granollers. Estamos en Granollers, Barcelona. Escríbenos para más información sobre inscripciones y entrenamientos.',
+        canonical: `${BASE_URL}/contacto`,
+    });
 };

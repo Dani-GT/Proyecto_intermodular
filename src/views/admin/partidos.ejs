@@ -84,7 +84,6 @@
                     </td>
                     <td>
                       <form action="/admin/partidos/<%= p.id %>" method="POST" class="inline-form">
-                        <input type="hidden" name="_method" value="PUT">
                         <input type="text" name="resultado" value="<%= p.resultado || '' %>" class="form-control" placeholder="7-3" style="width:75px;padding:.3rem .5rem;font-size:.82rem">
                         <button type="submit" class="btn btn-primary btn-sm">✓</button>
                       </form>

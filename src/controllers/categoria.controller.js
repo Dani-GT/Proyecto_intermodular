@@ -1,5 +1,7 @@
 const prisma = require('../lib/prisma');
 
+const BASE_URL = 'https://cb-granollers.onrender.com';
+
 // ─── Listar categorías ────────────────────────────────────────────────────────
 exports.index = async (req, res) => {
     try {
@@ -12,6 +14,8 @@ exports.index = async (req, res) => {
 
         res.render('categorias/index', {
             title: 'Categorías | CB Granollers',
+            description: 'Todos los equipos del Club Béisbol Granollers: Sub-10, Sub-12, Sub-14, Sub-16, Junior y Senior. Descubre los calendarios, resultados y plantillas.',
+            canonical: `${BASE_URL}/categorias`,
             categorias,
         });
     } catch (error) {
@@ -75,6 +79,8 @@ exports.show = async (req, res) => {
 
         res.render('categorias/show', {
             title: `${categoria.nombre} | CB Granollers`,
+            description: `Equipo ${categoria.nombre} del Club Béisbol Granollers. Jugadores, técnicos, próximos partidos y últimos resultados.`,
+            canonical: `${BASE_URL}/categorias/${categoria.nombre.toLowerCase()}`,
             categoria,
             inscripciones: categoria.inscripciones,
             jugadores,
@@ -101,6 +107,8 @@ exports.resultados = async (req, res) => {
 
         res.render('categorias/resultados', {
             title: 'Resultados | CB Granollers',
+            description: 'Últimos resultados de los equipos del Club Béisbol Granollers. Marcadores y estadísticas de todos los partidos.',
+            canonical: `${BASE_URL}/categorias/resultados`,
             partidos,
         });
     } catch (error) {
@@ -124,6 +132,8 @@ exports.calendario = async (req, res) => {
 
         res.render('categorias/calendario', {
             title: 'Calendario | CB Granollers',
+            description: 'Próximos partidos del Club Béisbol Granollers. Consulta el calendario de todos los equipos para la temporada 2026-2027.',
+            canonical: `${BASE_URL}/categorias/calendario`,
             partidos,
         });
     } catch (error) {

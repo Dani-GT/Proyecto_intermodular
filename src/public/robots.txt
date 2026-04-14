@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+
+# Páginas privadas — no indexar
+Disallow: /auth/perfil
+Disallow: /auth/registro
+Disallow: /auth/login
+Disallow: /admin/
+Disallow: /inscripcion/
+Disallow: /tienda/carrito
+Disallow: /tienda/pago
+
+Sitemap: https://cb-granollers.onrender.com/sitemap.xml

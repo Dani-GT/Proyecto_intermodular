@@ -60,7 +60,6 @@
                     </td>
                     <td>
                       <form action="/admin/usuarios/<%= u.id %>/rol" method="POST" class="inline-form">
-                        <input type="hidden" name="_method" value="PUT">
                         <select name="rol" class="form-control" style="padding:.3rem .6rem;font-size:.82rem;width:auto" onchange="this.form.submit()">
                           <% ['SOCIO','JUGADOR','TECNICO','ADMIN'].forEach(function(r) { %>
                             <option value="<%= r %>" <%= rolActual === r ? 'selected' : '' %>><%= r %></option>

@@ -3,7 +3,6 @@ const express = require('express');
 const path = require('path');
 const session = require('express-session');
 const flash = require('connect-flash');
-const methodOverride = require('method-override');
 const PgSessionStore = require('./src/lib/sessionStore');
 
 const app = express();
@@ -19,7 +18,6 @@ app.set('views', path.join(__dirname, 'src/views'));
 // ─── Middleware ───────────────────────────────────────────────────────────────
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(methodOverride('_method'));
 app.use(express.static(path.join(__dirname, 'src/public')));
 
 // ─── Sesiones (persistidas en PostgreSQL/Supabase) ───────────────────────────

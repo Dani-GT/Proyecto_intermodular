@@ -1,5 +1,7 @@
 const prisma = require('../lib/prisma');
 
+const BASE_URL = 'https://cb-granollers.onrender.com';
+
 // ─── Listar noticias ──────────────────────────────────────────────────────────
 exports.index = async (req, res) => {
     try {
@@ -9,6 +11,8 @@ exports.index = async (req, res) => {
 
         res.render('noticias/index', {
             title: 'Noticias | CB Granollers',
+            description: 'Últimas noticias del Club Béisbol Granollers: resultados, fichajes, eventos y todo lo que pasa en el club.',
+            canonical: `${BASE_URL}/noticias`,
             noticias,
         });
     } catch (error) {
@@ -37,8 +41,15 @@ exports.show = async (req, res) => {
             take: 3,
         });
 
+        // Descripción: primer párrafo del resumen o del contenido (máx. 160 chars)
+        const rawDesc = noticia.resumen || noticia.contenido || '';
+        const seoDesc = rawDesc.replace(/<[^>]+>/g, '').substring(0, 160).trim();
+
         res.render('noticias/show', {
             title: `${noticia.titulo} | CB Granollers`,
+            description: seoDesc || `Noticia del Club Béisbol Granollers: ${noticia.titulo}`,
+            canonical: `${BASE_URL}/noticias/${noticia.id}`,
+            ogImage: noticia.imagen ? `${BASE_URL}${noticia.imagen}` : undefined,
             noticia,
             relacionadas,
         });
