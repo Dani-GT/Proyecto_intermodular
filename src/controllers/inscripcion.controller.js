@@ -11,6 +11,18 @@ function calcularEdad(fechaNacimiento) {
     return edad;
 }
 
+// ─── Categoría permitida según edad ──────────────────────────────────────────
+function categoriaPermitida(nombre, edad) {
+    if (edad === null) return true; // sin fecha → mostrar todas por si acaso
+    if (nombre === 'SUB10')  return edad <= 10;
+    if (nombre === 'SUB12')  return edad >= 11 && edad <= 12;
+    if (nombre === 'SUB14')  return edad >= 13 && edad <= 14;
+    if (nombre === 'SUB16')  return edad >= 15 && edad <= 16;
+    if (nombre === 'SUB18')  return edad >= 17 && edad <= 18;
+    if (nombre === 'SENIOR') return edad >= 18;
+    return false;
+}
+
 // ─── Formulario de inscripción ────────────────────────────────────────────────
 exports.showForm = async (req, res) => {
     try {
@@ -38,20 +50,29 @@ exports.showForm = async (req, res) => {
             return res.redirect('/auth/perfil');
         }
 
-        const [categorias, persona] = await Promise.all([
+        const [todasCategorias, persona] = await Promise.all([
             prisma.categoria.findMany({ orderBy: { nombre: 'asc' } }),
-            prisma.persona.findUnique({ where: { id: req.session.usuario.id }, select: { fechaNacimiento: true } }),
+            prisma.persona.findUnique({
+                where: { id: req.session.usuario.id },
+                select: { fechaNacimiento: true, tutorNombre: true },
+            }),
         ]);
 
-        const edad = calcularEdad(persona?.fechaNacimiento);
-        const esMenor = edad !== null && edad < 18;
-        // Sin fecha de nacimiento, mostramos el formulario de tutor por precaución
-        const mostrarTutor = esMenor || edad === null;
+        const edad     = calcularEdad(persona?.fechaNacimiento);
+        const esMenor  = edad !== null && edad < 18;
+        const tieneTutor = !!persona?.tutorNombre; // tutor ya guardado en registro
+
+        // Solo mostrar las categorías que corresponden a la edad del usuario
+        const categorias = todasCategorias.filter(c => categoriaPermitida(c.nombre, edad));
+
+        // Mostrar el formulario de tutor solo si es menor Y no tiene tutor guardado
+        const mostrarTutor = (esMenor || edad === null) && !tieneTutor;
 
         res.render('inscripcion/form', {
             title: 'Inscripción | CB Granollers',
             categorias,
             esMenor,
+            tieneTutor,
             mostrarTutor,
             edad,
         });
@@ -97,17 +118,32 @@ exports.inscribir = async (req, res) => {
             return res.redirect('/inscripcion');
         }
 
-        // 3. Comprobar minoría de edad y validar todos los datos del tutor
+        // 3. Datos del jugador: edad, categoría y tutor
         const persona = await prisma.persona.findUnique({
             where: { id: personaId },
-            select: { fechaNacimiento: true },
+            select: {
+                fechaNacimiento: true,
+                tutorNombre: true, tutorApellidos: true,
+                tutorDni: true,    tutorTelefono: true,
+                tutorFechaNacimiento: true,
+            },
         });
-        const edad = calcularEdad(persona?.fechaNacimiento);
-        const esMenor = edad !== null && edad < 18;
+        const edad     = calcularEdad(persona?.fechaNacimiento);
+        const esMenor  = edad !== null && edad < 18;
         const sinFecha = edad === null;
 
-        if (esMenor || sinFecha) {
-            // Todos los campos del tutor son obligatorios para menores
+        // 3a. Validar que la categoría seleccionada corresponde a la edad
+        const categoriaObj = await prisma.categoria.findUnique({ where: { id: parseInt(categoriaId) } });
+        if (categoriaObj && edad !== null && !categoriaPermitida(categoriaObj.nombre, edad)) {
+            req.flash('error', `La categoría ${categoriaObj.nombre} no corresponde a tu edad (${edad} años).`);
+            return res.redirect('/inscripcion');
+        }
+
+        // 3b. Gestión del tutor para menores
+        const tieneTutor = !!persona?.tutorNombre; // ya guardado en el registro
+
+        if ((esMenor || sinFecha) && !tieneTutor) {
+            // Si no tiene tutor guardado, exigir los datos en el formulario
             const camposFaltantes = [];
             if (!tutorNombre?.trim())           camposFaltantes.push('nombre');
             if (!tutorApellidos?.trim())         camposFaltantes.push('apellidos');
@@ -120,7 +156,6 @@ exports.inscribir = async (req, res) => {
                 return res.redirect('/inscripcion');
             }
 
-            // Verificar que el tutor sea mayor de 18 años
             const edadTutor = calcularEdad(tutorFechaNacimiento);
             if (edadTutor === null || edadTutor < 18) {
                 req.flash('error', 'El tutor legal debe ser mayor de 18 años.');
@@ -141,17 +176,23 @@ exports.inscribir = async (req, res) => {
                 },
             });
 
-            // Guardar tutor si es menor (o sin fecha registrada) y se han aportado los datos
-            if ((esMenor || sinFecha) && tutorNombre?.trim()) {
+            if (esMenor || sinFecha) {
+                // Usar datos del tutor del formulario, o los ya guardados en el registro
+                const tutorData = tieneTutor ? {
+                    nombre:          persona.tutorNombre,
+                    apellidos:       persona.tutorApellidos,
+                    dni:             persona.tutorDni,
+                    telefono:        persona.tutorTelefono || '',
+                    fechaNacimiento: persona.tutorFechaNacimiento || new Date('1980-01-01'),
+                } : {
+                    nombre:          tutorNombre.trim(),
+                    apellidos:       tutorApellidos.trim(),
+                    dni:             tutorDni.trim().toUpperCase(),
+                    telefono:        tutorTelefono.trim(),
+                    fechaNacimiento: new Date(tutorFechaNacimiento),
+                };
                 await tx.tutorLegal.create({
-                    data: {
-                        inscripcionId:   inscripcion.id,
-                        nombre:          tutorNombre.trim(),
-                        apellidos:       tutorApellidos.trim(),
-                        dni:             tutorDni.trim().toUpperCase(),
-                        telefono:        tutorTelefono.trim(),
-                        fechaNacimiento: new Date(tutorFechaNacimiento),
-                    },
+                    data: { inscripcionId: inscripcion.id, ...tutorData },
                 });
             }
         });
