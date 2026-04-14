@@ -3,12 +3,13 @@ const nodemailer = require('nodemailer');
 // ─── Transporter (Gmail con contraseña de aplicación) ─────────────────────────
 const transporter = nodemailer.createTransport({
     host:   'smtp.gmail.com',
-    port:   465,
-    secure: true,
+    port:   587,
+    secure: false,          // STARTTLS — puerto 587, permitido en Render
     auth: {
         user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,   // Contraseña de aplicación de Google
+        pass: process.env.EMAIL_PASS,
     },
+    tls: { rejectUnauthorized: false },
 });
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'danielgalantavares@gmail.com';
