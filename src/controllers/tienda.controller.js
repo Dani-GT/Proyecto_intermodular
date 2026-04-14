@@ -1,4 +1,5 @@
-const prisma = require('../lib/prisma');
+const prisma  = require('../lib/prisma');
+const mailer  = require('../lib/mailer');
 
 // ─── Catálogo de productos ────────────────────────────────────────────────────
 exports.index = async (req, res) => {
@@ -257,6 +258,14 @@ exports.procesarPago = async (req, res) => {
 
         // Limpiar carrito de sesión
         req.session.carrito = [];
+
+        // Notificar al admin por email (sin bloquear la respuesta)
+        const persona = await prisma.persona.findUnique({
+            where: { id: personaId },
+            select: { nombre: true, apellidos: true, email: true, telefono: true },
+        });
+        if (persona) mailer.notificarCompra(compra, persona);
+
         req.flash('exito', `¡Pedido #${compra.id.substring(0, 8).toUpperCase()} realizado con éxito!`);
         res.redirect(`/tienda/compra/${compra.id}`);
 

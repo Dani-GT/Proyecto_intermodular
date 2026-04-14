@@ -16,3 +16,9 @@ services:
         generateValue: true  # Render genera un valor aleatorio automáticamente
       - key: PORT
         value: 3000
+      - key: EMAIL_USER
+        sync: false          # Tu cuenta de Gmail (ej. tucuenta@gmail.com)
+      - key: EMAIL_PASS
+        sync: false          # Contraseña de aplicación de Google (16 caracteres)
+      - key: ADMIN_EMAIL
+        value: danielgalantavares@gmail.com

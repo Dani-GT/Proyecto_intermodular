@@ -1,5 +1,6 @@
 const bcrypt = require('bcryptjs');
-const prisma = require('../lib/prisma');
+const prisma  = require('../lib/prisma');
+const mailer  = require('../lib/mailer');
 
 // Calcula la edad en años completos
 function calcularEdad(fechaStr) {
@@ -119,6 +120,9 @@ exports.register = async (req, res) => {
             email: nuevaPersona.email,
             rol: 'SOCIO',
         };
+
+        // Notificar al admin por email (sin bloquear la respuesta)
+        mailer.notificarRegistro(nuevaPersona);
 
         req.flash('exito', `¡Bienvenido/a al club, ${nuevaPersona.nombre}!`);
         res.redirect('/');
