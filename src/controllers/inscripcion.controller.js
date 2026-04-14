@@ -161,12 +161,9 @@ exports.inscribir = async (req, res) => {
 
     } catch (error) {
         console.error('Error en inscripción:', error.message || error);
-        // Detectar errores de schema (columna o tabla inexistente en DB)
-        if (error.message && (error.message.includes('column') || error.message.includes('relation') || error.message.includes('does not exist'))) {
-            req.flash('error', 'Error de base de datos: falta aplicar la migración SQL en Supabase (columnas rolSolicitado / tutores_legales).');
-        } else {
-            req.flash('error', 'Error al procesar la inscripción. Inténtalo de nuevo.');
-        }
+        const msg = error.message || String(error);
+        // Mostrar siempre el error técnico en desarrollo / Supabase no migrado
+        req.flash('error', `Error al procesar la inscripción: ${msg}`);
         res.redirect('/inscripcion');
     }
 };
