@@ -14,16 +14,19 @@ const transporter = nodemailer.createTransport({
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'danielgalantavares@gmail.com';
 const FROM        = `"CB Granollers" <${process.env.EMAIL_USER}>`;
 
-// ─── Helper: enviar sin bloquear (errores solo en consola) ────────────────────
+// ─── Helper: enviar sin bloquear (errores siempre en consola) ────────────────
 async function send(options) {
     if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-        console.warn('[Mailer] EMAIL_USER / EMAIL_PASS no configurados. Email no enviado.');
+        console.warn('[Mailer] ⚠️  EMAIL_USER / EMAIL_PASS no configurados — email no enviado.');
         return;
     }
+    console.log(`[Mailer] Enviando email a ${options.to} · asunto: ${options.subject}`);
     try {
-        await transporter.sendMail(options);
+        const info = await transporter.sendMail(options);
+        console.log('[Mailer] ✅ Email enviado. messageId:', info.messageId);
     } catch (err) {
-        console.error('[Mailer] Error al enviar email:', err.message);
+        console.error('[Mailer] ❌ Error al enviar email:', err.message);
+        console.error('[Mailer] Detalle:', err.code, err.response || '');
     }
 }
 
