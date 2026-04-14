@@ -1,6 +1,17 @@
 const bcrypt = require('bcryptjs');
 const prisma = require('../lib/prisma');
 
+// Calcula la edad en años completos
+function calcularEdad(fechaStr) {
+    if (!fechaStr) return null;
+    const hoy = new Date();
+    const nac = new Date(fechaStr);
+    let edad = hoy.getFullYear() - nac.getFullYear();
+    const m = hoy.getMonth() - nac.getMonth();
+    if (m < 0 || (m === 0 && hoy.getDate() < nac.getDate())) edad--;
+    return edad;
+}
+
 // ─── Mostrar formulario de registro ──────────────────────────────────────────
 exports.showRegister = (req, res) => {
     res.render('auth/registro', { title: 'Registro | CB Granollers' });
@@ -8,12 +19,20 @@ exports.showRegister = (req, res) => {
 
 // ─── Procesar registro ────────────────────────────────────────────────────────
 exports.register = async (req, res) => {
-    const { nombre, apellidos, email, password, confirmarPassword, fechaNacimiento, telefono } = req.body;
+    const {
+        nombre, apellidos, email, password, confirmarPassword, fechaNacimiento, telefono,
+        tutorNombre, tutorApellidos, tutorDni, tutorTelefono, tutorFechaNacimiento,
+    } = req.body;
 
     try {
         // Validaciones básicas
         if (!nombre || !apellidos || !email || !password) {
             req.flash('error', 'Todos los campos obligatorios deben estar completos.');
+            return res.redirect('/auth/registro');
+        }
+
+        if (!fechaNacimiento) {
+            req.flash('error', 'La fecha de nacimiento es obligatoria.');
             return res.redirect('/auth/registro');
         }
 
@@ -25,6 +44,32 @@ exports.register = async (req, res) => {
         if (password.length < 8) {
             req.flash('error', 'La contraseña debe tener al menos 8 caracteres.');
             return res.redirect('/auth/registro');
+        }
+
+        // Comprobar si es menor de edad
+        const edad = calcularEdad(fechaNacimiento);
+        const esMenor = edad !== null && edad < 18;
+
+        // Si es menor, todos los datos del tutor son obligatorios
+        if (esMenor) {
+            const camposFaltantes = [];
+            if (!tutorNombre?.trim())           camposFaltantes.push('nombre del tutor');
+            if (!tutorApellidos?.trim())         camposFaltantes.push('apellidos del tutor');
+            if (!tutorDni?.trim())               camposFaltantes.push('DNI del tutor');
+            if (!tutorTelefono?.trim())          camposFaltantes.push('teléfono del tutor');
+            if (!tutorFechaNacimiento?.trim())   camposFaltantes.push('fecha de nacimiento del tutor');
+
+            if (camposFaltantes.length > 0) {
+                req.flash('error', `Como menor de edad, debes completar todos los datos del tutor legal. Faltan: ${camposFaltantes.join(', ')}.`);
+                return res.redirect('/auth/registro');
+            }
+
+            // Verificar que el tutor sea mayor de 18 años
+            const edadTutor = calcularEdad(tutorFechaNacimiento);
+            if (edadTutor === null || edadTutor < 18) {
+                req.flash('error', 'El tutor legal debe ser mayor de 18 años.');
+                return res.redirect('/auth/registro');
+            }
         }
 
         // Verificar email duplicado
@@ -39,22 +84,28 @@ exports.register = async (req, res) => {
 
         // Crear persona y rol en una transacción
         const nuevaPersona = await prisma.$transaction(async (tx) => {
-            const persona = await tx.persona.create({
-                data: {
-                    nombre,
-                    apellidos,
-                    email,
-                    password: passwordHash,
-                    fechaNacimiento: fechaNacimiento ? new Date(fechaNacimiento) : null,
-                    telefono: telefono || null,
-                }
-            });
+            const personaData = {
+                nombre,
+                apellidos,
+                email,
+                password: passwordHash,
+                fechaNacimiento: new Date(fechaNacimiento),
+                telefono: telefono?.trim() || null,
+            };
+
+            // Si es menor, guardar datos del tutor en la persona
+            if (esMenor) {
+                personaData.tutorNombre          = tutorNombre.trim();
+                personaData.tutorApellidos        = tutorApellidos.trim();
+                personaData.tutorDni             = tutorDni.trim().toUpperCase();
+                personaData.tutorTelefono        = tutorTelefono.trim();
+                personaData.tutorFechaNacimiento = new Date(tutorFechaNacimiento);
+            }
+
+            const persona = await tx.persona.create({ data: personaData });
 
             await tx.rol.create({
-                data: {
-                    tipo: 'SOCIO',
-                    personaId: persona.id,
-                }
+                data: { tipo: 'SOCIO', personaId: persona.id },
             });
 
             return persona;
@@ -73,8 +124,8 @@ exports.register = async (req, res) => {
         res.redirect('/');
 
     } catch (error) {
-        console.error('Error en registro:', error);
-        req.flash('error', 'Ha ocurrido un error. Por favor, inténtalo de nuevo.');
+        console.error('Error en registro:', error.message || error);
+        req.flash('error', 'Ha ocurrido un error al crear la cuenta. Por favor, inténtalo de nuevo.');
         res.redirect('/auth/registro');
     }
 };
@@ -120,7 +171,6 @@ exports.login = async (req, res) => {
 
         req.flash('exito', `¡Bienvenido/a de nuevo, ${persona.nombre}!`);
 
-        // Redirigir según rol
         if (persona.rol?.tipo === 'ADMIN') {
             return res.redirect('/admin/dashboard');
         }
@@ -148,7 +198,6 @@ exports.showPerfil = async (req, res) => {
     let compras = [];
 
     try {
-        // Intento completo con inscripciones y tutor legal
         try {
             persona = await prisma.persona.findUnique({
                 where: { id: req.session.usuario.id },
@@ -163,8 +212,7 @@ exports.showPerfil = async (req, res) => {
                 compras = persona.compras || [];
             }
         } catch (dbError) {
-            // Fallback: puede que la DB no tenga aún las columnas rolSolicitado / tabla tutores_legales
-            console.warn('Perfil: error al cargar inscripciones, usando fallback sin inscripciones:', dbError.message);
+            console.warn('Perfil: error al cargar inscripciones, usando fallback:', dbError.message);
             persona = await prisma.persona.findUnique({
                 where: { id: req.session.usuario.id },
                 include: {
@@ -175,7 +223,6 @@ exports.showPerfil = async (req, res) => {
             if (persona) compras = persona.compras || [];
         }
 
-        // Refrescar el rol en la sesión por si fue actualizado por el admin
         if (persona && persona.rol) {
             req.session.usuario.rol = persona.rol.tipo;
         }
@@ -214,7 +261,6 @@ exports.updatePerfil = async (req, res) => {
             },
         });
 
-        // Actualizar sesión con los nuevos datos
         req.session.usuario = {
             ...req.session.usuario,
             nombre: persona.nombre,

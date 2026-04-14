@@ -62,6 +62,13 @@ model Persona {
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
 
+  // Datos del tutor legal (solo para menores de edad — obligatorio en el registro)
+  tutorNombre          String?   @db.VarChar(100)
+  tutorApellidos       String?   @db.VarChar(100)
+  tutorDni             String?   @db.VarChar(20)
+  tutorTelefono        String?   @db.VarChar(20)
+  tutorFechaNacimiento DateTime?
+
   // Relaciones
   rol           Rol?
   compras       Compra[]

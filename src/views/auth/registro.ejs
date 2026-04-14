@@ -11,24 +11,27 @@
         <p class="auth-subtitle">Crea tu cuenta y forma parte del CB Granollers</p>
       </div>
 
-      <form action="/auth/registro" method="POST" novalidate>
+      <form action="/auth/registro" method="POST" novalidate id="formRegistro">
+
+        <!-- Nombre y apellidos -->
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
           <div class="form-group">
-            <label class="form-label" for="nombre">Nombre</label>
+            <label class="form-label" for="nombre">Nombre <span style="color:red">*</span></label>
             <input type="text" id="nombre" name="nombre" class="form-control"
               placeholder="Joan" required autocomplete="given-name"
               value="<%= typeof nombre !== 'undefined' ? nombre : '' %>">
           </div>
           <div class="form-group">
-            <label class="form-label" for="apellidos">Apellidos</label>
+            <label class="form-label" for="apellidos">Apellidos <span style="color:red">*</span></label>
             <input type="text" id="apellidos" name="apellidos" class="form-control"
               placeholder="García Puig" required autocomplete="family-name"
               value="<%= typeof apellidos !== 'undefined' ? apellidos : '' %>">
           </div>
         </div>
 
+        <!-- Email -->
         <div class="form-group">
-          <label class="form-label" for="email">Correo electrónico</label>
+          <label class="form-label" for="email">Correo electrónico <span style="color:red">*</span></label>
           <div class="input-icon-wrap">
             <span class="input-icon">📧</span>
             <input type="email" id="email" name="email" class="form-control"
@@ -37,6 +40,7 @@
           </div>
         </div>
 
+        <!-- Teléfono y fecha de nacimiento -->
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
           <div class="form-group">
             <label class="form-label" for="telefono">Teléfono</label>
@@ -45,14 +49,67 @@
               value="<%= typeof telefono !== 'undefined' ? telefono : '' %>">
           </div>
           <div class="form-group">
-            <label class="form-label" for="fechaNacimiento">Fecha de nacimiento</label>
+            <label class="form-label" for="fechaNacimiento">
+              Fecha de nacimiento <span style="color:red">*</span>
+            </label>
             <input type="date" id="fechaNacimiento" name="fechaNacimiento" class="form-control"
               required value="<%= typeof fechaNacimiento !== 'undefined' ? fechaNacimiento : '' %>">
           </div>
         </div>
 
+        <!-- ── SECCIÓN TUTOR (visible sólo si menor de 18) ─────────────────── -->
+        <div id="seccionTutor" style="display:none;margin-bottom:1rem">
+          <div style="background:rgba(var(--accent-rgb),.1);border:2px solid var(--accent);
+                      border-radius:10px;padding:1.25rem 1.25rem 1rem">
+            <h4 style="margin:0 0 .4rem;color:var(--accent)">👪 Datos del padre/madre o tutor legal</h4>
+            <p style="font-size:.83rem;color:var(--text2);margin-bottom:1rem;line-height:1.5">
+              Eres menor de edad. Para registrarte es <strong>obligatorio</strong> facilitar
+              los datos completos de un progenitor o tutor legal.
+            </p>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:.85rem;margin-bottom:.85rem">
+              <div class="form-group" style="margin-bottom:0">
+                <label class="form-label" for="tutorNombre">Nombre <span style="color:red">*</span></label>
+                <input type="text" id="tutorNombre" name="tutorNombre" class="form-control tutor-field"
+                  placeholder="Nombre del tutor" autocomplete="off">
+              </div>
+              <div class="form-group" style="margin-bottom:0">
+                <label class="form-label" for="tutorApellidos">Apellidos <span style="color:red">*</span></label>
+                <input type="text" id="tutorApellidos" name="tutorApellidos" class="form-control tutor-field"
+                  placeholder="Apellidos del tutor" autocomplete="off">
+              </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:.85rem;margin-bottom:.85rem">
+              <div class="form-group" style="margin-bottom:0">
+                <label class="form-label" for="tutorDni">DNI <span style="color:red">*</span></label>
+                <input type="text" id="tutorDni" name="tutorDni" class="form-control tutor-field"
+                  placeholder="12345678A" pattern="[0-9]{8}[A-Za-z]"
+                  title="8 dígitos seguidos de una letra" autocomplete="off">
+              </div>
+              <div class="form-group" style="margin-bottom:0">
+                <label class="form-label" for="tutorTelefono">Teléfono <span style="color:red">*</span></label>
+                <input type="tel" id="tutorTelefono" name="tutorTelefono" class="form-control tutor-field"
+                  placeholder="600 000 000" autocomplete="off">
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom:0">
+              <label class="form-label" for="tutorFechaNacimiento">
+                Fecha de nacimiento del tutor <span style="color:red">*</span>
+              </label>
+              <input type="date" id="tutorFechaNacimiento" name="tutorFechaNacimiento"
+                class="form-control tutor-field"
+                max="<%= new Date(new Date().setFullYear(new Date().getFullYear()-18)).toISOString().split('T')[0] %>"
+                title="El tutor debe ser mayor de 18 años">
+              <small style="color:var(--text3);font-size:.77rem">El tutor/a debe ser mayor de 18 años.</small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Contraseña -->
         <div class="form-group">
-          <label class="form-label" for="password">Contraseña</label>
+          <label class="form-label" for="password">Contraseña <span style="color:red">*</span></label>
           <div class="password-wrap">
             <input type="password" id="password" name="password" class="form-control"
               placeholder="Mínimo 8 caracteres" required autocomplete="new-password">
@@ -62,7 +119,7 @@
         </div>
 
         <div class="form-group">
-          <label class="form-label" for="passwordConfirm">Confirmar contraseña</label>
+          <label class="form-label" for="passwordConfirm">Confirmar contraseña <span style="color:red">*</span></label>
           <div class="password-wrap">
             <input type="password" id="passwordConfirm" name="confirmarPassword" class="form-control"
               placeholder="Repite la contraseña" required autocomplete="new-password">
@@ -82,5 +139,44 @@
     </div>
   </div>
 </main>
+
+<script>
+(function () {
+  const dobInput    = document.getElementById('fechaNacimiento');
+  const seccion     = document.getElementById('seccionTutor');
+  const tutorFields = document.querySelectorAll('.tutor-field');
+
+  function calcularEdad(fechaStr) {
+    if (!fechaStr) return null;
+    const hoy = new Date();
+    const nac = new Date(fechaStr);
+    let edad = hoy.getFullYear() - nac.getFullYear();
+    const m = hoy.getMonth() - nac.getMonth();
+    if (m < 0 || (m === 0 && hoy.getDate() < nac.getDate())) edad--;
+    return edad;
+  }
+
+  function actualizarTutor() {
+    const edad = calcularEdad(dobInput.value);
+    const esMenor = edad !== null && edad < 18;
+
+    seccion.style.display = esMenor ? 'block' : 'none';
+    tutorFields.forEach(function (f) {
+      if (esMenor) {
+        f.setAttribute('required', 'required');
+      } else {
+        f.removeAttribute('required');
+        f.value = '';
+      }
+    });
+  }
+
+  dobInput.addEventListener('change', actualizarTutor);
+  dobInput.addEventListener('input',  actualizarTutor);
+
+  // Evaluar estado inicial (por si hay valor pre-rellenado)
+  actualizarTutor();
+})();
+</script>
 
 <%- include('../partials/footer') %>

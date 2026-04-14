@@ -26,3 +26,11 @@ CREATE TABLE IF NOT EXISTS tutores_legales (
 ALTER TABLE tutores_legales
   ADD COLUMN IF NOT EXISTS telefono          VARCHAR(20)  NOT NULL DEFAULT '',
   ADD COLUMN IF NOT EXISTS "fechaNacimiento" TIMESTAMP(3);
+
+-- 4. Columnas de tutor en personas (para menores en el registro)
+ALTER TABLE personas
+  ADD COLUMN IF NOT EXISTS "tutorNombre"          VARCHAR(100),
+  ADD COLUMN IF NOT EXISTS "tutorApellidos"        VARCHAR(100),
+  ADD COLUMN IF NOT EXISTS "tutorDni"              VARCHAR(20),
+  ADD COLUMN IF NOT EXISTS "tutorTelefono"         VARCHAR(20),
+  ADD COLUMN IF NOT EXISTS "tutorFechaNacimiento"  TIMESTAMP(3);
