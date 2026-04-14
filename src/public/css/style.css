@@ -785,6 +785,9 @@ select.form-control { cursor: pointer; }
   /* ── Resultados + Agenda: columna en móvil ── */
   .home-results-grid { grid-template-columns: 1fr; }
 
+  /* ── Perfil admin: grid 2 columnas en móvil ── */
+  #tab-admin-panel > div[style*="grid-template-columns:repeat(3"] { grid-template-columns: 1fr 1fr !important; }
+
   /* ── Scoreboard / resultados: columna en móvil ── */
   .score-item { flex-direction: column; align-items: flex-start; gap: .5rem; }
   .score-meta { flex-wrap: wrap; }

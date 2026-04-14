@@ -25,7 +25,66 @@
       </div>
     </div>
 
-    <!-- Tabs -->
+    <% if (persona.rol && persona.rol.tipo === 'ADMIN') { %>
+
+    <!-- ══ VISTA ADMIN ══ -->
+    <div class="profile-tabs">
+      <button class="profile-tab active" data-tab="admin-panel">🖥️ Panel de administración</button>
+      <button class="profile-tab" data-tab="editar">✏️ Mis datos</button>
+    </div>
+
+    <div id="tab-admin-panel" class="profile-panel">
+
+      <div class="card" style="padding:1.5rem;margin-bottom:1.5rem;background:rgba(var(--accent-rgb),.06);border-color:rgba(var(--accent-rgb),.25)">
+        <p style="margin:0;font-size:.9rem;color:var(--text2)">
+          Accede al panel completo para gestionar todos los apartados del club.
+        </p>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem">
+
+        <a href="/admin/dashboard" class="card card-hover" style="padding:1.75rem;text-decoration:none;text-align:center">
+          <div style="font-size:2rem;margin-bottom:.6rem">📊</div>
+          <div style="font-weight:700;color:var(--text)">Dashboard</div>
+          <div style="font-size:.8rem;color:var(--text2);margin-top:.25rem">Resumen general</div>
+        </a>
+
+        <a href="/admin/inscripciones" class="card card-hover" style="padding:1.75rem;text-decoration:none;text-align:center">
+          <div style="font-size:2rem;margin-bottom:.6rem">📋</div>
+          <div style="font-weight:700;color:var(--text)">Inscripciones</div>
+          <div style="font-size:.8rem;color:var(--text2);margin-top:.25rem">Gestionar solicitudes</div>
+        </a>
+
+        <a href="/admin/usuarios" class="card card-hover" style="padding:1.75rem;text-decoration:none;text-align:center">
+          <div style="font-size:2rem;margin-bottom:.6rem">👥</div>
+          <div style="font-weight:700;color:var(--text)">Usuarios</div>
+          <div style="font-size:.8rem;color:var(--text2);margin-top:.25rem">Ver y editar socios</div>
+        </a>
+
+        <a href="/admin/productos" class="card card-hover" style="padding:1.75rem;text-decoration:none;text-align:center">
+          <div style="font-size:2rem;margin-bottom:.6rem">🛍️</div>
+          <div style="font-weight:700;color:var(--text)">Productos</div>
+          <div style="font-size:.8rem;color:var(--text2);margin-top:.25rem">Tienda y stock</div>
+        </a>
+
+        <a href="/admin/noticias" class="card card-hover" style="padding:1.75rem;text-decoration:none;text-align:center">
+          <div style="font-size:2rem;margin-bottom:.6rem">📰</div>
+          <div style="font-weight:700;color:var(--text)">Noticias</div>
+          <div style="font-size:.8rem;color:var(--text2);margin-top:.25rem">Publicar y editar</div>
+        </a>
+
+        <a href="/admin/partidos" class="card card-hover" style="padding:1.75rem;text-decoration:none;text-align:center">
+          <div style="font-size:2rem;margin-bottom:.6rem">⚾</div>
+          <div style="font-weight:700;color:var(--text)">Partidos</div>
+          <div style="font-size:.8rem;color:var(--text2);margin-top:.25rem">Calendario y resultados</div>
+        </a>
+
+      </div>
+    </div>
+
+    <% } else { %>
+
+    <!-- ══ VISTA SOCIO / JUGADOR ══ -->
     <div class="profile-tabs">
       <button class="profile-tab active" data-tab="inscripciones">📋 Mis inscripciones</button>
       <button class="profile-tab" data-tab="compras">🛍️ Mis compras</button>
@@ -127,7 +186,9 @@
       <% } %>
     </div>
 
-    <!-- Panel edición de datos propios -->
+    <% } %>
+
+    <!-- Panel edición de datos propios (común a todos los roles) -->
     <div id="tab-editar" class="profile-panel" style="display:none">
       <div style="display:grid;gap:1.5rem;grid-template-columns:1fr 1fr">
 
