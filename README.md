@@ -34,6 +34,7 @@ Aplicación web completa para el Club Béisbol Granollers. Permite a los socios 
 | Base de datos | PostgreSQL (alojada en Supabase) |
 | Autenticación | express-session + bcryptjs |
 | Subida de ficheros | Multer |
+| Envío de emails | Resend API (REST via fetch nativo) |
 | Despliegue | Render |
 
 El proyecto sigue una arquitectura **MVC** (Modelo–Vista–Controlador):
@@ -54,10 +55,13 @@ El proyecto sigue una arquitectura **MVC** (Modelo–Vista–Controlador):
 ### Inscripciones
 - Formulario de inscripción a categorías (Sub10, Sub12, Sub14, Sub16, Sub18, Sénior)
 - El usuario elige si quiere inscribirse como **jugador** o como **técnico**
+- Las categorías disponibles se filtran automáticamente según la edad del usuario
 - Si el inscrito es **menor de edad**, se exigen los datos del padre/madre o tutor legal (nombre, apellidos y DNI)
+- Si el menor ya facilitó los datos del tutor al registrarse, no se le vuelven a pedir
 - No se puede enviar una nueva solicitud si ya hay una `PENDIENTE` o `APROBADA`
 - Al aprobar una solicitud desde el panel admin, el rol del usuario cambia automáticamente de `SOCIO` a `JUGADOR` o `TÉCNICO`
 - Al rechazar, el rol vuelve a `SOCIO`
+- Al enviar una nueva inscripción, el administrador recibe un **email automático** con todos los datos
 
 ### Categorías
 - Página propia para cada categoría con el cuerpo técnico y la plantilla de jugadores
@@ -116,7 +120,8 @@ Proyecto_intermodular/
     │   ├── noticia.routes.js
     │   └── tienda.routes.js
     ├── lib/
-    │   └── prisma.js             # Instancia singleton del cliente Prisma
+    │   ├── prisma.js             # Instancia singleton del cliente Prisma
+    │   └── mailer.js             # Envío de emails via Resend API (registro, inscripción, compra)
     ├── views/
     │   ├── partials/             # head.ejs, navbar.ejs, footer.ejs, flash.ejs
     │   ├── admin/                # dashboard, usuarios, inscripciones, productos, noticias, partidos
@@ -177,9 +182,17 @@ DIRECT_URL="postgresql://postgres:TU_PASSWORD@db.XXXXXXXXXX.supabase.co:5432/pos
 # Clave secreta para las sesiones (cualquier cadena larga)
 SESSION_SECRET="cambia-esto-por-algo-secreto"
 
+# Email — Resend API (https://resend.com)
+# Obtén tu API key en resend.com → API Keys → Create API Key
+RESEND_API_KEY="re_xxxxxxxxxxxxxxxxxxxx"
+# Email del administrador que recibirá las notificaciones
+ADMIN_EMAIL="tu@email.com"
+
 NODE_ENV="development"
 PORT=3000
 ```
+
+> ⚠️ Sin `RESEND_API_KEY` el servidor arranca igualmente, pero no se enviarán correos de notificación. En ese caso verás un aviso `[Mailer] ⚠️ RESEND_API_KEY no configurado` en los logs.
 
 > Para generar un SESSION_SECRET seguro:
 > ```bash
@@ -236,7 +249,10 @@ El repositorio incluye un `render.yaml` que Render detecta automáticamente.
 1. Ve a [render.com](https://render.com) → **New → Web Service**
 2. Conecta tu repositorio de GitHub
 3. Render leerá el `render.yaml` y configurará el build solo
-4. En **Environment**, añade manualmente la variable `DATABASE_URL` con tu URL de Supabase
+4. En **Environment → Add environment variable**, añade manualmente:
+   - `DATABASE_URL` → tu URL de conexión de Supabase
+   - `RESEND_API_KEY` → tu clave de Resend (para el envío de emails)
+   - `ADMIN_EMAIL` → email donde llegan las notificaciones (por defecto `danielgalantavares@gmail.com`)
 5. El resto de variables ya están definidas en el `render.yaml`
 
 El comando de build configurado es:
