@@ -179,8 +179,42 @@
         </div>
 
       </div>
-    </div>
 
+      <!-- Datos del tutor legal (solo si es menor registrado con tutor) -->
+      <% if (persona.tutorNombre) { %>
+      <div class="card" style="padding:2rem;margin-top:1.5rem;border:2px solid rgba(var(--accent-rgb),.35)">
+        <h3 style="margin-bottom:1.25rem;color:var(--accent)">👪 Datos del tutor legal</h3>
+        <p style="font-size:.82rem;color:var(--text2);margin-bottom:1.25rem">
+          Estos datos se recogieron en el momento del registro. Si necesitas modificarlos contacta con el club.
+        </p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label" style="font-size:.78rem">Nombre</label>
+            <input type="text" class="form-control" value="<%= persona.tutorNombre %>" disabled>
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label" style="font-size:.78rem">Apellidos</label>
+            <input type="text" class="form-control" value="<%= persona.tutorApellidos %>" disabled>
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label" style="font-size:.78rem">DNI</label>
+            <input type="text" class="form-control" value="<%= persona.tutorDni %>" disabled>
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label" style="font-size:.78rem">Teléfono</label>
+            <input type="text" class="form-control" value="<%= persona.tutorTelefono || '–' %>" disabled>
+          </div>
+          <% if (persona.tutorFechaNacimiento) { %>
+          <div class="form-group" style="margin-bottom:0;grid-column:1/-1">
+            <label class="form-label" style="font-size:.78rem">Fecha de nacimiento del tutor</label>
+            <input type="text" class="form-control" value="<%= new Date(persona.tutorFechaNacimiento).toLocaleDateString('es') %>" disabled>
+          </div>
+          <% } %>
+        </div>
+      </div>
+      <% } %>
+
+    </div>
   </div>
 </main>
 

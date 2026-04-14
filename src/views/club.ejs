@@ -203,3 +203,44 @@
       </section>
 
       <%- include('partials/footer') %>
+
+<script>
+/* ── Contador animado club-stats ─────────────────────────────────────────── */
+(function () {
+  var stats = [
+    { selector: '.club-stat-item:nth-child(1) .club-stat-num', end: 110,  prefix: '+', start: 0,    duration: 1600 },
+    { selector: '.club-stat-item:nth-child(2) .club-stat-num', end: 20,   prefix: '+', start: 0,    duration: 1200 },
+    { selector: '.club-stat-item:nth-child(3) .club-stat-num', end: 1985, prefix: '',  start: 1960, duration: 1800 },
+    { selector: '.club-stat-item:nth-child(4) .club-stat-num', end: 8,    prefix: '',  start: 0,    duration: 900  },
+  ];
+
+  function easeOutQuad(t) { return 1 - (1 - t) * (1 - t); }
+
+  function animateStat(cfg) {
+    var el = document.querySelector(cfg.selector);
+    if (!el) return;
+    var startTime = null;
+    var range = cfg.end - cfg.start;
+    function step(ts) {
+      if (!startTime) startTime = ts;
+      var progress = Math.min((ts - startTime) / cfg.duration, 1);
+      el.textContent = cfg.prefix + Math.round(cfg.start + range * easeOutQuad(progress));
+      if (progress < 1) requestAnimationFrame(step);
+      else el.textContent = cfg.prefix + cfg.end;
+    }
+    requestAnimationFrame(step);
+  }
+
+  var container = document.querySelector('.club-stats');
+  if (!container) return;
+  var fired = false;
+  new IntersectionObserver(function (entries) {
+    if (entries[0].isIntersecting && !fired) {
+      fired = true;
+      stats.forEach(function (cfg, i) {
+        setTimeout(function () { animateStat(cfg); }, i * 120);
+      });
+    }
+  }, { threshold: 0.4 }).observe(container);
+})();
+</script>
