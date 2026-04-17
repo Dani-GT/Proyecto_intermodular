@@ -4,7 +4,6 @@
 > Proyecto Intermodular · CFGS Desarrollo de Aplicaciones Web · 2025-2026  
 > Desarrollado por **Daniel Galán Tavares**
 
-
 Aplicación web completa para el Club Béisbol Granollers. Permite a los socios consultar información del club, inscribirse en categorías, comprar en la tienda y mantenerse al día con las noticias y el calendario de partidos. El club puede gestionar todo desde un panel de administración.
 
 ---
@@ -13,6 +12,8 @@ Aplicación web completa para el Club Béisbol Granollers. Permite a los socios 
 
 - [Tecnologías utilizadas](#tecnologías-utilizadas)
 - [Funcionalidades](#funcionalidades)
+- [Notificaciones por email](#notificaciones-por-email)
+- [Sesiones](#sesiones)
 - [Estructura del proyecto](#estructura-del-proyecto)
 - [Instalación en local](#instalación-en-local)
 - [Variables de entorno](#variables-de-entorno)
@@ -20,27 +21,28 @@ Aplicación web completa para el Club Béisbol Granollers. Permite a los socios 
 - [Despliegue en Render](#despliegue-en-render)
 - [Scripts disponibles](#scripts-disponibles)
 - [Usuarios de prueba](#usuarios-de-prueba)
-- [Modelo de datos](#modelo-de-datos-resumen)
+- [Modelo de datos](#modelo-de-datos)
 
 ---
 
 ## Tecnologías utilizadas
 
-| Capa | Tecnología |
-|------|-----------|
-| Servidor | Node.js + Express |
-| Vistas | EJS (Embedded JavaScript Templates) |
-| ORM | Prisma v5 |
-| Base de datos | PostgreSQL (alojada en Supabase) |
-| Autenticación | express-session + bcryptjs |
-| Subida de ficheros | Multer |
-| Envío de emails | Resend API (REST via fetch nativo) |
-| Despliegue | Render |
+| Capa | Tecnología | Motivo |
+|------|-----------|--------|
+| Servidor | Node.js + Express | Framework minimalista y ampliamente adoptado para APIs y servidores web MVC |
+| Vistas | EJS (Embedded JavaScript Templates) | Renderizado en servidor con sintaxis familiar sin necesidad de bundler |
+| ORM | Prisma v5 | Tipado fuerte, migraciones automáticas y cliente generado a partir del schema |
+| Base de datos | PostgreSQL en Supabase | BD relacional robusta, gratuita en la nube y compatible con Prisma |
+| Autenticación | express-session + bcryptjs | Sesiones persistidas en BD y contraseñas hasheadas con salt automático |
+| Almacenamiento de sesiones | pg / sessionStore propio | Las sesiones se guardan en PostgreSQL en lugar de en memoria, necesario para Render |
+| Subida de ficheros | Multer | Middleware estándar de Express para gestionar multipart/form-data |
+| Envío de emails | Resend API (fetch nativo) | Servicio externo vía HTTPS REST; no requiere SMTP (bloqueado en Render free tier) |
+| Despliegue | Render | Plataforma PaaS con integración continua desde GitHub |
 
 El proyecto sigue una arquitectura **MVC** (Modelo–Vista–Controlador):
 - Los **modelos** los define Prisma en `schema.prisma`
-- Los **controladores** contienen toda la lógica de negocio
-- Las **vistas** son plantillas EJS con partials reutilizables (navbar, footer, flash...)
+- Los **controladores** contienen toda la lógica de negocio (`src/controllers/`)
+- Las **vistas** son plantillas EJS con partials reutilizables (`navbar`, `footer`, `flash`...)
 
 ---
 
@@ -49,19 +51,20 @@ El proyecto sigue una arquitectura **MVC** (Modelo–Vista–Controlador):
 ### Usuarios y acceso
 - Registro e inicio de sesión con contraseñas hasheadas con bcrypt
 - Cuatro roles: `SOCIO`, `JUGADOR`, `TÉCNICO` y `ADMIN`
-- Cada usuario solo puede ver y editar sus propios datos desde su perfil
+- Cada usuario puede ver y editar sus propios datos desde su perfil
 - Rutas protegidas según rol (middleware `requireAuth` y `requireAdmin`)
+- Al registrarse un nuevo socio, el administrador recibe un email automático
 
 ### Inscripciones
-- Formulario de inscripción a categorías (Sub10, Sub12, Sub14, Sub16, Sub18, Sénior)
-- El usuario elige si quiere inscribirse como **jugador** o como **técnico**
+- Formulario de inscripción a categorías: Sub10, Sub12, Sub14, Sub16, Sub18 y Sénior
 - Las categorías disponibles se filtran automáticamente según la edad del usuario
-- Si el inscrito es **menor de edad**, se exigen los datos del padre/madre o tutor legal (nombre, apellidos y DNI)
+- El usuario elige si quiere inscribirse como **jugador** o como **técnico**
+- Si el inscrito es **menor de edad**, se exigen los datos del padre/madre o tutor legal
 - Si el menor ya facilitó los datos del tutor al registrarse, no se le vuelven a pedir
 - No se puede enviar una nueva solicitud si ya hay una `PENDIENTE` o `APROBADA`
-- Al aprobar una solicitud desde el panel admin, el rol del usuario cambia automáticamente de `SOCIO` a `JUGADOR` o `TÉCNICO`
+- Al aprobar una solicitud desde el panel admin, el rol cambia automáticamente a `JUGADOR` o `TÉCNICO`
 - Al rechazar, el rol vuelve a `SOCIO`
-- Al enviar una nueva inscripción, el administrador recibe un **email automático** con todos los datos
+- Al enviar una solicitud, el administrador recibe un email automático con todos los datos
 
 ### Categorías
 - Página propia para cada categoría con el cuerpo técnico y la plantilla de jugadores
@@ -69,9 +72,10 @@ El proyecto sigue una arquitectura **MVC** (Modelo–Vista–Controlador):
 - Filtro por categoría en las páginas de calendario y resultados globales
 
 ### Tienda
-- Catálogo de productos con filtros por categoría
+- Catálogo de productos con filtros por categoría (Ropa, Equipamiento, Merchandising)
 - Carrito gestionado en sesión
-- Proceso de compra simulado: carrito → datos de envío → pago → confirmación
+- Proceso de compra: carrito → datos de envío → pago → confirmación
+- Al completar una compra, el administrador recibe un email automático con el detalle del pedido
 
 ### Noticias
 - Listado con noticia destacada, grid de noticias y sidebar de recientes
@@ -82,9 +86,33 @@ El proyecto sigue una arquitectura **MVC** (Modelo–Vista–Controlador):
 - **Usuarios**: listado, cambio de rol y eliminación
 - **Inscripciones**: listado con rol solicitado, datos del tutor legal si aplica, y cambio de estado
 - **Jugadores y técnicos**: creación directa desde el panel sin pasar por el proceso de inscripción
-- **Productos**: alta, edición y gestión de stock, con subida de imagen directa
-- **Noticias**: alta y edición con subida de imagen directa
+- **Productos**: alta, edición y gestión de stock, con subida de imagen
+- **Noticias**: alta y edición con subida de imagen
 - **Partidos**: creación y registro de resultados por categoría
+
+---
+
+## Notificaciones por email
+
+El sistema envía emails automáticos al administrador en tres situaciones:
+
+| Evento | Asunto del email |
+|--------|-----------------|
+| Nuevo registro de socio | `⚾ Nuevo socio registrado — Nombre Apellidos` |
+| Nueva solicitud de inscripción | `📋 Nueva inscripción — Nombre Apellidos (Categoría)` |
+| Nueva compra en la tienda | `🛍️ Nuevo pedido #XXXXXXXX — Nombre Apellidos` |
+
+Los emails se envían a través de **[Resend](https://resend.com)** usando su API REST directamente con `fetch` nativo de Node.js (sin librerías adicionales). Esto evita el problema de que Render free tier bloquea las conexiones SMTP salientes.
+
+Si la variable `RESEND_API_KEY` no está configurada, el servidor arranca igualmente y registra un aviso en los logs, pero no se envían correos.
+
+---
+
+## Sesiones
+
+Las sesiones **no se guardan en memoria** (lo que se perdería al reiniciar el servidor). Se persisten en la **misma base de datos PostgreSQL de Supabase**, en una tabla llamada `user_sessions`, mediante un store personalizado (`src/lib/sessionStore.js`).
+
+Cuando un usuario hace login, se crea un registro en esa tabla con un ID de sesión único. Ese ID viaja en una **cookie** cifrada en el navegador (`httpOnly`, `secure` en producción, duración 7 días). En cada petición, el servidor lee la cookie, busca la sesión en la base de datos y recupera los datos del usuario sin necesidad de volver a consultar la tabla `personas`.
 
 ---
 
@@ -92,9 +120,10 @@ El proyecto sigue una arquitectura **MVC** (Modelo–Vista–Controlador):
 
 ```
 Proyecto_intermodular/
-├── app.js                        # Punto de entrada de Express
+├── app.js                        # Punto de entrada: Express, sesiones, rutas
 ├── package.json
 ├── render.yaml                   # Configuración del despliegue en Render
+├── er_diagram.svg                # Diagrama Entidad-Relación completo
 ├── prisma/
 │   ├── schema.prisma             # Modelos y relaciones de la BD
 │   ├── seed.js                   # Datos de prueba
@@ -121,7 +150,8 @@ Proyecto_intermodular/
     │   └── tienda.routes.js
     ├── lib/
     │   ├── prisma.js             # Instancia singleton del cliente Prisma
-    │   └── mailer.js             # Envío de emails via Resend API (registro, inscripción, compra)
+    │   ├── sessionStore.js       # Store de sesiones sobre PostgreSQL
+    │   └── mailer.js             # Notificaciones por email via Resend API
     ├── views/
     │   ├── partials/             # head.ejs, navbar.ejs, footer.ejs, flash.ejs
     │   ├── admin/                # dashboard, usuarios, inscripciones, productos, noticias, partidos
@@ -150,6 +180,7 @@ Proyecto_intermodular/
 
 - [Node.js](https://nodejs.org/) v18 o superior
 - Una cuenta gratuita en [Supabase](https://supabase.com)
+- Una cuenta gratuita en [Resend](https://resend.com) (opcional, para emails)
 - Git
 
 ### Pasos
@@ -162,7 +193,7 @@ cd Proyecto_intermodular
 # 2. Instala las dependencias
 npm install
 
-# 3. Crea el archivo de variables de entorno (ver sección siguiente)
+# 3. Crea el archivo de variables de entorno y rellénalo
 cp .env.example .env
 ```
 
@@ -170,34 +201,35 @@ cp .env.example .env
 
 ## Variables de entorno
 
-Crea un archivo `.env` en la raíz del proyecto:
+Crea un archivo `.env` en la raíz del proyecto (el `.env` no se sube al repositorio por seguridad):
 
 ```env
-# URL de conexión a Supabase
-DATABASE_URL="postgresql://postgres:TU_PASSWORD@db.XXXXXXXXXX.supabase.co:5432/postgres"
-
-# Necesaria para migraciones con prisma migrate
+# ── Base de datos (Supabase) ──────────────────────────────────────────────────
+# Obtén las URLs en Supabase → Settings → Database → Connection string
+DATABASE_URL="postgresql://postgres:TU_PASSWORD@db.XXXXXXXXXX.supabase.co:6543/postgres?pgbouncer=true"
 DIRECT_URL="postgresql://postgres:TU_PASSWORD@db.XXXXXXXXXX.supabase.co:5432/postgres"
 
-# Clave secreta para las sesiones (cualquier cadena larga)
+# ── Sesiones ──────────────────────────────────────────────────────────────────
+# Cadena aleatoria y larga para firmar las cookies de sesión
 SESSION_SECRET="cambia-esto-por-algo-secreto"
 
-# Email — Resend API (https://resend.com)
+# ── Email (Resend) ────────────────────────────────────────────────────────────
 # Obtén tu API key en resend.com → API Keys → Create API Key
 RESEND_API_KEY="re_xxxxxxxxxxxxxxxxxxxx"
 # Email del administrador que recibirá las notificaciones
 ADMIN_EMAIL="tu@email.com"
 
+# ── Entorno ───────────────────────────────────────────────────────────────────
 NODE_ENV="development"
 PORT=3000
 ```
-
-> ⚠️ Sin `RESEND_API_KEY` el servidor arranca igualmente, pero no se enviarán correos de notificación. En ese caso verás un aviso `[Mailer] ⚠️ RESEND_API_KEY no configurado` en los logs.
 
 > Para generar un SESSION_SECRET seguro:
 > ```bash
 > node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 > ```
+
+> ⚠️ Sin `RESEND_API_KEY` el servidor arranca igualmente pero no se enviarán correos. Se mostrará `[Mailer] ⚠️ RESEND_API_KEY no configurado` en los logs.
 
 ---
 
@@ -207,11 +239,13 @@ PORT=3000
 
 1. Entra en [supabase.com](https://supabase.com) → **New project**
 2. Elige un nombre, región (EU West recomendado) y contraseña
-3. Espera a que se inicialice
+3. Espera a que se inicialice (~2 minutos)
 
-### Obtener la URL de conexión
+### Obtener las URLs de conexión
 
-Ve a **Settings → Database → Connection string**, copia la URI y pégala en el `.env` como `DATABASE_URL`. Recuerda sustituir `[YOUR-PASSWORD]` por tu contraseña.
+Ve a **Settings → Database → Connection string**:
+- URI con PgBouncer → `DATABASE_URL`
+- URI directa → `DIRECT_URL`
 
 ### Aplicar el esquema y cargar datos
 
@@ -248,11 +282,12 @@ El repositorio incluye un `render.yaml` que Render detecta automáticamente.
 
 1. Ve a [render.com](https://render.com) → **New → Web Service**
 2. Conecta tu repositorio de GitHub
-3. Render leerá el `render.yaml` y configurará el build solo
+3. Render leerá el `render.yaml` y configurará el build automáticamente
 4. En **Environment → Add environment variable**, añade manualmente:
-   - `DATABASE_URL` → tu URL de conexión de Supabase
-   - `RESEND_API_KEY` → tu clave de Resend (para el envío de emails)
-   - `ADMIN_EMAIL` → email donde llegan las notificaciones (por defecto `danielgalantavares@gmail.com`)
+   - `DATABASE_URL` → URL de conexión con PgBouncer de Supabase
+   - `DIRECT_URL` → URL directa de Supabase (para migraciones)
+   - `RESEND_API_KEY` → tu clave de Resend
+   - `ADMIN_EMAIL` → email donde recibirás las notificaciones
 5. El resto de variables ya están definidas en el `render.yaml`
 
 El comando de build configurado es:
@@ -262,8 +297,7 @@ npm install && npx prisma generate && npx prisma migrate deploy
 
 > **Importante:** para que `prisma migrate deploy` funcione en Render necesitas subir la carpeta `prisma/migrations/` al repositorio. Si usas `db:push` en local, genera la migración inicial antes del primer despliegue:
 > ```bash
-> npm run db:migrate
-> # Escribe un nombre como "init" cuando lo pida
+> npm run db:migrate   # escribe "init" cuando lo pida
 > git add prisma/migrations/
 > git commit -m "add initial migration"
 > git push
@@ -275,10 +309,10 @@ npm install && npx prisma generate && npx prisma migrate deploy
 
 | Script | Descripción |
 |--------|-------------|
-| `npm start` | Arranca el servidor |
-| `npm run dev` | Arranca con nodemon (recarga automática) |
-| `npm run db:generate` | Genera el cliente de Prisma |
-| `npm run db:push` | Sincroniza el schema con la BD sin crear migraciones (útil en desarrollo) |
+| `npm start` | Arranca el servidor en producción |
+| `npm run dev` | Arranca con nodemon (recarga automática en desarrollo) |
+| `npm run db:generate` | Genera el cliente de Prisma a partir del schema |
+| `npm run db:push` | Sincroniza el schema con la BD sin crear migraciones (desarrollo) |
 | `npm run db:migrate` | Crea y aplica una migración versionada |
 | `npm run db:studio` | Abre Prisma Studio (interfaz gráfica de la BD en el navegador) |
 | `npm run db:seed` | Puebla la base de datos con datos de prueba |
@@ -297,27 +331,33 @@ Después de ejecutar `npm run db:seed` puedes entrar con estas cuentas:
 
 ---
 
-## Modelo de datos (resumen)
+## Modelo de datos
+
+El diagrama ER completo está en [`er_diagram.svg`](./er_diagram.svg).
 
 ```
-Persona ──< Rol
-        ──< Inscripcion ──< TutorLegal
-        ──< Compra ──< CompraProducto ──> Producto
+Persona ──1:1── Rol
+        ──1:N── Inscripcion ──1:1── TutorLegal
+        ──1:N── Compra ──1:N── CompraProducto ──N:1── Producto
 
-Categoria ──< Inscripcion
-          ──< Partido
+Categoria ──1:N── Inscripcion
+          ──1:N── Partido
+
+Noticia  (entidad independiente, gestionada desde el panel admin)
 ```
 
-Los modelos principales son:
-
-- **Persona** — usuarios registrados
-- **Rol** — tipo de usuario (SOCIO, JUGADOR, TÉCNICO, ADMIN)
-- **Categoria** — Sub10 a Sénior
-- **Inscripcion** — solicitud de un usuario para unirse a una categoría, con estado (PENDIENTE / APROBADA / RECHAZADA)
-- **TutorLegal** — datos del tutor, obligatorios si el inscrito es menor de edad
-- **Partido** — partidos con rival, fecha, campo y resultado
-- **Noticia** — artículos del club
-- **Producto / Compra / CompraProducto** — tienda online
+| Entidad | Descripción |
+|---------|-------------|
+| **Persona** | Usuarios registrados. Incluye opcionalmente los datos del tutor legal para menores |
+| **Rol** | Tipo de usuario: `SOCIO`, `JUGADOR`, `TÉCNICO` o `ADMIN` |
+| **Categoria** | Categorías del club: Sub10, Sub12, Sub14, Sub16, Sub18, Sénior |
+| **Inscripcion** | Solicitud de un usuario para unirse a una categoría (PENDIENTE / APROBADA / RECHAZADA) |
+| **TutorLegal** | Datos del tutor obligatorios cuando el inscrito es menor de edad |
+| **Partido** | Partidos con rival, fecha, campo, si es local/visitante y resultado |
+| **Noticia** | Artículos publicados por el club, con imagen y opción de marcarla como destacada |
+| **Producto** | Artículos de la tienda con precio, stock e imagen (Ropa / Equipamiento / Merchandising) |
+| **Compra** | Cabecera del pedido de un usuario con total y estado |
+| **CompraProducto** | Líneas del pedido: producto, cantidad y precio unitario en el momento de la compra |
 
 ---
 
