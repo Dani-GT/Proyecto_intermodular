@@ -566,8 +566,16 @@ select.form-control { cursor: pointer; }
   position: relative; min-height: 560px; display: flex; align-items: flex-end;
   background: var(--bg3); overflow: hidden;
 }
-.club-hero-bg { position:absolute;inset:0;background:url('/images/estadio.jpg') center/cover; opacity:.3; }
-[data-theme="light"] .club-hero-bg { opacity:.2; }
+.club-hero-bg {
+  position: absolute; inset: 0;
+  background-image: url('/images/aficion.webp');
+  background-size: cover; background-position: center;
+  opacity: .45;
+  transform-origin: center center;
+  animation: heroZoom 14s ease-in-out infinite alternate;
+  will-change: transform;
+}
+[data-theme="light"] .club-hero-bg { opacity:.3; }
 .club-hero-overlay { position:absolute;inset:0; background:linear-gradient(to top, rgba(15,23,42,.95) 0%, rgba(15,23,42,.4) 100%); }
 [data-theme="light"] .club-hero-overlay { background:linear-gradient(to top, rgba(15,23,42,.85) 0%, rgba(15,23,42,.2) 100%); }
 .club-hero-content { position:relative;z-index:1; padding: 4rem 0 3rem; }
