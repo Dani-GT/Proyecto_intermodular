@@ -570,12 +570,12 @@ select.form-control { cursor: pointer; }
   position: absolute; inset: 0;
   background-image: url('/images/aficion.webp');
   background-size: cover; background-position: center;
-  opacity: .45;
+  opacity: .7;
   transform-origin: center center;
   animation: heroZoom 14s ease-in-out infinite alternate;
   will-change: transform;
 }
-[data-theme="light"] .club-hero-bg { opacity:.3; }
+[data-theme="light"] .club-hero-bg { opacity:.5; }
 .club-hero-overlay { position:absolute;inset:0; background:linear-gradient(to top, rgba(15,23,42,.95) 0%, rgba(15,23,42,.4) 100%); }
 [data-theme="light"] .club-hero-overlay { background:linear-gradient(to top, rgba(15,23,42,.85) 0%, rgba(15,23,42,.2) 100%); }
 .club-hero-content { position:relative;z-index:1; padding: 4rem 0 3rem; }
