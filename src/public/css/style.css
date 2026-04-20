@@ -471,7 +471,7 @@ select.form-control { cursor: pointer; }
 .cat-sub14  { background: linear-gradient(135deg,rgba(217,119,6,.75),rgba(180,83,9,.85)), url('/images/sub14anotando.webp') center/cover no-repeat; }
 .cat-sub16  { background: linear-gradient(135deg,rgba(124,58,237,.75),rgba(109,40,217,.85)), url('/images/sub16pitcher.webp') center/cover no-repeat; }
 .cat-sub18  { background: linear-gradient(135deg,#dc2626,#b91c1c); }
-.cat-senior { background: linear-gradient(135deg,#0f172a,#1e293b); border: 1px solid var(--accent); }
+.cat-senior { background: linear-gradient(135deg,rgba(15,23,42,.8),rgba(30,41,59,.85)), url('/images/senior.webp') center/cover no-repeat; border: 1px solid var(--accent); }
 
 /* ══════════════════════════════════════════════════════════════════════
    INSCRIPCIÓN
