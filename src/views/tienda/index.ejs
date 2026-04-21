@@ -52,7 +52,7 @@
                 <a href="/tienda/<%= producto.id %>" class="card product-card card-hover" style="text-decoration:none;display:block">
                   <div class="product-img">
                     <% if (producto.imagen) { %>
-                      <img src="<%= producto.imagen %>" alt="<%= producto.nombre %>">
+                      <img src="<%= producto.imagen %>" alt="<%= producto.nombre %>" class="img-zoomable" data-src="<%= producto.imagen %>" data-title="<%= producto.nombre %>" style="cursor:zoom-in">
                     <% } else { %>
                       <div class="product-img-placeholder">
                         <%= producto.categoria === 'ROPA' ? '👕' : producto.categoria === 'EQUIPAMIENTO' ? '⚾' : '🎁' %>
@@ -93,5 +93,32 @@
     </div>
   </div>
 </main>
+
+<!-- ── Modal imagen producto ───────────────────────────────── -->
+<div id="imgModal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.85);align-items:center;justify-content:center;padding:1.5rem" onclick="cerrarModal(event)">
+  <div style="position:relative;max-width:90vw;max-height:90vh" onclick="event.stopPropagation()">
+    <button onclick="document.getElementById('imgModal').style.display='none'" style="position:absolute;top:-14px;right:-14px;width:32px;height:32px;border-radius:50%;background:#fff;border:none;font-size:1.1rem;cursor:pointer;line-height:1;z-index:1">✕</button>
+    <img id="imgModalSrc" src="" alt="" style="max-width:90vw;max-height:85vh;object-fit:contain;border-radius:8px;display:block">
+    <p id="imgModalTitle" style="color:#fff;text-align:center;margin-top:.75rem;font-size:.95rem;font-weight:600"></p>
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll('.img-zoomable').forEach(img => {
+    img.addEventListener('click', function(e) {
+      e.preventDefault(); e.stopPropagation();
+      document.getElementById('imgModalSrc').src   = this.dataset.src;
+      document.getElementById('imgModalTitle').textContent = this.dataset.title || '';
+      const modal = document.getElementById('imgModal');
+      modal.style.display = 'flex';
+    });
+  });
+  function cerrarModal(e) {
+    if (e.target.id === 'imgModal') document.getElementById('imgModal').style.display = 'none';
+  }
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') document.getElementById('imgModal').style.display = 'none';
+  });
+</script>
 
 <%- include('../partials/footer') %>
