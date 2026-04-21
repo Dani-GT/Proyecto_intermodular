@@ -469,7 +469,7 @@ async function main() {
       precio: 69.99,
       stock: 20,
       categoria: 'EQUIPAMIENTO',
-      imagen: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&q=80',
+      imagen: '/images/productos/mochilapro.webp',
     },
     {
       nombre: 'Mochila de Entrenamiento CB Granollers Lite',
@@ -477,7 +477,7 @@ async function main() {
       precio: 44.99,
       stock: 25,
       categoria: 'EQUIPAMIENTO',
-      imagen: 'https://images.unsplash.com/photo-1622560480605-d83c853bc5c3?w=600&q=80',
+      imagen: '/images/productos/mochilelite.webp',
     },
     // ── PELOTAS ───────────────────────────────────────────────────────────────
     {
@@ -511,7 +511,7 @@ async function main() {
       precio: 34.99,
       stock: 40,
       categoria: 'EQUIPAMIENTO',
-      imagen: 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=600&q=80',
+      imagen: '/images/productos/guantillassenior.webp',
     },
     {
       nombre: 'Guantillas de Bateo Junior (Sub14/Sub16)',
@@ -519,7 +519,7 @@ async function main() {
       precio: 24.99,
       stock: 35,
       categoria: 'EQUIPAMIENTO',
-      imagen: 'https://images.unsplash.com/photo-1617711773026-ea5e6a7a4c8f?w=600&q=80',
+      imagen: '/images/productos/guantillasjunior.webp',
     },
     {
       nombre: 'Guantillas de Bateo Infantil (Sub10/Sub12)',
@@ -527,7 +527,7 @@ async function main() {
       precio: 17.99,
       stock: 30,
       categoria: 'EQUIPAMIENTO',
-      imagen: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=600&q=80',
+      imagen: '/images/productos/guantillainfantil.webp',
     },
     // ── EQUIPAMIENTO ADICIONAL ─────────────────────────────────────────────────
     {
@@ -553,7 +553,7 @@ async function main() {
       precio: 12.99,
       stock: 60,
       categoria: 'MERCHANDISING',
-      imagen: 'https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?w=600&q=80',
+      imagen: '/images/productos/taza.webp',
     },
     {
       nombre: 'Llavero CB Granollers',
@@ -561,7 +561,7 @@ async function main() {
       precio: 7.99,
       stock: 150,
       categoria: 'MERCHANDISING',
-      imagen: 'https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=600&q=80',
+      imagen: '/images/productos/llavero.webp',
     },
     {
       nombre: 'Bufanda Jacquard CB Granollers',
@@ -569,7 +569,7 @@ async function main() {
       precio: 19.99,
       stock: 45,
       categoria: 'MERCHANDISING',
-      imagen: 'https://images.unsplash.com/photo-1520903920243-00d872a2d1c9?w=600&q=80',
+      imagen: '/images/productos/bufanda.webp',
     },
     {
       nombre: 'Pin Esmaltado CB Granollers',
@@ -577,7 +577,7 @@ async function main() {
       precio: 5.99,
       stock: 200,
       categoria: 'MERCHANDISING',
-      imagen: 'https://images.unsplash.com/photo-1618354691373-d851c5c3a990?w=600&q=80',
+      imagen: '/images/productos/pin.webp',
     },
     {
       nombre: 'Pegatina Pack CB Granollers (5 uds)',
@@ -585,14 +585,16 @@ async function main() {
       precio: 6.99,
       stock: 180,
       categoria: 'MERCHANDISING',
-      imagen: 'https://images.unsplash.com/photo-1611532736597-de2d4265fba3?w=600&q=80',
+      imagen: '/images/productos/pegatinas.webp',
     },
   ];
 
   for (const producto of productosData) {
     await prisma.producto.upsert({
       where: { nombre: producto.nombre },
-      update: {},
+      update: {
+        ...(producto.imagen && { imagen: producto.imagen }),
+      },
       create: producto,
     });
   }
