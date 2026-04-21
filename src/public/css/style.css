@@ -469,8 +469,8 @@ select.form-control { cursor: pointer; }
 .cat-sub10  { background: linear-gradient(135deg,rgba(22,163,74,.75),rgba(21,128,61,.85)), url('/images/sub10.webp') center/cover no-repeat; }
 .cat-sub12  { background: linear-gradient(135deg,rgba(37,99,235,.75),rgba(29,78,216,.85)), url('/images/sub12fly.webp') center/cover no-repeat; }
 .cat-sub14  { background: linear-gradient(135deg,rgba(217,119,6,.75),rgba(180,83,9,.85)), url('/images/sub14anotando.webp') center/cover no-repeat; }
-.cat-sub16  { background: linear-gradient(135deg,rgba(124,58,237,.75),rgba(109,40,217,.85)), url('/images/sub16pitcher.webp') center/cover no-repeat; }
-.cat-sub18  { background: linear-gradient(135deg,#dc2626,#b91c1c); }
+.cat-sub16  { background: linear-gradient(135deg,rgba(124,58,237,.75),rgba(109,40,217,.85)), url('/images/sub16pitcher.webp') center 20%/cover no-repeat; }
+.cat-sub18  { background: linear-gradient(135deg,rgba(220,38,38,.75),rgba(185,28,28,.85)), url('/images/sub18.webp') center/cover no-repeat; }
 .cat-senior { background: linear-gradient(135deg,rgba(15,23,42,.8),rgba(30,41,59,.85)), url('/images/senior.webp') center/cover no-repeat; border: 1px solid var(--accent); }
 
 /* ══════════════════════════════════════════════════════════════════════
