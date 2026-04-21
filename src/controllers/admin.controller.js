@@ -186,9 +186,9 @@ exports.createProducto = async (req, res) => {
     const { nombre, descripcion, precio, stock, categoria } = req.body;
 
     try {
-        // Si se subió un archivo, usar su ruta pública; si no, usar URL manual si la pasan
+        // Si se subió un archivo: Cloudinary devuelve URL en req.file.path; disco local usa filename
         const imagenUrl = req.file
-            ? `/images/productos/${req.file.filename}`
+            ? (req.file.path?.startsWith('http') ? req.file.path : `/images/productos/${req.file.filename}`)
             : (req.body.imagenUrl || null);
 
         await prisma.producto.create({
@@ -221,7 +221,7 @@ exports.updateProducto = async (req, res) => {
 
         // Si se sube nueva imagen, usarla; si no, conservar la actual
         const imagenUrl = req.file
-            ? `/images/productos/${req.file.filename}`
+            ? (req.file.path?.startsWith('http') ? req.file.path : `/images/productos/${req.file.filename}`)
             : (req.body.imagenUrl || productoActual?.imagen || null);
 
         await prisma.producto.update({
@@ -270,7 +270,7 @@ exports.createNoticia = async (req, res) => {
 
     try {
         const imagenUrl = req.file
-            ? `/images/noticias/${req.file.filename}`
+            ? (req.file.path?.startsWith('http') ? req.file.path : `/images/noticias/${req.file.filename}`)
             : (req.body.imagenUrl || null);
 
         await prisma.noticia.create({
@@ -303,7 +303,7 @@ exports.updateNoticia = async (req, res) => {
         const noticiaActual = await prisma.noticia.findUnique({ where: { id: parseInt(id) } });
 
         const imagenUrl = req.file
-            ? `/images/noticias/${req.file.filename}`
+            ? (req.file.path?.startsWith('http') ? req.file.path : `/images/noticias/${req.file.filename}`)
             : (req.body.imagenUrl || noticiaActual?.imagen || null);
 
         await prisma.noticia.update({
