@@ -35,7 +35,7 @@ Aplicación web completa para el Club Béisbol Granollers. Permite a los socios 
 | Base de datos | PostgreSQL en Supabase | BD relacional robusta, gratuita en la nube y compatible con Prisma |
 | Autenticación | express-session + bcryptjs | Sesiones persistidas en BD y contraseñas hasheadas con salt automático |
 | Almacenamiento de sesiones | pg / sessionStore propio | Las sesiones se guardan en PostgreSQL en lugar de en memoria, necesario para Render |
-| Subida de ficheros | Multer | Middleware estándar de Express para gestionar multipart/form-data |
+| Subida de ficheros | Multer + Cloudinary | Multer gestiona multipart/form-data; en producción las imágenes se suben a Cloudinary para evitar la pérdida de ficheros en el sistema efímero de Render |
 | Envío de emails | Resend API (fetch nativo) | Servicio externo vía HTTPS REST; no requiere SMTP (bloqueado en Render free tier) |
 | Despliegue | Render | Plataforma PaaS con integración continua desde GitHub |
 
@@ -86,8 +86,8 @@ El proyecto sigue una arquitectura **MVC** (Modelo–Vista–Controlador):
 - **Usuarios**: listado, cambio de rol y eliminación
 - **Inscripciones**: listado con rol solicitado, datos del tutor legal si aplica, y cambio de estado
 - **Jugadores y técnicos**: creación directa desde el panel sin pasar por el proceso de inscripción
-- **Productos**: alta, edición y gestión de stock, con subida de imagen
-- **Noticias**: alta y edición con subida de imagen
+- **Productos**: alta, edición y gestión de stock, con subida de imagen (guardada en Cloudinary en producción)
+- **Noticias**: alta y edición con subida de imagen (guardada en Cloudinary en producción)
 - **Partidos**: creación y registro de resultados por categoría
 
 ---
@@ -181,6 +181,7 @@ Proyecto_intermodular/
 - [Node.js](https://nodejs.org/) v18 o superior
 - Una cuenta gratuita en [Supabase](https://supabase.com)
 - Una cuenta gratuita en [Resend](https://resend.com) (opcional, para emails)
+- Una cuenta gratuita en [Cloudinary](https://cloudinary.com) (opcional, para subida de imágenes en producción)
 - Git
 
 ### Pasos
@@ -219,6 +220,13 @@ RESEND_API_KEY="re_xxxxxxxxxxxxxxxxxxxx"
 # Email del administrador que recibirá las notificaciones
 ADMIN_EMAIL="tu@email.com"
 
+# ── Cloudinary (imágenes subidas desde el admin) ─────────────────────────────
+# Obtén las credenciales en cloudinary.com → Dashboard
+# Sin estas variables las imágenes se guardan en disco (válido solo en local)
+CLOUDINARY_CLOUD_NAME="tu_cloud_name"
+CLOUDINARY_API_KEY="tu_api_key"
+CLOUDINARY_API_SECRET="tu_api_secret"
+
 # ── Entorno ───────────────────────────────────────────────────────────────────
 NODE_ENV="development"
 PORT=3000
@@ -230,6 +238,8 @@ PORT=3000
 > ```
 
 > ⚠️ Sin `RESEND_API_KEY` el servidor arranca igualmente pero no se enviarán correos. Se mostrará `[Mailer] ⚠️ RESEND_API_KEY no configurado` en los logs.
+
+> ⚠️ Sin las variables de Cloudinary, las imágenes subidas desde el admin se guardan en disco local. Esto es válido en desarrollo, pero en Render (sistema de ficheros efímero) las imágenes se perderían al reiniciar el servidor.
 
 ---
 
@@ -288,6 +298,9 @@ El repositorio incluye un `render.yaml` que Render detecta automáticamente.
    - `DIRECT_URL` → URL directa de Supabase (para migraciones)
    - `RESEND_API_KEY` → tu clave de Resend
    - `ADMIN_EMAIL` → email donde recibirás las notificaciones
+   - `CLOUDINARY_CLOUD_NAME` → cloud name de tu cuenta Cloudinary
+   - `CLOUDINARY_API_KEY` → API key de Cloudinary
+   - `CLOUDINARY_API_SECRET` → API secret de Cloudinary
 5. El resto de variables ya están definidas en el `render.yaml`
 
 El comando de build configurado es:
@@ -316,6 +329,8 @@ npm install && npx prisma generate && npx prisma migrate deploy
 | `npm run db:migrate` | Crea y aplica una migración versionada |
 | `npm run db:studio` | Abre Prisma Studio (interfaz gráfica de la BD en el navegador) |
 | `npm run db:seed` | Puebla la base de datos con datos de prueba |
+| `node scripts/update-noticias-imagenes.js` | Asigna imágenes estáticas a noticias existentes en la BD |
+| `node scripts/update-productos-imagenes.js` | Asigna imágenes estáticas a productos existentes en la BD |
 
 ---
 
