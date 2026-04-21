@@ -276,6 +276,7 @@ async function main() {
     },
     {
       titulo: 'El equipo Sub18 se proclama campeón del Torneo de Primavera 2025',
+      imagen: '/images/suporters.webp',
       resumen: 'Los jóvenes jugadores granolleríes ganaron el torneo invictos con 5 victorias en 5 partidos.',
       contenido: `El equipo Sub18 del CB Granollers se coronó campeón del XXII Torneo de Primavera disputado en Hospitalet de Llobregat. Los jugadores dirigidos por Àlex Ribera completaron una actuación perfecta ganando los cinco partidos de la competición.\n\nLa final se disputó el domingo por la tarde ante el CB Vilafranca, a quienes vencieron por 8-2 en un partido dominado de principio a fin. El MVP del torneo fue el lanzador Martí Casas, quien completó dos aperturas sin carreras limpias en contra.\n\n"Estos chicos han trabajado muchísimo y se lo merecen. El equipo ha crecido un 100% respecto al año pasado", comentó orgulloso el entrenador Àlex Ribera.\n\nEl trofeo ya está expuesto en la sede del club junto a los demás reconocimientos de la temporada.`,
       publicadoEn: new Date('2025-05-20'),
@@ -284,6 +285,7 @@ async function main() {
     },
     {
       titulo: 'Nuevas instalaciones en el campo municipal completadas',
+      imagen: '/images/battingpractice.webp',
       resumen: 'El Ayuntamiento de Granollers completa la reforma del campo de béisbol con nuevos vestuarios y tribuna ampliada.',
       contenido: `El Ayuntamiento de Granollers ha finalizado las obras de mejora de las instalaciones del campo municipal de béisbol. Los nuevos vestuarios, la ampliación de la tribuna principal y el nuevo sistema de iluminación LED ya están listos para la temporada 2025-2026.\n\n"Es un reconocimiento al trabajo que lleva haciendo el club durante más de 20 años. Granollers se merece unas instalaciones acordes al nivel del béisbol que se practica aquí", declaró la regidora de deportes durante la inauguración oficial.\n\nEl campo renovado fue estrenado en el primer partido de liga de la temporada ante el CB Hospitalet, con más de 300 espectadores en las gradas.`,
       publicadoEn: new Date('2025-09-22'),
@@ -292,6 +294,7 @@ async function main() {
     },
     {
       titulo: 'Jornada de puertas abiertas: más de 80 niños descubren el béisbol',
+      imagen: '/images/formacion.webp',
       resumen: 'El club organizó una exitosa jornada de iniciación con récord de participación infantil.',
       contenido: `El CB Granollers organizó el pasado sábado una jornada de puertas abiertas que superó todas las expectativas con la participación de más de 80 niños y niñas de entre 6 y 12 años. Los entrenadores del club prepararon juegos y actividades adaptadas a cada edad.\n\nLos pequeños pudieron batear, lanzar y atrapar en un ambiente divertido y seguro. La jornada culminó con un partido amistoso entre los participantes que arrancó los aplausos de los padres presentes.\n\n"Es la cantera del futuro. Ver la ilusión de estos chavales nos llena de energía para seguir trabajando", declaró el coordinador de cantera del club.\n\nEl club ha abierto el plazo de inscripción para la categoría Sub10 de la temporada 2025-2026.`,
       publicadoEn: new Date('2025-10-18'),
@@ -300,6 +303,7 @@ async function main() {
     },
     {
       titulo: 'El senior lidera la clasificación tras una brillante primera vuelta',
+      imagen: '/images/pitcher.webp',
       resumen: 'Con 8 victorias y 1 derrota, el equipo senior de Granollers encabeza el grupo A de la División de Honor catalana.',
       contenido: `Tras completar la primera vuelta de la temporada 2025-2026, el equipo senior del CB Granollers lidera la clasificación del Grupo A de la División de Honor de béisbol catalán con 8 victorias y tan solo 1 derrota.\n\nEl balance es histórico para el club granollerí. El trabajo de Roberto Fuentes está dando sus frutos y la afición empieza a soñar en serio con el título.\n\nDestacados de la primera vuelta: el lanzador Daniel Moreno acumula 52 strikeouts en 7 aperturas con un ERA de 1.84, mientras que el campo interior ha cometido solo 2 errores en 9 partidos. El bateador Marc Puig lidera el equipo con un promedio de .342.\n\nLos próximos compromisos de la segunda vuelta serán cruciales para mantener el liderato y conseguir la clasificación para el campeonato nacional.`,
       publicadoEn: new Date('2025-12-08'),
@@ -316,6 +320,7 @@ async function main() {
         resumen: noticia.resumen,
         contenido: noticia.contenido,
         destacada: noticia.destacada,
+        ...(noticia.imagen && { imagen: noticia.imagen }),
       },
       create: noticia,
     });
