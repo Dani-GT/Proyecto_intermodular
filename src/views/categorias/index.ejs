@@ -37,7 +37,7 @@
             <% const catImgs = {SUB10:'/images/sub10.webp',SUB12:'/images/sub12fly.webp',SUB14:'/images/sub14anotando.webp',SUB16:'/images/sub16pitcher.webp',SUB18:'/images/sub18.webp',SENIOR:'/images/senior.webp'}; %>
             <div class="category-img">
               <% if (catImgs[cat.nombre]) { %>
-                <img src="<%= catImgs[cat.nombre] %>" alt="Categoría <%= cat.nombre %>">
+                <img src="<%= catImgs[cat.nombre] %>" alt="Categoría <%= cat.nombre %>" style="<%= cat.nombre === 'SUB16' ? 'object-position: center 20%' : '' %>">
               <% } else { %>
                 <div class="category-img-placeholder"><%= catEmoji[cat.nombre] || '⚾' %></div>
               <% } %>
