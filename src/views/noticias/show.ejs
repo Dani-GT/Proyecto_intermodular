@@ -26,7 +26,7 @@
 
         <div class="article-img">
           <% if (noticia.imagen) { %>
-            <img src="<%= noticia.imagen %>" alt="<%= noticia.titulo %>" style="width:100%;height:100%;object-fit:cover">
+            <img src="<%= noticia.imagen %>" alt="<%= noticia.titulo %>" style="width:100%;height:100%;object-fit:cover;<%= noticia.imagen.includes('pitcher') ? 'object-position:center 20%' : '' %>">
           <% } else { %>
             <div style="width:100%;height:300px;display:flex;align-items:center;justify-content:center;font-size:5rem;background:var(--bg2)">📰</div>
           <% } %>

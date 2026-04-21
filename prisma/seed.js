@@ -268,6 +268,7 @@ async function main() {
   const noticiaData = [
     {
       titulo: 'El CB Granollers arranca la temporada 2025-2026 con grandes expectativas',
+      imagen: '/images/saludo.webp',
       resumen: 'El club granollerí presenta su plantilla más amplia de la historia con 8 equipos en competición.',
       contenido: `El Club Béisbol Granollers ha comenzado oficialmente la temporada 2025-2026 con una presentación de equipos que llenó las instalaciones del campo municipal. Con más de 150 jugadores federados, el club afronta el curso más ambicioso de su historia.\n\nEl equipo senior, dirigido por Roberto Fuentes, aspira al ascenso a la División de Honor nacional, mientras que las categorías base presentan un estado de forma excelente tras una intensa pretemporada.\n\n"Estamos muy ilusionados con lo que hemos preparado este verano. El nivel de compromiso de los jugadores y de las familias es increíble", declaró el presidente del club durante el acto de presentación.\n\nLa temporada comienza el próximo sábado con el primer partido oficial del equipo senior en casa.`,
       publicadoEn: new Date('2025-09-10'),
@@ -285,7 +286,7 @@ async function main() {
     },
     {
       titulo: 'Nuevas instalaciones en el campo municipal completadas',
-      imagen: '/images/battingpractice.webp',
+      imagen: '/images/mantenimiento.webp',
       resumen: 'El Ayuntamiento de Granollers completa la reforma del campo de béisbol con nuevos vestuarios y tribuna ampliada.',
       contenido: `El Ayuntamiento de Granollers ha finalizado las obras de mejora de las instalaciones del campo municipal de béisbol. Los nuevos vestuarios, la ampliación de la tribuna principal y el nuevo sistema de iluminación LED ya están listos para la temporada 2025-2026.\n\n"Es un reconocimiento al trabajo que lleva haciendo el club durante más de 20 años. Granollers se merece unas instalaciones acordes al nivel del béisbol que se practica aquí", declaró la regidora de deportes durante la inauguración oficial.\n\nEl campo renovado fue estrenado en el primer partido de liga de la temporada ante el CB Hospitalet, con más de 300 espectadores en las gradas.`,
       publicadoEn: new Date('2025-09-22'),

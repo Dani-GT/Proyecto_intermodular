@@ -26,7 +26,7 @@
           <a href="/noticias/<%= dest.id %>" class="card card-hover news-featured-grid" style="display:grid;grid-template-columns:280px 1fr;margin-bottom:2rem;text-decoration:none;overflow:hidden">
             <div style="overflow:hidden;min-height:200px">
               <% if (dest.imagen) { %>
-                <img src="<%= dest.imagen %>" alt="<%= dest.titulo %>" style="width:100%;height:100%;object-fit:cover;display:block">
+                <img src="<%= dest.imagen %>" alt="<%= dest.titulo %>" style="width:100%;height:100%;object-fit:cover;display:block;<%= dest.imagen.includes('pitcher') ? 'object-position:center 20%' : '' %>">
               <% } else { %>
                 <div style="width:100%;height:100%;min-height:200px;display:flex;align-items:center;justify-content:center;font-size:2.5rem;background:linear-gradient(135deg,var(--bg2),var(--bg3))">📰</div>
               <% } %>
@@ -48,7 +48,7 @@
               <a href="/noticias/<%= noticia.id %>" class="card news-card card-hover" style="text-decoration:none">
                 <div class="news-thumb">
                   <% if (noticia.imagen) { %>
-                    <img src="<%= noticia.imagen %>" alt="<%= noticia.titulo %>">
+                    <img src="<%= noticia.imagen %>" alt="<%= noticia.titulo %>" style="<%= noticia.imagen.includes('pitcher') ? 'object-position:center 20%' : '' %>">
                   <% } else { %>
                     <div class="news-thumb-placeholder">📰</div>
                   <% } %>
