@@ -50,13 +50,29 @@
     })();
   </script>
 
-  <!-- Google Fonts -->
-  <link rel="preconnect"  href="https://fonts.googleapis.com">
-  <link rel="preconnect"  href="https://fonts.gstatic.com" crossorigin>
-  <link rel="dns-prefetch" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- Critical inline CSS: evita FOUC mientras carga el stylesheet principal -->
+  <style>
+    :root { --bg: #f8fafc; --text: #0f172a; }
+    [data-theme="dark"] { --bg: #0f172a; --text: #f1f5f9; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--bg); color: var(--text); font-family: system-ui, sans-serif; }
+    .navbar { position: sticky; top: 0; z-index: 100; background: var(--bg); }
+  </style>
 
-  <!-- CSS -->
-  <link rel="stylesheet" href="/css/style.css">
+  <!-- Google Fonts — no bloqueante -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="dns-prefetch" href="https://fonts.googleapis.com">
+  <link rel="preload" as="style"
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Inter:wght@400;500;600&display=swap"
+        onload="this.onload=null;this.rel='stylesheet'">
+  <noscript>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Inter:wght@400;500;600&display=swap">
+  </noscript>
+
+  <!-- CSS principal — no bloqueante -->
+  <link rel="preload" as="style" href="/css/style.css"
+        onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="/css/style.css"></noscript>
 </head>
 <body>
