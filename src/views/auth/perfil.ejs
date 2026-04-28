@@ -142,7 +142,7 @@
     </div>
 
     <!-- Panel compras -->
-    <div id="tab-compras" class="profile-panel" style="display:none">
+    <div id="tab-compras" class="profile-panel hidden">
       <% if (typeof compras !== 'undefined' && compras && compras.length > 0) { %>
         <div class="table-wrap">
           <table class="table">
@@ -189,7 +189,7 @@
     <% } %>
 
     <!-- Panel edición de datos propios (común a todos los roles) -->
-    <div id="tab-editar" class="profile-panel" style="display:none">
+    <div id="tab-editar" class="profile-panel hidden">
       <div style="display:grid;gap:1.5rem;grid-template-columns:1fr 1fr">
 
         <!-- Datos personales -->
@@ -280,17 +280,10 @@
 </main>
 
 <script>
-document.querySelectorAll('.profile-tab').forEach(function(tab) {
-  tab.addEventListener('click', function() {
-    document.querySelectorAll('.profile-tab').forEach(function(t) { t.classList.remove('active'); });
-    document.querySelectorAll('.profile-panel').forEach(function(p) { p.style.display = 'none'; });
-    tab.classList.add('active');
-    document.getElementById('tab-' + tab.dataset.tab).style.display = '';
-  });
-});
-// Abrir tab de edición si viene parámetro
+// Abrir tab de edición si viene parámetro en la URL
 if (window.location.hash === '#editar') {
-  document.querySelector('[data-tab="editar"]').click();
+  const btn = document.querySelector('[data-tab="editar"]');
+  if (btn) btn.click();
 }
 </script>
 

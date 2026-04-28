@@ -21,6 +21,13 @@ function toggleTheme() {
   if (saved) applyTheme(saved);
 })();
 
+// ─── Animación hero: se activa solo tras el load para no bloquear LCP ─────────
+window.addEventListener('load', function () {
+  document.querySelectorAll('.hero-bg, .club-hero-bg').forEach(el => {
+    el.classList.add('hero-animated');
+  });
+});
+
 // ─── DOM Ready ─────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', function () {
 
@@ -98,22 +105,37 @@ document.addEventListener('DOMContentLoaded', function () {
   document.querySelectorAll('.profile-tab').forEach(tab => {
     tab.addEventListener('click', function () {
       const target = this.dataset.tab;
-      document.querySelectorAll('.profile-tab').forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('.profile-panel').forEach(p => p.style.display = 'none');
-      this.classList.add('active');
-      const panel = document.getElementById('tab-' + target);
-      if (panel) panel.style.display = 'block';
+      // Leer estado antes de escribir (evita reflow forzado)
+      const panels = document.querySelectorAll('.profile-panel');
+      const tabs   = document.querySelectorAll('.profile-tab');
+      const panel  = document.getElementById('tab-' + target);
+      // Agrupar todas las escrituras en un único frame
+      requestAnimationFrame(() => {
+        tabs.forEach(t => t.classList.remove('active'));
+        panels.forEach(p => p.classList.add('hidden'));
+        this.classList.add('active');
+        if (panel) panel.classList.remove('hidden');
+      });
     });
   });
 
   // ── Filtros tienda ────────────────────────────────────────────────────
   document.querySelectorAll('.shop-filter-btn').forEach(btn => {
     btn.addEventListener('click', function () {
-      document.querySelectorAll('.shop-filter-btn').forEach(b => b.classList.remove('active'));
-      this.classList.add('active');
-      const cat = this.dataset.cat;
-      document.querySelectorAll('.product-card-wrap').forEach(card => {
-        card.style.display = (!cat || cat === 'TODOS' || card.dataset.cat === cat) ? '' : 'none';
+      const cat   = this.dataset.cat;
+      const btns  = document.querySelectorAll('.shop-filter-btn');
+      const cards = document.querySelectorAll('.product-card-wrap');
+      // Leer dataset de todas las tarjetas antes de modificar el DOM
+      const visibility = Array.from(cards).map(card =>
+        (!cat || cat === 'TODOS' || card.dataset.cat === cat)
+      );
+      // Escribir todo en un único frame
+      requestAnimationFrame(() => {
+        btns.forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        cards.forEach((card, i) => {
+          card.classList.toggle('hidden', !visibility[i]);
+        });
       });
     });
   });
@@ -129,11 +151,14 @@ document.addEventListener('DOMContentLoaded', function () {
 // ─── Utilidades globales ───────────────────────────────────────────────────
 function fadeOut(el) {
   if (!el) return;
-  el.style.transition = 'opacity .3s, max-height .3s, margin .3s, padding .3s';
-  el.style.opacity = '0';
-  el.style.maxHeight = '0';
-  el.style.margin = '0';
-  el.style.padding = '0';
+  // Agrupar todas las escrituras de estilo en un único frame
+  requestAnimationFrame(() => {
+    el.style.transition = 'opacity .3s, max-height .3s, margin .3s, padding .3s';
+    el.style.opacity    = '0';
+    el.style.maxHeight  = '0';
+    el.style.margin     = '0';
+    el.style.padding    = '0';
+  });
   setTimeout(() => el.remove(), 320);
 }
 
