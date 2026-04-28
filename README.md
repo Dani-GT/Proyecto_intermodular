@@ -1,135 +1,99 @@
-# ⚾ Club Béisbol Granollers — Web Oficial
+# ⚾ CB Granollers — Web Oficial
 
-[Ver en producción](https://proyecto-intermodular-nf0w.onrender.com/)
-> Proyecto Intermodular · CFGS Desarrollo de Aplicaciones Web · 2025-2026  
-> Desarrollado por **Daniel Galán Tavares**
+Página web completa del **Club Béisbol Granollers**, desarrollada como proyecto intermodular del CFGS Desarrollo de Aplicaciones Web (DAW). Incluye gestión de socios, inscripciones por categoría, tienda online, publicación de noticias y un panel de administración completo.
 
-Aplicación web completa para el Club Béisbol Granollers. Permite a los socios consultar información del club, inscribirse en categorías, comprar en la tienda y mantenerse al día con las noticias y el calendario de partidos. El club puede gestionar todo desde un panel de administración.
+🌐 **Demo en producción:** [https://cb-granollers.onrender.com](https://cb-granollers.onrender.com)
 
 ---
 
-## Índice
+## Tabla de contenidos
 
-- [Tecnologías utilizadas](#tecnologías-utilizadas)
-- [Funcionalidades](#funcionalidades)
-- [Notificaciones por email](#notificaciones-por-email)
-- [Sesiones](#sesiones)
-- [Estructura del proyecto](#estructura-del-proyecto)
-- [Instalación en local](#instalación-en-local)
-- [Variables de entorno](#variables-de-entorno)
-- [Base de datos (Supabase)](#base-de-datos-supabase)
-- [Despliegue en Render](#despliegue-en-render)
-- [Scripts disponibles](#scripts-disponibles)
-- [Usuarios de prueba](#usuarios-de-prueba)
-- [Modelo de datos](#modelo-de-datos)
-
----
-
-## Tecnologías utilizadas
-
-| Capa | Tecnología | Motivo |
-|------|-----------|--------|
-| Servidor | Node.js + Express | Framework minimalista y ampliamente adoptado para APIs y servidores web MVC |
-| Vistas | EJS (Embedded JavaScript Templates) | Renderizado en servidor con sintaxis familiar sin necesidad de bundler |
-| ORM | Prisma v5 | Tipado fuerte, migraciones automáticas y cliente generado a partir del schema |
-| Base de datos | PostgreSQL en Supabase | BD relacional robusta, gratuita en la nube y compatible con Prisma |
-| Autenticación | express-session + bcryptjs | Sesiones persistidas en BD y contraseñas hasheadas con salt automático |
-| Almacenamiento de sesiones | pg / sessionStore propio | Las sesiones se guardan en PostgreSQL en lugar de en memoria, necesario para Render |
-| Subida de ficheros | Multer + Cloudinary | Multer gestiona multipart/form-data; en producción las imágenes se suben a Cloudinary para evitar la pérdida de ficheros en el sistema efímero de Render |
-| Envío de emails | Resend API (fetch nativo) | Servicio externo vía HTTPS REST; no requiere SMTP (bloqueado en Render free tier) |
-| Despliegue | Render | Plataforma PaaS con integración continua desde GitHub |
-
-El proyecto sigue una arquitectura **MVC** (Modelo–Vista–Controlador):
-- Los **modelos** los define Prisma en `schema.prisma`
-- Los **controladores** contienen toda la lógica de negocio (`src/controllers/`)
-- Las **vistas** son plantillas EJS con partials reutilizables (`navbar`, `footer`, `flash`...)
+1. [Tecnologías](#tecnologías)
+2. [Características](#características)
+3. [Arquitectura y estructura del proyecto](#arquitectura-y-estructura-del-proyecto)
+4. [Modelos de datos](#modelos-de-datos)
+5. [Variables de entorno](#variables-de-entorno)
+6. [Instalación y desarrollo local](#instalación-y-desarrollo-local)
+7. [Scripts disponibles](#scripts-disponibles)
+8. [Despliegue en Render](#despliegue-en-render)
+9. [Subida de imágenes — Cloudinary](#subida-de-imágenes--cloudinary)
+10. [Email transaccional — Resend](#email-transaccional--resend)
+11. [Optimizaciones de rendimiento](#optimizaciones-de-rendimiento)
+12. [Autor](#autor)
 
 ---
 
-## Funcionalidades
+## Tecnologías
 
-### Usuarios y acceso
-- Registro e inicio de sesión con contraseñas hasheadas con bcrypt
-- Cuatro roles: `SOCIO`, `JUGADOR`, `TÉCNICO` y `ADMIN`
-- Cada usuario puede ver y editar sus propios datos desde su perfil
-- Rutas protegidas según rol (middleware `requireAuth` y `requireAdmin`)
-- Al registrarse un nuevo socio, el administrador recibe un email automático
+| Capa | Tecnología |
+|------|-----------|
+| Servidor | Node.js ≥ 18 + Express 4 |
+| Plantillas | EJS 3 |
+| ORM | Prisma 5 |
+| Base de datos | PostgreSQL (Supabase) |
+| Sesiones | express-session + almacén personalizado en PostgreSQL |
+| Subida de imágenes | Multer + Cloudinary v1 (producción) / disco local (desarrollo) |
+| Email | Resend REST API (fetch nativo, sin SMTP) |
+| Estilos | CSS puro con custom properties (tema claro/oscuro) |
+| JS frontend | Vanilla JS (`main.js`) |
+| Despliegue | Render (plan gratuito) |
+| Hosting imágenes | Cloudinary (carpetas `cbgranollers/noticias` y `cbgranollers/productos`) |
 
-### Inscripciones
-- Formulario de inscripción a categorías: Sub10, Sub12, Sub14, Sub16, Sub18 y Sénior
-- Las categorías disponibles se filtran automáticamente según la edad del usuario
-- El usuario elige si quiere inscribirse como **jugador** o como **técnico**
-- Si el inscrito es **menor de edad**, se exigen los datos del padre/madre o tutor legal
-- Si el menor ya facilitó los datos del tutor al registrarse, no se le vuelven a pedir
-- No se puede enviar una nueva solicitud si ya hay una `PENDIENTE` o `APROBADA`
-- Al aprobar una solicitud desde el panel admin, el rol cambia automáticamente a `JUGADOR` o `TÉCNICO`
-- Al rechazar, el rol vuelve a `SOCIO`
-- Al enviar una solicitud, el administrador recibe un email automático con todos los datos
+---
 
-### Categorías
-- Página propia para cada categoría con el cuerpo técnico y la plantilla de jugadores
-- Calendario de próximos partidos y últimos resultados por categoría
-- Filtro por categoría en las páginas de calendario y resultados globales
+## Características
 
-### Tienda
-- Catálogo de productos con filtros por categoría (Ropa, Equipamiento, Merchandising)
-- Carrito gestionado en sesión
-- Proceso de compra: carrito → datos de envío → pago → confirmación
-- Al completar una compra, el administrador recibe un email automático con el detalle del pedido
+### Públicas (sin iniciar sesión)
+- **Página de inicio** con hero, noticias destacadas, categorías y llamada a la acción
+- **El Club** — historia, galería y timeline (desde 1985)
+- **Categorías** — Sub-10, Sub-12, Sub-14, Sub-16, Sub-18 y Sénior con entrenadores y horarios
+- **Calendario y resultados** de partidos por categoría
+- **Noticias** — listado y detalle con imagen
+- **Tienda** — catálogo con filtro por categoría (ROPA, EQUIPAMIENTO, MERCHANDISING)
+- **Formulario de contacto**
+- Tema claro/oscuro persistido en `localStorage`
+- SEO básico (Open Graph, Twitter Card, sitemap.xml, robots.txt)
 
-### Noticias
-- Listado con noticia destacada, grid de noticias y sidebar de recientes
-- Página de detalle de cada noticia
+### Para socios autenticados
+- **Registro** con validación de mayoría de edad (solicita datos del tutor legal para menores)
+- **Inicio de sesión / Cierre de sesión**
+- **Mi perfil** — ver inscripciones, historial de compras y editar datos personales o contraseña
+- **Inscripción** a categorías con selección de rol (JUGADOR / TÉCNICO)
+- **Carrito y compra** — añadir productos, revisar carrito, proceso de checkout y confirmación
 
 ### Panel de administración (`/admin`)
-- **Dashboard** con estadísticas generales
-- **Usuarios**: listado, cambio de rol y eliminación
-- **Inscripciones**: listado con rol solicitado, datos del tutor legal si aplica, y cambio de estado
-- **Jugadores y técnicos**: creación directa desde el panel sin pasar por el proceso de inscripción
-- **Productos**: alta, edición y gestión de stock, con subida de imagen (guardada en Cloudinary en producción)
-- **Noticias**: alta y edición con subida de imagen (guardada en Cloudinary en producción)
-- **Partidos**: creación y registro de resultados por categoría
+Accesible únicamente con rol `ADMIN`.
+
+- **Dashboard** — resumen de socios, inscripciones, noticias y productos
+- **Inscripciones** — listado completo, cambio de estado (PENDIENTE / APROBADA / RECHAZADA) y notas con datos del tutor legal
+- **Usuarios** — listado de socios, cambio de rol, eliminación
+- **Productos** — crear, editar y eliminar productos con subida de imagen (Cloudinary en producción)
+- **Noticias** — crear, editar y eliminar noticias con subida de imagen (Cloudinary en producción)
+- **Partidos** — crear, editar y eliminar partidos por categoría con resultado
+
+### Notificaciones por email
+El administrador recibe un email automático ante:
+- Nuevo registro de socio (incluyendo datos del tutor si es menor)
+- Nueva solicitud de inscripción
+- Nuevo pedido de la tienda con desglose de productos y total
 
 ---
 
-## Notificaciones por email
-
-El sistema envía emails automáticos al administrador en tres situaciones:
-
-| Evento | Asunto del email |
-|--------|-----------------|
-| Nuevo registro de socio | `⚾ Nuevo socio registrado — Nombre Apellidos` |
-| Nueva solicitud de inscripción | `📋 Nueva inscripción — Nombre Apellidos (Categoría)` |
-| Nueva compra en la tienda | `🛍️ Nuevo pedido #XXXXXXXX — Nombre Apellidos` |
-
-Los emails se envían a través de **[Resend](https://resend.com)** usando su API REST directamente con `fetch` nativo de Node.js (sin librerías adicionales). Esto evita el problema de que Render free tier bloquea las conexiones SMTP salientes.
-
-Si la variable `RESEND_API_KEY` no está configurada, el servidor arranca igualmente y registra un aviso en los logs, pero no se envían correos.
-
----
-
-## Sesiones
-
-Las sesiones **no se guardan en memoria** (lo que se perdería al reiniciar el servidor). Se persisten en la **misma base de datos PostgreSQL de Supabase**, en una tabla llamada `user_sessions`, mediante un store personalizado (`src/lib/sessionStore.js`).
-
-Cuando un usuario hace login, se crea un registro en esa tabla con un ID de sesión único. Ese ID viaja en una **cookie** cifrada en el navegador (`httpOnly`, `secure` en producción, duración 7 días). En cada petición, el servidor lee la cookie, busca la sesión en la base de datos y recupera los datos del usuario sin necesidad de volver a consultar la tabla `personas`.
-
----
-
-## Estructura del proyecto
+## Arquitectura y estructura del proyecto
 
 ```
 Proyecto_intermodular/
-├── app.js                        # Punto de entrada: Express, sesiones, rutas
+├── app.js                            # Punto de entrada, configuración Express
 ├── package.json
-├── render.yaml                   # Configuración del despliegue en Render
-├── er_diagram.svg                # Diagrama Entidad-Relación completo
+├── render.yaml                       # Configuración de despliegue en Render
 ├── prisma/
-│   ├── schema.prisma             # Modelos y relaciones de la BD
-│   ├── seed.js                   # Datos de prueba
-│   └── migrations/               # Historial de migraciones
+│   ├── schema.prisma                 # Modelos de datos
+│   └── seed.js                       # Datos iniciales (categorías, productos, admin)
+├── scripts/
+│   ├── update-productos-imagenes.js  # Actualiza rutas de imágenes de productos en BD
+│   └── update-noticias-imagenes.js   # Actualiza rutas de imágenes de noticias en BD
 └── src/
-    ├── controllers/
+    ├── controllers/                  # Lógica de negocio por módulo
     │   ├── admin.controller.js
     │   ├── auth.controller.js
     │   ├── categoria.controller.js
@@ -137,243 +101,283 @@ Proyecto_intermodular/
     │   ├── inscripcion.controller.js
     │   ├── noticia.controller.js
     │   └── tienda.controller.js
-    ├── middleware/
-    │   ├── auth.middleware.js     # requireAuth, requireAdmin, redirectIfAuth
-    │   └── upload.middleware.js   # Multer para imágenes de noticias y productos
-    ├── routes/
-    │   ├── admin.routes.js
-    │   ├── auth.routes.js
-    │   ├── categoria.routes.js
-    │   ├── index.routes.js
-    │   ├── inscripcion.routes.js
-    │   ├── noticia.routes.js
-    │   └── tienda.routes.js
     ├── lib/
-    │   ├── prisma.js             # Instancia singleton del cliente Prisma
-    │   ├── sessionStore.js       # Store de sesiones sobre PostgreSQL
-    │   └── mailer.js             # Notificaciones por email via Resend API
-    ├── views/
-    │   ├── partials/             # head.ejs, navbar.ejs, footer.ejs, flash.ejs
-    │   ├── admin/                # dashboard, usuarios, inscripciones, productos, noticias, partidos
-    │   ├── auth/                 # login.ejs, registro.ejs, perfil.ejs
-    │   ├── categorias/           # index, show, calendario, resultados
-    │   ├── inscripcion/          # form.ejs, mis-inscripciones.ejs
-    │   ├── noticias/             # index.ejs, show.ejs
-    │   ├── tienda/               # index, producto, carrito, checkout, pago, confirmacion
-    │   ├── index.ejs
-    │   ├── club.ejs
-    │   ├── contacto.ejs
-    │   └── 404.ejs
+    │   ├── mailer.js                 # Envío de emails via Resend API
+    │   ├── prisma.js                 # Singleton del cliente Prisma
+    │   └── sessionStore.js           # Almacén de sesiones en PostgreSQL
+    ├── middleware/
+    │   ├── auth.middleware.js        # Guards: requireAuth, requireAdmin
+    │   └── upload.middleware.js      # Multer: Cloudinary (prod) o disco (dev)
+    ├── routes/                       # Definición de rutas por módulo
     └── public/
-        ├── css/style.css
-        ├── js/main.js
-        └── images/
-            ├── noticias/         # Imágenes subidas para noticias
-            └── productos/        # Imágenes subidas para productos
+        ├── css/style.css             # Estilos globales (38 KB minificado)
+        ├── js/main.js                # JavaScript frontend
+        ├── images/                   # Imágenes estáticas en WebP
+        │   └── productos/            # Imágenes del catálogo inicial
+        ├── robots.txt
+        └── sitemap.xml
+    └── views/
+        ├── partials/                 # head, navbar, footer, flash
+        ├── admin/                    # Vistas del panel de administración
+        ├── auth/                     # login, registro, perfil
+        ├── categorias/               # index, show, calendario, resultados
+        ├── inscripcion/              # Formulario y mis inscripciones
+        ├── noticias/                 # Listado y detalle
+        ├── tienda/                   # Catálogo, carrito, checkout, pago, confirmación
+        ├── index.ejs                 # Página de inicio
+        ├── club.ejs                  # Historia del club
+        ├── contacto.ejs
+        └── 404.ejs
 ```
+
+El proyecto sigue el patrón **MVC**: las rutas delegan en controladores que acceden a la base de datos a través del cliente Prisma y devuelven datos a las vistas EJS.
 
 ---
 
-## Instalación en local
+## Modelos de datos
 
-### Requisitos previos
-
-- [Node.js](https://nodejs.org/) v18 o superior
-- Una cuenta gratuita en [Supabase](https://supabase.com)
-- Una cuenta gratuita en [Resend](https://resend.com) (opcional, para emails)
-- Una cuenta gratuita en [Cloudinary](https://cloudinary.com) (opcional, para subida de imágenes en producción)
-- Git
-
-### Pasos
-
-```bash
-# 1. Clona el repositorio
-git clone https://github.com/Dani-GT/Proyecto_intermodular.git
-cd Proyecto_intermodular
-
-# 2. Instala las dependencias
-npm install
-
-# 3. Crea el archivo de variables de entorno y rellénalo
-cp .env.example .env
 ```
+Persona ──── Rol (1:1)
+        ──── Inscripcion (1:N) ──── TutorLegal (1:1)
+        ──── Compra (1:N) ────────── CompraProducto (N:M) ──── Producto
+
+Categoria ── Inscripcion (1:N)
+          ── Partido (1:N)
+
+Noticia     (independiente)
+```
+
+| Modelo | Descripción |
+|--------|-------------|
+| `Persona` | Usuario del sistema. Incluye campos opcionales para datos del tutor legal (menores) |
+| `Rol` | Tipo de usuario: `SOCIO`, `JUGADOR`, `TÉCNICO`, `ADMIN` |
+| `Categoria` | Categoría deportiva: SUB10–SUB18 + SENIOR |
+| `Inscripcion` | Solicitud de un socio a una categoría. Estado: `PENDIENTE`, `APROBADA`, `RECHAZADA` |
+| `TutorLegal` | Datos del tutor vinculados a una inscripción (cuando el jugador es menor) |
+| `Partido` | Partido de una categoría con fecha, rival, campo y resultado |
+| `Noticia` | Artículo publicable con imagen, resumen y flag `destacada` |
+| `Producto` | Artículo de la tienda con precio, stock e imagen. Categorías: `ROPA`, `EQUIPAMIENTO`, `MERCHANDISING` |
+| `Compra` | Pedido de un socio. Estado: `PENDIENTE`, `PAGADA`, `COMPLETADA`, `CANCELADA`, `ENVIADA` |
+| `CompraProducto` | Línea de pedido (relación N:M entre Compra y Producto con cantidad y precio unitario) |
 
 ---
 
 ## Variables de entorno
 
-Crea un archivo `.env` en la raíz del proyecto (el `.env` no se sube al repositorio por seguridad):
+Crea un archivo `.env` en la raíz del proyecto basándote en `.env.example`:
 
 ```env
 # ── Base de datos (Supabase) ──────────────────────────────────────────────────
-# Obtén las URLs en Supabase → Settings → Database → Connection string
-DATABASE_URL="postgresql://postgres:TU_PASSWORD@db.XXXXXXXXXX.supabase.co:6543/postgres?pgbouncer=true"
+# Obtén las URLs en: Supabase → Settings → Database → Connection string
+DATABASE_URL="postgresql://postgres:TU_PASSWORD@db.XXXXXXXXXX.supabase.co:6543/postgres?pgbouncer=true&connection_limit=1"
 DIRECT_URL="postgresql://postgres:TU_PASSWORD@db.XXXXXXXXXX.supabase.co:5432/postgres"
 
 # ── Sesiones ──────────────────────────────────────────────────────────────────
-# Cadena aleatoria y larga para firmar las cookies de sesión
+# Genera un valor con: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 SESSION_SECRET="cambia-esto-por-algo-secreto"
 
-# ── Email (Resend) ────────────────────────────────────────────────────────────
-# Obtén tu API key en resend.com → API Keys → Create API Key
-RESEND_API_KEY="re_xxxxxxxxxxxxxxxxxxxx"
-# Email del administrador que recibirá las notificaciones
-ADMIN_EMAIL="tu@email.com"
-
 # ── Cloudinary (imágenes subidas desde el admin) ─────────────────────────────
-# Obtén las credenciales en cloudinary.com → Dashboard
-# Sin estas variables las imágenes se guardan en disco (válido solo en local)
+# Obtén las credenciales en: cloudinary.com → Dashboard
 CLOUDINARY_CLOUD_NAME="tu_cloud_name"
 CLOUDINARY_API_KEY="tu_api_key"
 CLOUDINARY_API_SECRET="tu_api_secret"
+
+# ── Email (Resend) ────────────────────────────────────────────────────────────
+# Obtén tu API key en: resend.com → API Keys → Create API Key
+RESEND_API_KEY="re_xxxxxxxxxxxxxxxxxxxx"
+ADMIN_EMAIL="tu@email.com"
 
 # ── Entorno ───────────────────────────────────────────────────────────────────
 NODE_ENV="development"
 PORT=3000
 ```
 
-> Para generar un SESSION_SECRET seguro:
-> ```bash
-> node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
-> ```
+> **Cloudinary es opcional en desarrollo.** Si las tres variables `CLOUDINARY_*` no están definidas, las imágenes se guardan en disco local (`src/public/images/`). En producción (Render) el sistema de archivos es efímero, por lo que Cloudinary es obligatorio para que las imágenes subidas desde el admin persistan entre deploys.
 
-> ⚠️ Sin `RESEND_API_KEY` el servidor arranca igualmente pero no se enviarán correos. Se mostrará `[Mailer] ⚠️ RESEND_API_KEY no configurado` en los logs.
-
-> ⚠️ Sin las variables de Cloudinary, las imágenes subidas desde el admin se guardan en disco local. Esto es válido en desarrollo, pero en Render (sistema de ficheros efímero) las imágenes se perderían al reiniciar el servidor.
+> **Supabase — plan gratuito:** La base de datos se pausa automáticamente tras 7 días sin actividad. Si la app no responde, entra en el [dashboard de Supabase](https://supabase.com/dashboard) y pulsa **Restore project**.
 
 ---
 
-## Base de datos (Supabase)
+## Instalación y desarrollo local
 
-### Crear el proyecto
+### Requisitos previos
+- Node.js ≥ 18
+- Una base de datos PostgreSQL (se recomienda Supabase)
+- (Opcional) Cuenta en Cloudinary para la subida de imágenes desde el admin
 
-1. Entra en [supabase.com](https://supabase.com) → **New project**
-2. Elige un nombre, región (EU West recomendado) y contraseña
-3. Espera a que se inicialice (~2 minutos)
-
-### Obtener las URLs de conexión
-
-Ve a **Settings → Database → Connection string**:
-- URI con PgBouncer → `DATABASE_URL`
-- URI directa → `DIRECT_URL`
-
-### Aplicar el esquema y cargar datos
+### Pasos
 
 ```bash
-# Genera el cliente de Prisma (obligatorio tras clonar)
-npm run db:generate
+# 1. Clonar el repositorio
+git clone https://github.com/Dani-GT/Proyecto_intermodular.git
+cd Proyecto_intermodular
 
-# Sincroniza el esquema con la base de datos
+# 2. Instalar dependencias
+npm install
+
+# 3. Configurar variables de entorno
+cp .env.example .env
+# Edita .env con tus credenciales
+
+# 4. Aplicar el esquema a la base de datos
 npm run db:push
 
-# Carga los datos de prueba
+# 5. (Opcional) Cargar datos de ejemplo
 npm run db:seed
-```
 
----
-
-## Ejecutar en local
-
-```bash
-# Modo desarrollo (se reinicia solo al guardar cambios)
+# 6. Iniciar en modo desarrollo
 npm run dev
-
-# Modo producción
-npm start
 ```
 
-Abre el navegador en [http://localhost:3000](http://localhost:3000)
+La aplicación estará disponible en [http://localhost:3000](http://localhost:3000).
 
----
-
-## Despliegue en Render
-
-El repositorio incluye un `render.yaml` que Render detecta automáticamente.
-
-1. Ve a [render.com](https://render.com) → **New → Web Service**
-2. Conecta tu repositorio de GitHub
-3. Render leerá el `render.yaml` y configurará el build automáticamente
-4. En **Environment → Add environment variable**, añade manualmente:
-   - `DATABASE_URL` → URL de conexión con PgBouncer de Supabase
-   - `DIRECT_URL` → URL directa de Supabase (para migraciones)
-   - `RESEND_API_KEY` → tu clave de Resend
-   - `ADMIN_EMAIL` → email donde recibirás las notificaciones
-   - `CLOUDINARY_CLOUD_NAME` → cloud name de tu cuenta Cloudinary
-   - `CLOUDINARY_API_KEY` → API key de Cloudinary
-   - `CLOUDINARY_API_SECRET` → API secret de Cloudinary
-5. El resto de variables ya están definidas en el `render.yaml`
-
-El comando de build configurado es:
-```
-npm install && npx prisma generate && npx prisma migrate deploy
-```
-
-> **Importante:** para que `prisma migrate deploy` funcione en Render necesitas subir la carpeta `prisma/migrations/` al repositorio. Si usas `db:push` en local, genera la migración inicial antes del primer despliegue:
-> ```bash
-> npm run db:migrate   # escribe "init" cuando lo pida
-> git add prisma/migrations/
-> git commit -m "add initial migration"
-> git push
-> ```
+El seed crea un usuario administrador con las credenciales:
+- **Email:** `admin@cbgranollers.com`
+- **Contraseña:** `Admin1234!`
 
 ---
 
 ## Scripts disponibles
 
-| Script | Descripción |
-|--------|-------------|
-| `npm start` | Arranca el servidor en producción |
-| `npm run dev` | Arranca con nodemon (recarga automática en desarrollo) |
-| `npm run db:generate` | Genera el cliente de Prisma a partir del schema |
-| `npm run db:push` | Sincroniza el schema con la BD sin crear migraciones (desarrollo) |
-| `npm run db:migrate` | Crea y aplica una migración versionada |
-| `npm run db:studio` | Abre Prisma Studio (interfaz gráfica de la BD en el navegador) |
-| `npm run db:seed` | Puebla la base de datos con datos de prueba |
-| `node scripts/update-noticias-imagenes.js` | Asigna imágenes estáticas a noticias existentes en la BD |
-| `node scripts/update-productos-imagenes.js` | Asigna imágenes estáticas a productos existentes en la BD |
+| Script | Comando | Descripción |
+|--------|---------|-------------|
+| Producción | `npm start` | Inicia el servidor con `node app.js` |
+| Desarrollo | `npm run dev` | Inicia con `nodemon` (recarga automática) |
+| Generar cliente Prisma | `npm run db:generate` | Regenera `@prisma/client` |
+| Migración (dev) | `npm run db:migrate` | Crea y aplica una nueva migración |
+| Push esquema | `npm run db:push` | Aplica el esquema sin crear migración (ideal para primeros pasos) |
+| Seed | `npm run db:seed` | Carga categorías, productos e imágenes predeterminadas en la BD |
+| Prisma Studio | `npm run db:studio` | Interfaz visual para explorar y editar la BD |
+| Actualizar imágenes productos | `node scripts/update-productos-imagenes.js` | Actualiza las rutas de imagen de los productos del seed a las versiones WebP locales |
+| Actualizar imágenes noticias | `node scripts/update-noticias-imagenes.js` | Actualiza rutas de imagen de noticias existentes en la BD |
 
 ---
 
-## Usuarios de prueba
+## Despliegue en Render
 
-Después de ejecutar `npm run db:seed` puedes entrar con estas cuentas:
+El repositorio incluye `render.yaml` con la configuración lista para despliegue automático.
 
-| Rol | Email | Contraseña |
-|-----|-------|------------|
-| Admin | admin@cbgranollers.cat | Admin1234! |
-| Socio | socio@ejemplo.com | User1234! |
-| Jugador (Sub14) | jugador@ejemplo.com | User1234! |
+### Pasos
+
+1. Crea un nuevo **Web Service** en [render.com](https://render.com) conectando el repositorio de GitHub.
+2. Render detectará el `render.yaml` automáticamente. Si prefieres configurarlo a mano, usa:
+   - **Build Command:** `npm install && npx prisma generate && npx prisma db push --skip-generate --accept-data-loss`
+   - **Start Command:** `node app.js`
+3. Añade las siguientes variables de entorno en el panel de Render:
+
+| Variable | Descripción |
+|----------|-------------|
+| `DATABASE_URL` | URL con pgBouncer de Supabase (puerto 6543) |
+| `DIRECT_URL` | URL directa de Supabase (puerto 5432) |
+| `SESSION_SECRET` | Cadena aleatoria secreta (Render puede generarla automáticamente) |
+| `CLOUDINARY_CLOUD_NAME` | Nombre del cloud en Cloudinary |
+| `CLOUDINARY_API_KEY` | API Key de Cloudinary |
+| `CLOUDINARY_API_SECRET` | API Secret de Cloudinary |
+| `RESEND_API_KEY` | API Key de Resend para emails |
+| `ADMIN_EMAIL` | Email del administrador para notificaciones |
+| `NODE_ENV` | `production` |
+
+4. Haz un primer deploy. Render ejecutará el build command que incluye `prisma db push`, creando todas las tablas automáticamente.
+5. Ejecuta el seed la primera vez desde tu máquina local (con las mismas variables de entorno):
+   ```bash
+   npm run db:seed
+   ```
+
+### Notas importantes sobre Render (plan gratuito)
+
+- El servicio **se duerme** tras 15 minutos de inactividad. La primera petición tras el sueño tarda unos segundos.
+- El sistema de archivos es **efímero**: cualquier archivo escrito en disco desaparece al reiniciar. Por eso Cloudinary es obligatorio en producción.
+- Las sesiones se persisten en PostgreSQL para sobrevivir reinicios y deploys.
 
 ---
 
-## Modelo de datos
+## Subida de imágenes — Cloudinary
 
-El diagrama ER completo está en [`er_diagram.svg`](./er_diagram.svg).
+El middleware `src/middleware/upload.middleware.js` detecta automáticamente si las variables `CLOUDINARY_*` están definidas:
 
+- **Con Cloudinary** (producción): las imágenes se suben directamente a Cloudinary. `req.file.path` contiene la URL pública (`https://res.cloudinary.com/...`).
+- **Sin Cloudinary** (desarrollo local): las imágenes se guardan en `src/public/images/noticias/` o `src/public/images/productos/` con nombre único (timestamp + hash aleatorio).
+
+Los controladores distinguen ambos casos para asignar la URL correcta:
+
+```js
+const imagenUrl = req.file
+  ? (req.file.path?.startsWith('http') ? req.file.path : `/images/productos/${req.file.filename}`)
+  : (req.body.imagenUrl || null);
 ```
-Persona ──1:1── Rol
-        ──1:N── Inscripcion ──1:1── TutorLegal
-        ──1:N── Compra ──1:N── CompraProducto ──N:1── Producto
 
-Categoria ──1:N── Inscripcion
-          ──1:N── Partido
+**Versión requerida:** `cloudinary@^1.41.3` — compatible con `multer-storage-cloudinary@4.0.0`, que requiere la API v1 de Cloudinary. Se accede a través de `require('cloudinary').v2`.
 
-Noticia  (entidad independiente, gestionada desde el panel admin)
-```
-
-| Entidad | Descripción |
-|---------|-------------|
-| **Persona** | Usuarios registrados. Incluye opcionalmente los datos del tutor legal para menores |
-| **Rol** | Tipo de usuario: `SOCIO`, `JUGADOR`, `TÉCNICO` o `ADMIN` |
-| **Categoria** | Categorías del club: Sub10, Sub12, Sub14, Sub16, Sub18, Sénior |
-| **Inscripcion** | Solicitud de un usuario para unirse a una categoría (PENDIENTE / APROBADA / RECHAZADA) |
-| **TutorLegal** | Datos del tutor obligatorios cuando el inscrito es menor de edad |
-| **Partido** | Partidos con rival, fecha, campo, si es local/visitante y resultado |
-| **Noticia** | Artículos publicados por el club, con imagen y opción de marcarla como destacada |
-| **Producto** | Artículos de la tienda con precio, stock e imagen (Ropa / Equipamiento / Merchandising) |
-| **Compra** | Cabecera del pedido de un usuario con total y estado |
-| **CompraProducto** | Líneas del pedido: producto, cantidad y precio unitario en el momento de la compra |
+Las imágenes se organizan en Cloudinary en:
+- `cbgranollers/noticias` — imágenes de artículos
+- `cbgranollers/productos` — imágenes de la tienda
 
 ---
 
-*Proyecto realizado para el módulo de Proyecto Intermodular del CFGS DAW · Curso 2025-2026*
+## Email transaccional — Resend
+
+El módulo `src/lib/mailer.js` usa **fetch nativo de Node.js 18+** para llamar directamente a la API REST de Resend, sin dependencias de SMTP. Esto es necesario porque el plan gratuito de Render bloquea las conexiones SMTP salientes (puertos 25, 465, 587).
+
+Se envían tres tipos de email al administrador:
+
+| Función | Cuándo se activa |
+|---------|-----------------|
+| `notificarRegistro(persona)` | Nuevo registro de socio |
+| `notificarInscripcion(inscripcion, persona)` | Nueva solicitud de inscripción |
+| `notificarCompra(compra, persona)` | Nuevo pedido realizado |
+
+Si `RESEND_API_KEY` no está definida, las funciones registran un aviso en consola y no lanzan ningún error, por lo que la aplicación funciona correctamente sin email configurado.
+
+---
+
+## Optimizaciones de rendimiento
+
+A lo largo del desarrollo se aplicaron diversas mejoras orientadas a Core Web Vitals (PageSpeed Insights, tamaño móvil):
+
+### Imágenes
+- Todas las imágenes se almacenan en formato **WebP** y se comprimieron con Pillow (Python), consiguiendo reducciones de entre el 34 % y el 77 % respecto a los originales.
+- Las imágenes del catálogo y la galería usan rutas locales `/images/...` en vez de URLs externas.
+
+### LCP (Largest Contentful Paint)
+- El hero de la página de inicio usa una etiqueta `<img>` real (no `background-image` CSS) para que el navegador descubra el recurso antes en el parse del HTML.
+- Se añade `fetchpriority="high"` al hero y se pasa la ruta como variable `preloadHero` al partial `head.ejs` para generar un `<link rel="preload" as="image">` lo antes posible en el `<head>`.
+- El atributo `decoding="async"` **no se usa** en la imagen hero: introduce un retraso de ~5 s en el renderizado del LCP.
+- Las animaciones CSS del hero (y `will-change: transform`) se activan únicamente tras el evento `window.load`, evitando que la GPU cree capas durante la pintura inicial.
+
+### Render-blocking resources
+- **Google Fonts** se carga de forma no bloqueante:
+  ```html
+  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?..." onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="..."></noscript>
+  ```
+- El script `main.js` incluye el atributo `defer` para no bloquear el renderizado.
+- El CSS principal (`style.css`) permanece bloqueante para evitar el efecto FOUC (flash de contenido sin estilos) visible al navegar entre páginas.
+
+### Forced reflow
+- Los paneles de tabs (perfil) y filtros (tienda) usan la clase `.hidden` en vez de `style.display`, y agrupan todas las escrituras DOM dentro de `requestAnimationFrame`, eliminando reflows forzados.
+- `fadeOut` agrupa todas sus escrituras de estilo en un único frame.
+
+### CSS
+- `style.css` minificado: de ~58 KB a ~38 KB (−34 %).
+- Clase utilitaria `.hidden { display: none !important }` usada en tabs y filtros.
+- `margin-bottom` añadido al `.page-header` en mobile para separarlo del contenido siguiente.
+
+### Critical inline CSS
+Bloque inline en `head.ejs` para evitar el FOUC mientras se carga el stylesheet principal y aplicar el tema guardado sin parpadeo:
+
+```html
+<style>
+  :root { --bg: #f8fafc; --text: #0f172a; }
+  [data-theme="dark"] { --bg: #0f172a; --text: #f1f5f9; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: system-ui, sans-serif; }
+  .navbar { position: sticky; top: 0; z-index: 100; background: var(--bg); }
+</style>
+```
+
+---
+
+## Autor
+
+**Daniel Galán Tavares**  
+CFGS Desarrollo de Aplicaciones Web — Proyecto Intermodular 2025-2026  
+[danielgalantavares@gmail.com](mailto:danielgalantavares@gmail.com) · [GitHub](https://github.com/Dani-GT/Proyecto_intermodular)
