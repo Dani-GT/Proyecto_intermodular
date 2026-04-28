@@ -59,6 +59,11 @@
     .navbar { position: sticky; top: 0; z-index: 100; background: var(--bg); }
   </style>
 
+  <!-- Preload imagen LCP (solo páginas que lo necesiten) -->
+  <% if (typeof preloadHero !== 'undefined' && preloadHero) { %>
+  <link rel="preload" as="image" href="<%= preloadHero %>" fetchpriority="high">
+  <% } %>
+
   <!-- Google Fonts — no bloqueante -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -70,9 +75,7 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Inter:wght@400;500;600&display=swap">
   </noscript>
 
-  <!-- CSS principal — no bloqueante -->
-  <link rel="preload" as="style" href="/css/style.css"
-        onload="this.onload=null;this.rel='stylesheet'">
-  <noscript><link rel="stylesheet" href="/css/style.css"></noscript>
+  <!-- CSS principal -->
+  <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
