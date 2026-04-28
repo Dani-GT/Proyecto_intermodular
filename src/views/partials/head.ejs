@@ -4,6 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+  <!-- Preload recursos críticos lo antes posible -->
+  <link rel="preload" as="style" href="/css/style.css">
+
   <%
     var _title  = (typeof title !== 'undefined' && title) ? title : 'Club Béisbol Granollers';
     var _desc   = (typeof description !== 'undefined' && description)
