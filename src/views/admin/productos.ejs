@@ -26,6 +26,7 @@
         <div class="card" style="padding:1.75rem;margin-bottom:2rem">
           <h3 style="margin-bottom:1.25rem;font-size:1rem">➕ Nuevo producto</h3>
           <form action="/admin/productos" method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
               <div class="form-group">
                 <label class="form-label">Nombre</label>
@@ -112,6 +113,7 @@
                   <tr id="editProd-<%= p.id %>" style="display:none;background:var(--bg2)">
                     <td colspan="6" style="padding:1.25rem">
                       <form action="/admin/productos/<%= p.id %>" method="POST" enctype="multipart/form-data">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                         <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:.75rem;margin-bottom:.75rem">
                           <div>
                             <label class="form-label" style="font-size:.8rem">Nombre</label>

@@ -61,6 +61,7 @@
           </div>
 
           <form action="/tienda/checkout/confirmar" method="POST" style="margin-top:1.5rem">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <div class="form-group">
               <label class="form-label">Dirección de entrega</label>
               <input type="text" name="direccion" class="form-control"

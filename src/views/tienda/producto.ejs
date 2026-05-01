@@ -40,6 +40,7 @@
 
         <% if (producto.stock > 0) { %>
           <form action="/tienda/carrito/agregar" method="POST">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <input type="hidden" name="productoId" value="<%= producto.id %>">
             <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem">
               <label class="form-label" style="margin:0;white-space:nowrap">Cantidad:</label>

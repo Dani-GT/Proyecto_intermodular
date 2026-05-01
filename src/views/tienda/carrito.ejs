@@ -38,17 +38,20 @@
                 <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem">
                   <div class="cart-qty">
                     <form action="/tienda/carrito/actualizar" method="POST" style="display:inline">
+                      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                       <input type="hidden" name="productoId" value="<%= item.producto.id %>">
                       <input type="hidden" name="cantidad" value="<%= item.cantidad - 1 %>">
                       <button type="submit" class="cart-qty-btn">−</button>
                     </form>
                     <span class="cart-qty-num"><%= item.cantidad %></span>
                     <form action="/tienda/carrito/actualizar" method="POST" style="display:inline">
+                      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                       <input type="hidden" name="productoId" value="<%= item.producto.id %>">
                       <input type="hidden" name="cantidad" value="<%= item.cantidad + 1 %>">
                       <button type="submit" class="cart-qty-btn">+</button>
                     </form>
                     <form action="/tienda/carrito/eliminar" method="POST" style="display:inline;margin-left:.5rem">
+                      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                       <input type="hidden" name="productoId" value="<%= item.producto.id %>">
                       <button type="submit" class="btn-icon" style="font-size:.9rem;color:var(--red)" title="Eliminar">🗑️</button>
                     </form>

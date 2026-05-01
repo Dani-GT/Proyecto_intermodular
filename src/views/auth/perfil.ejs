@@ -196,6 +196,7 @@
         <div class="card" style="padding:2rem">
           <h3 style="margin-bottom:1.25rem">✏️ Mis datos personales</h3>
           <form action="/auth/perfil/editar" method="POST">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <div class="form-group">
               <label class="form-label">Nombre</label>
               <input type="text" name="nombre" class="form-control" value="<%= persona.nombre %>" required>
@@ -223,6 +224,7 @@
         <div class="card" style="padding:2rem">
           <h3 style="margin-bottom:1.25rem">🔒 Cambiar contraseña</h3>
           <form action="/auth/perfil/password" method="POST">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <div class="form-group">
               <label class="form-label">Contraseña actual</label>
               <input type="password" name="passwordActual" class="form-control" required>

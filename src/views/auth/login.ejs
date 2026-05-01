@@ -12,6 +12,7 @@
       </div>
 
       <form action="/auth/login" method="POST" novalidate>
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <div class="form-group">
           <label class="form-label" for="email">Correo electrónico</label>
           <div class="input-icon-wrap">

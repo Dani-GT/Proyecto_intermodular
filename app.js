@@ -4,6 +4,7 @@ const path = require('path');
 const session = require('express-session');
 const flash = require('connect-flash');
 const PgSessionStore = require('./src/lib/sessionStore');
+const { csrfGenerate } = require('./src/middleware/csrf.middleware');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -14,6 +15,65 @@ app.set('trust proxy', 1);
 // ─── Motor de vistas ─────────────────────────────────────────────────────────
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'src/views'));
+
+// ─── Cabeceras de seguridad HTTP (equivalente a helmet) ──────────────────────
+app.use((req, res, next) => {
+    // Evita que el navegador adivine el tipo MIME
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    // Bloquea el renderizado en iframes de otros orígenes (clickjacking)
+    res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+    // Activa el filtro XSS del navegador (IE/Edge legacy)
+    res.setHeader('X-XSS-Protection', '1; mode=block');
+    // Fuerza HTTPS en producción
+    if (process.env.NODE_ENV === 'production') {
+        res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+    }
+    // No enviar la cabecera Referrer a otros orígenes
+    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    // Eliminar cabecera que revela que usamos Express
+    res.removeHeader('X-Powered-By');
+    next();
+});
+
+// ─── Rate limiting en rutas de autenticación ─────────────────────────────────
+// Máximo 10 intentos por IP en ventana de 15 minutos
+const loginAttempts = new Map();
+const RATE_WINDOW_MS  = 15 * 60 * 1000; // 15 min
+const RATE_MAX        = 10;
+
+function loginRateLimiter(req, res, next) {
+    const ip  = req.ip || req.connection.remoteAddress || 'unknown';
+    const now = Date.now();
+    const entry = loginAttempts.get(ip) || { count: 0, resetAt: now + RATE_WINDOW_MS };
+
+    // Si la ventana ha expirado, reiniciar
+    if (now > entry.resetAt) {
+        entry.count   = 0;
+        entry.resetAt = now + RATE_WINDOW_MS;
+    }
+
+    entry.count++;
+    loginAttempts.set(ip, entry);
+
+    if (entry.count > RATE_MAX) {
+        const retryAfter = Math.ceil((entry.resetAt - now) / 1000);
+        res.set('Retry-After', String(retryAfter));
+        req.flash('error', `Demasiados intentos. Espera ${Math.ceil(retryAfter / 60)} minuto(s) e inténtalo de nuevo.`);
+        return res.redirect('/auth/login');
+    }
+    next();
+}
+
+// Limpiar IPs caducadas cada 15 min para evitar fuga de memoria
+setInterval(() => {
+    const now = Date.now();
+    for (const [ip, entry] of loginAttempts) {
+        if (now > entry.resetAt) loginAttempts.delete(ip);
+    }
+}, RATE_WINDOW_MS);
+
+// Exportar para usar en la ruta de login
+app.locals.loginRateLimiter = loginRateLimiter;
 
 // ─── Middleware ───────────────────────────────────────────────────────────────
 app.use(express.json());
@@ -51,6 +111,9 @@ app.use(session({
 
 // ─── Flash messages ───────────────────────────────────────────────────────────
 app.use(flash());
+
+// ─── Generación del token CSRF (disponible en todas las vistas como csrfToken) ─
+app.use(csrfGenerate);
 
 // ─── Variables globales de vistas ─────────────────────────────────────────────
 app.use((req, res, next) => {

@@ -12,6 +12,7 @@
       </div>
 
       <form action="/auth/registro" method="POST" novalidate id="formRegistro">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
 
         <!-- Nombre y apellidos -->
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">

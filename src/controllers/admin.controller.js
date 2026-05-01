@@ -472,6 +472,12 @@ exports.deleteInscripcion = async (req, res) => {
 exports.deleteUsuario = async (req, res) => {
     const { id } = req.params;
 
+    // Guard: un admin no puede borrarse a sí mismo
+    if (req.session.usuario && req.session.usuario.id === parseInt(id)) {
+        req.flash('error', 'No puedes eliminar tu propia cuenta de administrador.');
+        return res.redirect('/admin/usuarios');
+    }
+
     try {
         await prisma.persona.delete({ where: { id: parseInt(id) } });
         req.flash('exito', 'Usuario eliminado correctamente.');

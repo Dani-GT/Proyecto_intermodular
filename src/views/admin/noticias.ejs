@@ -26,6 +26,7 @@
         <div class="card" style="padding:1.75rem;margin-bottom:2rem">
           <h3 style="margin-bottom:1.25rem;font-size:1rem">➕ Nueva noticia</h3>
           <form action="/admin/noticias" method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <div class="form-group">
               <label class="form-label">Título</label>
               <input type="text" name="titulo" class="form-control" placeholder="Título de la noticia" required>
@@ -108,6 +109,7 @@
                   <tr id="editNot-<%= n.id %>" style="display:none;background:var(--bg2)">
                     <td colspan="6" style="padding:1.25rem">
                       <form action="/admin/noticias/<%= n.id %>" method="POST" enctype="multipart/form-data">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                         <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:.75rem">
                           <div>
                             <label class="form-label" style="font-size:.8rem">Título</label>
