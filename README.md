@@ -19,7 +19,8 @@ Página web completa del **Club Béisbol Granollers**, desarrollada como proyect
 9. [Subida de imágenes — Cloudinary](#subida-de-imágenes--cloudinary)
 10. [Email transaccional — Resend](#email-transaccional--resend)
 11. [Optimizaciones de rendimiento](#optimizaciones-de-rendimiento)
-12. [Autor](#autor)
+12. [Seguridad](#seguridad)
+13. [Autor](#autor)
 
 ---
 
@@ -34,6 +35,7 @@ Página web completa del **Club Béisbol Granollers**, desarrollada como proyect
 | Sesiones | express-session + almacén personalizado en PostgreSQL |
 | Subida de imágenes | Multer + Cloudinary v1 (producción) / disco local (desarrollo) |
 | Email | Resend REST API (fetch nativo, sin SMTP) |
+| Seguridad | Middleware propio: cabeceras HTTP, CSRF (Synchronizer Token), rate limiting |
 | Estilos | CSS puro con custom properties (tema claro/oscuro) |
 | JS frontend | Vanilla JS (`main.js`) |
 | Despliegue | Render (plan gratuito) |
@@ -107,6 +109,7 @@ Proyecto_intermodular/
     │   └── sessionStore.js           # Almacén de sesiones en PostgreSQL
     ├── middleware/
     │   ├── auth.middleware.js        # Guards: requireAuth, requireAdmin
+    │   ├── csrf.middleware.js        # Protección CSRF: csrfGenerate + csrfVerify
     │   └── upload.middleware.js      # Multer: Cloudinary (prod) o disco (dev)
     ├── routes/                       # Definición de rutas por módulo
     └── public/
@@ -373,6 +376,40 @@ Bloque inline en `head.ejs` para evitar el FOUC mientras se carga el stylesheet 
   .navbar { position: sticky; top: 0; z-index: 100; background: var(--bg); }
 </style>
 ```
+
+---
+
+## Seguridad
+
+Se han implementado las siguientes medidas de seguridad mediante **middlewares propios**, sin dependencias externas adicionales:
+
+### Cabeceras HTTP de seguridad
+Middleware aplicado globalmente (equivalente a *helmet*) que añade en cada respuesta:
+
+| Cabecera | Propósito |
+|----------|-----------|
+| `X-Content-Type-Options: nosniff` | Evita que el navegador adivine el tipo MIME |
+| `X-Frame-Options: SAMEORIGIN` | Previene ataques de *clickjacking* |
+| `X-XSS-Protection: 1; mode=block` | Activa el filtro XSS del navegador |
+| `Strict-Transport-Security` | Fuerza HTTPS (solo en producción) |
+| `Referrer-Policy: strict-origin-when-cross-origin` | Limita la información del Referer |
+
+Además se elimina `X-Powered-By` para no exponer el framework.
+
+### Protección CSRF
+Patrón *Synchronizer Token* implementado en `src/middleware/csrf.middleware.js`:
+- `csrfGenerate`: genera un token aleatorio de 32 bytes (`crypto.randomBytes`) por sesión y lo expone en todas las vistas como `csrfToken`.
+- `csrfVerify`: valida que el campo oculto `_csrf` del formulario coincide con el token de sesión antes de procesar cualquier POST.
+- Todos los formularios de la aplicación incluyen `<input type="hidden" name="_csrf" value="<%= csrfToken %>">`.
+
+### Rate limiting en el login
+Máximo **10 intentos de inicio de sesión por IP** en una ventana de 15 minutos. Superado el límite, el servidor bloquea el acceso temporalmente y devuelve un mensaje con el tiempo de espera restante.
+
+### Otros controles
+- El servidor **no arranca en producción** si `SESSION_SECRET` no está definido (evita sesiones con secreto público).
+- Las contraseñas se hashean con **bcrypt** (factor 10) antes de almacenarse.
+- La validación de **stock** se realiza dentro de una transacción Prisma atómica, evitando condiciones de carrera y stocks negativos.
+- Un administrador **no puede eliminarse a sí mismo** desde el panel de administración.
 
 ---
 
