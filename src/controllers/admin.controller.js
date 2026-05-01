@@ -352,14 +352,14 @@ exports.partidos = async (req, res) => {
 
 // ─── Crear partido ─────────────────────────────────────────────────────────────
 exports.createPartido = async (req, res) => {
-    const { rival, fecha, lugar, esLocal, categoriaId } = req.body;
+    const { rival, fecha, campo, lugar, esLocal, categoriaId } = req.body;
 
     try {
         await prisma.partido.create({
             data: {
                 rival,
                 fecha: new Date(fecha),
-                lugar,
+                campo: campo || lugar || null,   // acepta ambos nombres por retrocompatibilidad
                 esLocal: esLocal === 'true',
                 categoriaId: parseInt(categoriaId),
             }
@@ -404,6 +404,12 @@ exports.createJugador = async (req, res) => {
     try {
         const bcrypt = require('bcryptjs');
 
+        // La contraseña es obligatoria — no se permite fallback público
+        if (!password || password.trim().length < 8) {
+            req.flash('error', 'La contraseña es obligatoria y debe tener al menos 8 caracteres.');
+            return res.redirect('/admin/inscripciones');
+        }
+
         // Verificar que no exista el email
         const existente = await prisma.persona.findUnique({ where: { email } });
         if (existente) {
@@ -411,7 +417,7 @@ exports.createJugador = async (req, res) => {
             return res.redirect('/admin/inscripciones');
         }
 
-        const hash = await bcrypt.hash(password || 'User1234!', 10);
+        const hash = await bcrypt.hash(password, 10);
 
         await prisma.$transaction(async (tx) => {
             const persona = await tx.persona.create({

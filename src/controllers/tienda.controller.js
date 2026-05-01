@@ -230,6 +230,23 @@ exports.procesarPago = async (req, res) => {
 
         // Crear compra + líneas en transacción atómica
         const compra = await prisma.$transaction(async (tx) => {
+            // ── Validar stock disponible antes de proceder ────────────────────
+            for (const item of items) {
+                const productoActual = await tx.producto.findUnique({
+                    where: { id: item.productoId },
+                    select: { id: true, nombre: true, stock: true },
+                });
+                if (!productoActual) {
+                    throw new Error(`Producto ${item.productoId} no encontrado.`);
+                }
+                if (productoActual.stock < item.cantidad) {
+                    throw new Error(
+                        `Stock insuficiente para "${productoActual.nombre}": ` +
+                        `disponible ${productoActual.stock}, solicitado ${item.cantidad}.`
+                    );
+                }
+            }
+
             const nuevaCompra = await tx.compra.create({
                 data: {
                     personaId,
@@ -246,7 +263,7 @@ exports.procesarPago = async (req, res) => {
                 include: { CompraProducto: { include: { producto: true } } },
             });
 
-            // Descontar stock
+            // Descontar stock (garantizado: la validación anterior evita negativos)
             for (const item of items) {
                 await tx.producto.update({
                     where: { id: item.productoId },
@@ -271,7 +288,11 @@ exports.procesarPago = async (req, res) => {
 
     } catch (error) {
         console.error('Error al procesar pago:', error);
-        req.flash('error', 'Error al procesar el pago. Inténtalo de nuevo.');
+        // Si el error es de stock insuficiente, mostramos el mensaje específico al usuario
+        const msg = error.message?.startsWith('Stock insuficiente') || error.message?.startsWith('Producto')
+            ? error.message
+            : 'Error al procesar el pago. Inténtalo de nuevo.';
+        req.flash('error', msg);
         res.redirect('/tienda/checkout');
     }
 };

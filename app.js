@@ -21,6 +21,15 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'src/public')));
 
 // ─── Sesiones (persistidas en PostgreSQL/Supabase) ───────────────────────────
+if (!process.env.SESSION_SECRET) {
+    if (process.env.NODE_ENV === 'production') {
+        console.error('FATAL: SESSION_SECRET no está definido. El servidor no arrancará en producción sin él.');
+        process.exit(1);
+    } else {
+        console.warn('⚠️  SESSION_SECRET no definido — usando secreto de desarrollo. NUNCA uses esto en producción.');
+    }
+}
+
 const sessionStore = new PgSessionStore({
     connectionString: process.env.DIRECT_URL || process.env.DATABASE_URL,
     tableName: 'user_sessions',
@@ -29,7 +38,7 @@ const sessionStore = new PgSessionStore({
 
 app.use(session({
     store: sessionStore,
-    secret: process.env.SESSION_SECRET || 'cbg-secret-2025',
+    secret: process.env.SESSION_SECRET || 'dev-only-secret-no-usar-en-prod',
     resave: false,
     saveUninitialized: false,
     cookie: {
