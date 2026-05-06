@@ -143,6 +143,38 @@ exports.notificarInscripcion = async (inscripcion, persona) => {
     });
 };
 
+// ─── Email: mensaje de contacto ──────────────────────────────────────────────
+exports.notificarContacto = async ({ nombre, email, asunto, mensaje }) => {
+    await send({
+        to:      ADMIN_EMAIL,
+        subject: `📬 Nuevo mensaje de contacto — ${asunto || 'Sin asunto'}`,
+        html: `
+        <div style="font-family:Arial,sans-serif;max-width:560px;margin:0 auto;border:1px solid #e0e0e0;border-radius:8px;overflow:hidden">
+          <div style="background:#c0392b;padding:20px 24px">
+            <h2 style="color:#fff;margin:0;font-size:1.1rem">📬 CB Granollers — Nuevo mensaje de contacto</h2>
+          </div>
+          <div style="padding:24px">
+            <p style="margin:0 0 16px;color:#333">Has recibido un nuevo mensaje desde el formulario de contacto:</p>
+            <table style="width:100%;border-collapse:collapse;font-size:.9rem">
+              <tr><td style="color:#666;padding:4px 12px 4px 0;width:100px">Nombre</td>
+                  <td><strong>${nombre}</strong></td></tr>
+              <tr><td style="color:#666;padding:4px 12px 4px 0">Email</td>
+                  <td><a href="mailto:${email}" style="color:#c0392b">${email}</a></td></tr>
+              <tr><td style="color:#666;padding:4px 12px 4px 0">Asunto</td>
+                  <td>${asunto || '–'}</td></tr>
+              <tr><td style="color:#666;padding:4px 12px 4px 0;vertical-align:top">Mensaje</td>
+                  <td style="white-space:pre-wrap">${mensaje}</td></tr>
+              <tr><td style="color:#666;padding:4px 12px 4px 0">Recibido</td>
+                  <td>${new Date().toLocaleString('es')}</td></tr>
+            </table>
+          </div>
+          <div style="background:#f5f5f5;padding:12px 24px;font-size:.8rem;color:#999">
+            Mensaje automático generado por CB Granollers — para responder, escribe directamente a <strong>${email}</strong>.
+          </div>
+        </div>`,
+    });
+};
+
 // ─── Email: nueva compra ──────────────────────────────────────────────────────
 exports.notificarCompra = async (compra, persona) => {
     const lineas = compra.CompraProducto || [];

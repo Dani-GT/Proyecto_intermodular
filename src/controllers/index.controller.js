@@ -1,4 +1,5 @@
 const prisma = require('../lib/prisma');
+const mailer = require('../lib/mailer');
 
 const BASE_URL = 'https://cb-granollers.onrender.com';
 
@@ -66,4 +67,22 @@ exports.renderContacto = (req, res) => {
         description: 'Contacta con el Club Béisbol Granollers. Estamos en Granollers, Barcelona. Escríbenos para más información sobre inscripciones y entrenamientos.',
         canonical: `${BASE_URL}/contacto`,
     });
+};
+
+exports.procesarContacto = async (req, res) => {
+    const { nombre, email, asunto, mensaje } = req.body;
+
+    if (!nombre || !email || !mensaje) {
+        req.flash('error', 'Por favor, rellena todos los campos obligatorios.');
+        return res.redirect('/contacto');
+    }
+
+    try {
+        await mailer.notificarContacto({ nombre, email, asunto, mensaje });
+    } catch (err) {
+        console.error('[Contacto] Error enviando email:', err.message);
+    }
+
+    req.flash('exito', '¡Mensaje enviado correctamente! Nos pondremos en contacto contigo lo antes posible.');
+    res.redirect('/contacto');
 };
